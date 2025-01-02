@@ -148,37 +148,40 @@ authForm.addEventListener("submit", async (e) => {
   }
 });
 
-// Handle User State
 onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    authContainer.style.display = "none";
-    dashboardContainer.style.display = "flex";
-    chartContainer.style.display = "block";
-    loadDashboard(user);
-  } else {
-    authContainer.style.display = "flex";
-    dashboardContainer.style.display = "none";
-    chartContainer.style.display = "none";
-  }
-});
+    if (user) {
+      authContainer.style.display = "none";
+      dashboardContainer.style.display = "flex";
+      chartContainer.style.display = "block";
+      document.getElementById("username-display").textContent = user.email.split("@")[0];
+      loadDashboard(user);
+    } else {
+      authContainer.style.display = "flex";
+      dashboardContainer.style.display = "none";
+      chartContainer.style.display = "none";
+    }
+  });
+  
 
-// Load Dashboard Data
 const loadDashboard = async (user) => {
-  const userDocRef = doc(db, "users", user.uid);
-  const userDoc = await getDoc(userDocRef);
-
-  if (userDoc.exists()) {
-    const data = userDoc.data();
-    balanceDisplay.textContent = `$${data.balance.toFixed(2)}`;
-    updateBudgetsList(data.budgets);
-    updateExpensesSummary(data.expenses);
-    initializeChart(data.budgets, data.expenses);
-  } else {
-    await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
-    balanceDisplay.textContent = `$0.00`;
-    initializeChart([], []);
-  }
-};
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+  
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      document.getElementById("username-display").textContent = user.email.split("@")[0]; // Use email prefix as username
+      balanceDisplay.textContent = `$${data.balance.toFixed(2)}`;
+      updateBudgetsList(data.budgets);
+      updateExpensesSummary(data.expenses);
+      initializeChart(data.budgets, data.expenses);
+    } else {
+      await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
+      document.getElementById("username-display").textContent = user.email.split("@")[0];
+      balanceDisplay.textContent = `$0.00`;
+      initializeChart([], []);
+    }
+  };
+  
 
 // Update Budgets List
 const updateBudgetsList = (budgets) => {
@@ -205,18 +208,26 @@ const updateExpensesSummary = (expenses) => {
 
 // Add Income
 addIncomeForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const income = parseFloat(document.getElementById("income-amount").value);
-  const user = auth.currentUser;
-
-  const userDocRef = doc(db, "users", user.uid);
-  const userDoc = await getDoc(userDocRef);
-  const data = userDoc.data();
-
-  await updateDoc(userDocRef, { balance: data.balance + income });
-  balanceDisplay.textContent = `$${(data.balance + income).toFixed(2)}`;
-});
-
+    e.preventDefault();
+    const incomeInput = document.getElementById("income-amount");
+    const income = parseFloat(incomeInput.value);
+    if (isNaN(income) || income <= 0) {
+      alert("Please enter a valid income amount.");
+      return;
+    }
+  
+    const user = auth.currentUser;
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+    const data = userDoc.data();
+  
+    await updateDoc(userDocRef, { balance: data.balance + income });
+    balanceDisplay.textContent = `$${(data.balance + income).toFixed(2)}`;
+  
+    // Clear the input field after submission
+    incomeInput.value = "";
+  });
+  
 // Add Budget
 addBudgetForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -291,4 +302,22 @@ document.getElementById("budgets-list").addEventListener("click", async (e) => {
     await updateDoc(userDocRef, { budgets: updatedBudgets });
     updateBudgetsList(updatedBudgets);
   }
+});
+
+
+// Event listeners for bottom navigation
+document.getElementById("home-link").addEventListener("click", () => {
+  showSection("home-section");
+});
+
+document.getElementById("add-income-link").addEventListener("click", () => {
+  showSection("add-income-section");
+});
+
+document.getElementById("manage-budgets-link").addEventListener("click", () => {
+  showSection("manage-budgets-section");
+});
+
+document.getElementById("track-expenses-link").addEventListener("click", () => {
+  showSection("track-expenses-section");
 });
