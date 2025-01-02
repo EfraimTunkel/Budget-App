@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://kit.fontawesome.com/2b0e4418c9.js" crossorigin="anonymous"></script>
     <title>Budget App</title>
     <script type="module" src="app.js" defer></script>
     <link rel="stylesheet" href="styles.css" />
@@ -48,22 +49,33 @@
     <!-- Dashboard Container -->
     <div id="dashboard-container" style="display: none;">
       <!-- Sidebar -->
-      <nav id="sidebar">
-        <button id="menu-toggle" class="hamburger-menu">☰</button>
-        <ul id="menu">
-          <li><a href="#" id="add-income-link">Add Income</a></li>
-          <li><a href="#" id="manage-budgets-link">Manage Budgets</a></li>
-          <li><a href="#" id="track-expenses-link">Track Expenses</a></li>
-          <li><a href="#" id="logout-button">Log Out</a></li>
-        </ul>
+      <!-- Bottom Navigation -->
+      <nav class="bottom-nav">
+        <a href="#" id="home-link" class="nav-item">
+          <i class="fa-solid fa-house"></i><span>Home</span>
+        </a>
+        <a href="#" id="add-income-link" class="nav-item">
+          <i class="fa-solid fa-dollar-sign"></i><span>Add Income</span>
+        </a>
+        <a href="#" id="manage-budgets-link" class="nav-item">
+          <i class="fa-solid fa-wallet"></i><span>Budgets</span>
+        </a>
+        <a href="#" id="track-expenses-link" class="nav-item">
+          <i class="fa-solid fa-list"></i><span>Expenses</span>
+        </a>
+        <button id="logout-button">Log Out</button>
       </nav>
+      
+  
 
       <!-- Main Content -->
       <main id="main-content">
         <header>
-          <h1>Dashboard</h1>
-          <p>Your current balance: <span id="balance">$0.00</span></p>
-        </header>
+            <h1>Dashboard</h1>
+            <p>Hello, <span id="username-display">User</span>!</p>
+            <p>Your current balance: <span id="balance">$0.00</span></p>
+          </header>
+          
 
         <!-- Chart Section -->
         <section id="chart-container" style="display: none;">
