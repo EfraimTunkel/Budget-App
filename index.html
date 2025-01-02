@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="logo.png" type="image/png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Budget App</title>
+    <script type="module" src="app.js" defer></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Authentication Container -->
+    <div id="auth-container">
+      <div class="card">
+        <div class="logo">
+          <img src="logo.png" alt="Budget App Logo" />
+        </div>
+        <h1 class="app-title" id="form-title">Welcome Back!</h1>
+        <p class="subtitle">Log in to track your finances.</p>
+        <form id="auth-form">
+          <div class="input-group">
+            <label for="auth-email">Email</label>
+            <input
+              type="email"
+              id="auth-email"
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+          <div class="input-group">
+            <label for="auth-password">Password</label>
+            <input
+              type="password"
+              id="auth-password"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+          <button type="submit" id="auth-button" class="btn-auth">Log In</button>
+        </form>
+        <p class="toggle-auth">
+          Don't have an account? <a href="#" id="toggle-link">Sign up here</a>.
+        </p>
+      </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div id="dashboard-container" style="display: none;">
+      <!-- Sidebar -->
+      <nav id="sidebar">
+        <button id="menu-toggle" class="hamburger-menu">☰</button>
+        <ul id="menu">
+          <li><a href="#" id="add-income-link">Add Income</a></li>
+          <li><a href="#" id="manage-budgets-link">Manage Budgets</a></li>
+          <li><a href="#" id="track-expenses-link">Track Expenses</a></li>
+          <li><a href="#" id="logout-button">Log Out</a></li>
+        </ul>
+      </nav>
+
+      <!-- Main Content -->
+      <main id="main-content">
+        <header>
+          <h1>Dashboard</h1>
+          <p>Your current balance: <span id="balance">$0.00</span></p>
+        </header>
+
+        <!-- Chart Section -->
+        <section id="chart-container" style="display: none;">
+          <h2>Spending Overview</h2>
+          <canvas id="spending-chart"></canvas>
+        </section>
+
+        <!-- Add Income Section -->
+        <section id="add-income-section" class="hidden">
+          <h2>Add Income</h2>
+          <form id="add-income-form">
+            <input
+              type="number"
+              id="income-amount"
+              placeholder="Enter amount"
+              required
+            />
+            <button type="submit" class="btn-primary">Add Income</button>
+          </form>
+        </section>
+
+        <!-- Manage Budgets Section -->
+        <section id="manage-budgets-section" class="hidden">
+          <h2>Manage Budgets</h2>
+          <form id="add-budget-form">
+            <div class="input-group">
+              <label for="budget-category">Category Name</label>
+              <input
+                type="text"
+                id="budget-category"
+                placeholder="Category (e.g., Food)"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label for="budget-amount">Budget Amount</label>
+              <input
+                type="number"
+                id="budget-amount"
+                placeholder="Set a budget amount"
+                required
+              />
+            </div>
+            <button type="submit" class="btn-primary">Add Budget</button>
+          </form>
+          <ul id="budgets-list">
+            <!-- Dynamic List Items -->
+          </ul>
+        </section>
+
+        <!-- Track Expenses Section -->
+        <section id="track-expenses-section" class="hidden">
+          <h2>Track Expenses</h2>
+          <form id="add-expense-form">
+            <div class="input-group">
+              <label for="expense-category">Select Category</label>
+              <select id="expense-category" required>
+                <option value="" disabled selected>
+                  Choose a category
+                </option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="expense-amount">Expense Amount</label>
+              <input
+                type="number"
+                id="expense-amount"
+                placeholder="Enter expense amount"
+                required
+              />
+            </div>
+            <button type="submit" class="btn-primary">Add Expense</button>
+          </form>
+          <ul id="expenses-summary">
+            <!-- Dynamic Expense List -->
+          </ul>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

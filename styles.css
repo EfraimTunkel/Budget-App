@@ -1,0 +1,335 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Global Styles */
+  html, body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(to bottom right, #2193b0, #6dd5ed);
+    color: #333;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+  }
+  
+  /* Animation: Fade In */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Authentication Container */
+  #auth-container {
+    width: 90%;
+    max-width: 420px;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.6s ease-in-out;
+    margin-top: 50px;
+  }
+  
+  .card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  /* Logo */
+  .logo img {
+    width: 80px;
+    margin-bottom: 20px;
+  }
+  
+  /* Titles */
+  .app-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .subtitle {
+    font-size: 16px;
+    color: #6c757d;
+    margin-bottom: 25px;
+  }
+  
+  /* Input Group */
+  .input-group {
+    margin-bottom: 20px;
+    text-align: left;
+    width: 100%;
+  }
+  
+  .input-group label {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 5px;
+    display: block;
+  }
+  
+  .input-group input {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  .input-group input:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.4);
+  }
+  
+  /* Authentication Button */
+  .btn-auth {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #4caf50;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  .btn-auth:hover {
+    background-color: #43a047;
+    transform: translateY(-2px);
+  }
+  
+  .btn-auth:active {
+    transform: translateY(0);
+  }
+  
+  /* Logout Button */
+  #logout-button {
+    width: 80%;
+    margin: 15px auto;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #f44336;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    text-align: center;
+  }
+  
+  #logout-button:hover {
+    background-color: #d32f2f;
+    transform: translateY(-2px);
+  }
+  
+  #logout-button:active {
+    transform: translateY(0);
+  }
+  
+  /* Dashboard Container */
+  #dashboard-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+  }
+  
+  /* Header Section */
+  header {
+    background: #4caf50;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 4px solid #388e3c;
+  }
+  
+  header h1 {
+    font-size: 30px;
+    font-weight: bold;
+  }
+  
+  header p {
+    font-size: 18px;
+    margin-top: 5px;
+    font-weight: 500;
+  }
+  
+  /* Sidebar Navigation */
+  #sidebar {
+    background: #4caf50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .hamburger-menu {
+    font-size: 28px;
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: transform 0.2s;
+  }
+  
+ 
+  
+  #menu {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    background: #4caf50;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  #menu.visible {
+    display: flex;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  
+  #menu a {
+    width: 90%;
+    text-align: center;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    background: #43a047;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-bottom: 10px;
+    transition: background 0.3s, transform 0.2s;
+  }
+  
+  #menu a:hover {
+    background: #2e7d32;
+    transform: translateY(-2px);
+  }
+  
+  /* Main Content */
+  #main-content {
+    padding: 20px;
+  }
+  
+  /* Sections */
+  section {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  section h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  /* Balance Display */
+  #balance-display {
+    text-align: center;
+    padding: 20px;
+    background: #43a047;
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+  
+  /* Lists (Budgets and Expenses) */
+  ul {
+    list-style: none;
+    margin: 15px 0;
+    padding: 0;
+  }
+  
+  ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+  }
+  
+  ul li:hover {
+    transform: scale(1.02);
+    background: #f1f1f1;
+  }
+  
+  /* Charts Section */
+  #chart-container {
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  #chart-container h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    header h1 {
+      font-size: 22px;
+    }
+  
+    header p {
+      font-size: 16px;
+    }
+  
+    ul li {
+      padding: 10px;
+    }
+  
+    #menu a {
+      font-size: 16px;
+    }
+  
+    #logout-button {
+      font-size: 14px;
+      padding: 12px;
+    }
+  }
+  
