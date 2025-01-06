@@ -64,6 +64,7 @@ body {
   border-radius: 8px;
   outline: none;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box; /* Include padding in width */
 }
 
 #auth-container .input-group input:focus {
@@ -163,9 +164,10 @@ body {
   text-decoration: underline;
 }
 
+/* MOBILE-SPECIFIC STYLES */
 @media (max-width: 768px) {
   #auth-container {
-    width: 87%;
+    width: 90%;
     padding: 15px;
   }
 
@@ -178,14 +180,12 @@ body {
   }
 
   #auth-container .btn-auth,
-  #auth-container .social-btn {
-    font-size: 14px;
-    padding: 10px;
-  }
-
+  #auth-container .social-btn,
   #auth-container .input-group input {
     font-size: 14px;
     padding: 10px;
+    width: 100%; /* Ensure uniform width */
+    border-radius: 8px;
   }
 
   #auth-container .social-btn i {
@@ -200,6 +200,8 @@ body {
     font-size: 12px;
   }
 }
+
+/* DESKTOP-SPECIFIC STYLES */
 @media (min-width: 769px) {
   #auth-container {
     max-width: 500px;
@@ -215,11 +217,7 @@ body {
   }
 
   #auth-container .btn-auth,
-  #auth-container .social-btn {
-    font-size: 18px;
-    padding: 14px;
-  }
-
+  #auth-container .social-btn,
   #auth-container .input-group input {
     font-size: 18px;
     padding: 14px;
