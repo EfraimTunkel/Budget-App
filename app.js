@@ -1,113 +1,332 @@
+
 // Import Firebase modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
 import {
   getAuth,
-  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut,
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
-} from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  arrayUnion,
-} from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDuDrJSgnGvkDHCdIBq98m2zRGLvwRgbYs",
-  authDomain: "budgetapp-5d500.firebaseapp.com",
-  projectId: "budgetapp-5d500",
-  storageBucket: "budgetapp-5d500.firebasestorage.app",
-  messagingSenderId: "31114956560",
-  appId: "1:31114956560:web:1cbf62fbeaa484114ddf95",
-  measurementId: "G-X9P0P9FC43",
+// Fetch the API key securely from the Firebase Cloud Function
+const fetchApiKey = async () => {
+  try {
+    const response = await fetch("https://us-central1-budgetapp-5d500.cloudfunctions.net/getApiKey");
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    return data.apiKey;
+  } catch (error) {
+    console.error("Error fetching API key:", error);
+  }
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Initialize Firebase with dynamically fetched API key
+const initializeAppWithApiKey = async () => {
+  const apiKey = await fetchApiKey();
+  if (apiKey) {
+    const firebaseConfig = {
+      apiKey,
+      authDomain: "budgetapp-5d500.firebaseapp.com",
+      projectId: "budgetapp-5d500",
+      storageBucket: "budgetapp-5d500.appspot.com",
+      messagingSenderId: "31114956560",
+      appId: "1:31114956560:web:1cbf62fbeaa484114ddf95",
+      measurementId: "G-X9P0P9FC43",
+    };
 
-// Elements
-const authContainer = document.getElementById("auth-container");
-const dashboardContainer = document.getElementById("dashboard-container");
-const authForm = document.getElementById("auth-form");
-const authButton = document.getElementById("auth-button");
-const toggleLink = document.getElementById("toggle-link");
-const balanceDisplay = document.getElementById("balance");
-const addIncomeSection = document.getElementById("add-income-section");
-const manageBudgetsSection = document.getElementById("manage-budgets-section");
-const trackExpensesSection = document.getElementById("track-expenses-section");
-const addIncomeForm = document.getElementById("add-income-form");
-const addBudgetForm = document.getElementById("add-budget-form");
-const addExpenseForm = document.getElementById("add-expense-form");
-const budgetsList = document.getElementById("budgets-list");
-const expensesSummary = document.getElementById("expenses-summary");
-const expenseCategorySelect = document.getElementById("expense-category");
-const chartContainer = document.getElementById("chart-container");
-const ctx = document.getElementById("spending-chart").getContext("2d");
-
-// Sidebar Navigation
-document.getElementById("add-income-link").addEventListener("click", () => {
-  showSection(addIncomeSection);
-});
-document.getElementById("manage-budgets-link").addEventListener("click", () => {
-  showSection(manageBudgetsSection);
-});
-document.getElementById("track-expenses-link").addEventListener("click", () => {
-  showSection(trackExpensesSection);
-});
-
-// Show Specific Section
-const showSection = (section) => {
-  addIncomeSection.classList.add("hidden");
-  manageBudgetsSection.classList.add("hidden");
-  trackExpensesSection.classList.add("hidden");
-  section.classList.remove("hidden");
+    const app = initializeApp(firebaseConfig);
+    initializeFirebaseFeatures(app);
+  } else {
+    console.error("Failed to fetch API key. Firebase initialization aborted.");
+  }
 };
 
-// Initialize Chart
-let spendingChart;
+// Initialize Firebase Auth and Firestore features
+const initializeFirebaseFeatures = (app) => {
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-const initializeChart = (budgets, expenses) => {
-  const categories = budgets.map((budget) => budget.category);
-  const expenseData = categories.map((category) => {
-    const totalExpense = expenses
-      .filter((expense) => expense.category === category)
-      .reduce((sum, expense) => sum + expense.amount, 0);
-    return totalExpense;
+  // Elements
+  const authContainer = document.getElementById("auth-container");
+  const dashboardContainer = document.getElementById("dashboard-container");
+  const authForm = document.getElementById("auth-form");
+  const authButton = document.getElementById("auth-button");
+  const toggleLink = document.getElementById("toggle-link");
+  const googleSignInButton = document.getElementById("google-signin-button");
+  const logoutButton = document.getElementById("logout-button");
+  const balanceDisplay = document.getElementById("balance");
+  const addIncomeForm = document.getElementById("add-income-form");
+  const addBudgetForm = document.getElementById("add-budget-form");
+  const addExpenseForm = document.getElementById("add-expense-form");
+  const budgetsList = document.getElementById("budgets-list");
+  const expensesSummary = document.getElementById("expenses-summary");
+  const expenseCategorySelect = document.getElementById("expense-category");
+  // Toggle Login/Sign-Up
+  toggleLink.addEventListener("click", () => {
+    const isLogin = authButton.textContent === "Log In";
+    document.getElementById("form-title").textContent = isLogin
+      ? "Sign Up to Budget App"
+      : "Welcome Back!";
+    authButton.textContent = isLogin ? "Sign Up" : "Log In";
+    toggleLink.textContent = isLogin
+      ? "Already have an account? Log in here."
+      : "Don't have an account? Sign up here.";
   });
 
-  if (spendingChart) {
-    spendingChart.destroy();
+  // Handle Email/Password Authentication
+  authForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("auth-email").value;
+    const password = document.getElementById("auth-password").value;
+
+    try {
+      if (authButton.textContent === "Log In") {
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Logged in successfully!");
+      } else {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userDocRef = doc(db, "users", userCredential.user.uid);
+        await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
+        alert("Account created successfully!");
+      }
+    } catch (error) {
+      console.error("Authentication Error:", error.message);
+    }
+  });
+
+  // Handle Google Sign-In
+  const provider = new GoogleAuthProvider();
+
+googleSignInButton.addEventListener("click", async () => {
+    try {
+      const provider = new GoogleAuthProvider(); // Create provider instance
+      const result = await signInWithPopup(auth, provider); // Use signInWithPopup for web
+      const user = result.user;
+  
+      // Create a Firestore document for new users
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+  
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
+      }
+  
+      alert(`Welcome ${user.displayName}!`);
+      // Optionally redirect to dashboard or update UI
+    } catch (error) {
+      console.error("Google Sign-In Error:", error.message);
+      alert("Error signing in with Google. Check console for details.");
+    }
+  });
+  
+
+  // Monitor Auth State
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      authContainer.style.display = "none";
+      dashboardContainer.style.display = "block";
+      loadDashboard(user);
+    } else {
+      authContainer.style.display = "block";
+      dashboardContainer.style.display = "none";
+    }
+  });
+
+  const loadDashboard = async (user) => {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      balanceDisplay.textContent = `$${data.balance.toFixed(2)}`;
+      updateBudgetsList(data.budgets);
+      updateExpensesSummary(data.expenses);
+    } else {
+      await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
+      balanceDisplay.textContent = "$0.00";
+      updateBudgetsList([]);
+      updateExpensesSummary([]);
+    }
+  };
+
+  // Add Income
+  addIncomeForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const amount = parseFloat(document.getElementById("income-amount").value);
+    if (!isNaN(amount)) {
+      const user = auth.currentUser;
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        const newBalance = data.balance + amount;
+        await setDoc(userDocRef, { ...data, balance: newBalance });
+        balanceDisplay.textContent = `$${newBalance.toFixed(2)}`;
+        alert("Income added successfully!");
+        addIncomeForm.reset();
+      }
+    }
+  });
+
+  // Add Budget
+  addBudgetForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const category = document.getElementById("budget-category").value;
+    const amount = parseFloat(document.getElementById("budget-amount").value);
+    if (category && !isNaN(amount)) {
+      const user = auth.currentUser;
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        const budgets = [...data.budgets, { category, amount }];
+        await setDoc(userDocRef, { ...data, budgets });
+        updateBudgetsList(budgets);
+        alert("Budget added successfully!");
+        addBudgetForm.reset();
+      }
+    }
+  });
+
+  // Helper Functions
+  const updateBudgetsList = (budgets) => {
+    budgetsList.innerHTML = "";
+    expenseCategorySelect.innerHTML = "<option value=\"\" disabled selected>Choose a category</option>";
+    budgets.forEach((budget) => {
+      const li = document.createElement("li");
+      li.textContent = `${budget.category}: $${budget.amount.toFixed(2)}`;
+      budgetsList.appendChild(li);
+
+      const option = document.createElement("option");
+      option.value = budget.category;
+      option.textContent = budget.category;
+      expenseCategorySelect.appendChild(option);
+    });
+  };
+
+  const updateExpensesSummary = (expenses) => {
+    expensesSummary.innerHTML = "";
+    expenses.forEach((expense) => {
+      const li = document.createElement("li");
+      li.textContent = `${expense.category}: $${expense.amount.toFixed(2)}`;
+      expensesSummary.appendChild(li);
+    });
+  };
+
+  // Logout
+  logoutButton.addEventListener("click", async () => {
+    await signOut(auth);
+    alert("Logged out successfully!");
+    location.reload();
+  });
+};
+
+// Start the app by initializing with the API key
+initializeAppWithApiKey();
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({
+  client_id: "31114956560-rmea0jtoq86qie75n0v3e1v06e8tk1e3.apps.googleusercontent.com", // Update with your actual Web Client ID
+});
+
+// Toggle More Options
+const moreLink = document.getElementById("more-link");
+const moreOptions = document.getElementById("more-options");
+
+moreLink.addEventListener("click", () => {
+  moreOptions.classList.toggle("hidden");
+});
+
+document.querySelectorAll('.nav-more').forEach((more) => {
+    more.addEventListener('click', (e) => {
+      e.preventDefault();
+      const dropdown = document.createElement('ul');
+      dropdown.classList.add('dropdown-menu');
+      dropdown.innerHTML = `
+        <li><a href="#">Profile</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Logout</a></li>
+      `;
+      more.appendChild(dropdown);
+    });
+  });
+  
+  const showToast = (message) => {
+    const toast = document.getElementById("toast-container");
+    toast.textContent = message;
+    toast.classList.remove("hidden");
+    setTimeout(() => toast.classList.add("hidden"), 3000);
+  };
+  
+  // Example usage
+  showToast("Income added successfully!");
+ 
+
+
+
+  // Enhanced Error Handling
+const showError = (message) => {
+  const errorToast = document.getElementById("toast-container");
+  errorToast.textContent = message;
+  errorToast.style.backgroundColor = "#f44336";
+  errorToast.classList.remove("hidden");
+  setTimeout(() => errorToast.classList.add("hidden"), 3000);
+};
+
+
+// Add Income with Validation
+addIncomeForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const amount = parseFloat(document.getElementById("income-amount").value);
+  if (isNaN(amount) || amount <= 0) {
+    showError("Please enter a valid income amount!");
+    return;
   }
 
-  spendingChart = new Chart(ctx, {
-    type: "pie",
+  const user = auth.currentUser;
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+
+  if (userDoc.exists()) {
+    const data = userDoc.data();
+    const newBalance = data.balance + amount;
+    await setDoc(userDocRef, { ...data, balance: newBalance });
+    balanceDisplay.textContent = `$${newBalance.toFixed(2)}`;
+    showToast("Income added successfully!");
+    addIncomeForm.reset();
+  }
+});
+
+// Load Charts for Spending Overview
+const loadSpendingChart = (data) => {
+  const ctx = document.getElementById("spending-chart").getContext("2d");
+  new Chart(ctx, {
+    type: "doughnut",
     data: {
-      labels: categories,
-      datasets: [
-        {
-          label: "Spending Categories",
-          data: expenseData,
-          backgroundColor: ["#4caf50", "#ff9800", "#f44336", "#2196f3", "#9c27b0"],
-          borderColor: "#ffffff",
-          borderWidth: 2,
-        },
-      ],
+      labels: data.categories,
+      datasets: [{
+        label: "Spending Overview",
+        data: data.amounts,
+        backgroundColor: ["#4caf50", "#ff9800", "#2196f3", "#f44336", "#9c27b0"],
+        borderWidth: 1,
+      }],
     },
     options: {
       responsive: true,
       plugins: {
-        legend: { display: true, position: "bottom" },
+        legend: {
+          position: "top",
+        },
         tooltip: {
           callbacks: {
-            label: (tooltipItem) =>
-              `${tooltipItem.label}: $${tooltipItem.raw.toFixed(2)}`,
+            label: (tooltipItem) => {
+              return `${tooltipItem.label}: $${tooltipItem.raw}`;
+            },
           },
         },
       },
@@ -115,209 +334,69 @@ const initializeChart = (budgets, expenses) => {
   });
 };
 
-// Toggle Login/Sign-Up
-toggleLink.addEventListener("click", () => {
-  const isLogin = authButton.textContent === "Log In";
-  document.getElementById("form-title").textContent = isLogin
-    ? "Sign Up to Budget App"
-    : "Welcome Back!";
-  authButton.textContent = isLogin ? "Sign Up" : "Log In";
-  toggleLink.textContent = isLogin
-    ? "Already have an account? Log in here."
-    : "Don't have an account? Sign up here.";
-});
+// Dark Mode Toggle
+const toggleDarkMode = () => {
+  document.body.classList.toggle("dark-mode");
+  const isDarkMode = document.body.classList.contains("dark-mode");
+  localStorage.setItem("darkMode", isDarkMode);
+};
 
-// Handle Authentication
-authForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("auth-email").value;
-  const password = document.getElementById("auth-password").value;
+// Load User Preferences
+const loadUserPreferences = () => {
+  const isDarkMode = localStorage.getItem("darkMode") === "true";
+  if (isDarkMode) document.body.classList.add("dark-mode");
+};
 
-  try {
-    if (authButton.textContent === "Log In") {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      alert(`Welcome back, ${userCredential.user.email}!`);
-    } else if (authButton.textContent === "Sign Up") {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const userDocRef = doc(db, "users", userCredential.user.uid);
-      await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
-      alert(`Account created successfully! Welcome, ${userCredential.user.email}.`);
-    }
-  } catch (error) {
-    alert(`Error: ${error.message}`);
+// Initialize Dark Mode Button
+document.getElementById("dark-mode-toggle").addEventListener("click", toggleDarkMode);
+
+// Sort Budgets
+const sortBudgets = (budgets, criteria) => {
+  if (criteria === "category") {
+    return budgets.sort((a, b) => a.category.localeCompare(b.category));
   }
-});
-
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      authContainer.style.display = "none";
-      dashboardContainer.style.display = "flex";
-      chartContainer.style.display = "block";
-      document.getElementById("username-display").textContent = user.email.split("@")[0];
-      loadDashboard(user);
-    } else {
-      authContainer.style.display = "flex";
-      dashboardContainer.style.display = "none";
-      chartContainer.style.display = "none";
-    }
-  });
-  
-
-const loadDashboard = async (user) => {
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-  
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      document.getElementById("username-display").textContent = user.email.split("@")[0]; // Use email prefix as username
-      balanceDisplay.textContent = `$${data.balance.toFixed(2)}`;
-      updateBudgetsList(data.budgets);
-      updateExpensesSummary(data.expenses);
-      initializeChart(data.budgets, data.expenses);
-    } else {
-      await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
-      document.getElementById("username-display").textContent = user.email.split("@")[0];
-      balanceDisplay.textContent = `$0.00`;
-      initializeChart([], []);
-    }
-  };
-  
-
-// Update Budgets List
-const updateBudgetsList = (budgets) => {
-  budgetsList.innerHTML = "";
-  expenseCategorySelect.innerHTML =
-    '<option value="" disabled selected>Select category</option>';
-  budgets.forEach((budget) => {
-    budgetsList.innerHTML += `
-      <li>${budget.category}: $${budget.amount.toFixed(2)}
-        <button class="edit-btn" data-category="${budget.category}">Edit</button>
-        <button class="delete-btn" data-category="${budget.category}">Delete</button>
-      </li>`;
-    expenseCategorySelect.innerHTML += `<option value="${budget.category}">${budget.category}</option>`;
-  });
+  if (criteria === "amount") {
+    return budgets.sort((a, b) => b.amount - a.amount);
+  }
 };
 
-// Update Expenses Summary
-const updateExpensesSummary = (expenses) => {
-  expensesSummary.innerHTML = "";
-  expenses.forEach((expense) => {
-    expensesSummary.innerHTML += `<li>${expense.category}: $${expense.amount.toFixed(2)}</li>`;
-  });
-};
+// Delete Budget or Expense
+const deleteItem = async (id, type) => {
+  const user = auth.currentUser;
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
 
-// Add Income
-addIncomeForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const incomeInput = document.getElementById("income-amount");
-    const income = parseFloat(incomeInput.value);
-    if (isNaN(income) || income <= 0) {
-      alert("Please enter a valid income amount.");
-      return;
-    }
-  
-    const user = auth.currentUser;
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
+  if (userDoc.exists()) {
     const data = userDoc.data();
-  
-    await updateDoc(userDocRef, { balance: data.balance + income });
-    balanceDisplay.textContent = `$${(data.balance + income).toFixed(2)}`;
-  
-    // Clear the input field after submission
-    incomeInput.value = "";
-  });
-  
-// Add Budget
-addBudgetForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const category = document.getElementById("budget-category").value;
-  const amount = parseFloat(document.getElementById("budget-amount").value);
-  const user = auth.currentUser;
+    if (type === "budget") {
+      data.budgets = data.budgets.filter((budget) => budget.id !== id);
+    } else if (type === "expense") {
+      data.expenses = data.expenses.filter((expense) => expense.id !== id);
+    }
+    await setDoc(userDocRef, data);
+    loadDashboard(user);
+    showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!`);
+  }
+};
 
-  const userDocRef = doc(db, "users", user.uid);
-  await updateDoc(userDocRef, { budgets: arrayUnion({ category, amount }) });
-  const userDoc = await getDoc(userDocRef);
-  updateBudgetsList(userDoc.data().budgets);
-});
-
-// Add Expense
-addExpenseForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const category = document.getElementById("expense-category").value;
-  const amount = parseFloat(document.getElementById("expense-amount").value);
-  const user = auth.currentUser;
-
-  const userDocRef = doc(db, "users", user.uid);
-  const userDoc = await getDoc(userDocRef);
-  const data = userDoc.data();
-
-  const updatedBalance = data.balance - amount;
-  await updateDoc(userDocRef, {
-    balance: updatedBalance,
-    expenses: arrayUnion({ category, amount }),
-  });
-  balanceDisplay.textContent = `$${updatedBalance.toFixed(2)}`;
-  updateExpensesSummary(data.expenses.concat({ category, amount }));
-});
-
-// Logout
-document.getElementById("logout-button").addEventListener("click", async () => {
-  await signOut(auth);
-  location.reload();
-});
-
-// Sidebar Menu Toggle
-const menuToggle = document.getElementById("menu-toggle");
-const menu = document.getElementById("menu");
-
-menuToggle.addEventListener("click", () => {
-  menu.classList.toggle("visible");
-});
-
-document.addEventListener("click", (e) => {
-  if (!menu.contains(e.target) && e.target !== menuToggle) {
-    menu.classList.remove("visible");
+// Example: Adding delete button for budgets
+budgetsList.addEventListener("click", (e) => {
+  if (e.target.classList.contains("delete-budget")) {
+    const budgetId = e.target.dataset.id;
+    deleteItem(budgetId, "budget");
   }
 });
 
-// Edit/Delete Budget
-document.getElementById("budgets-list").addEventListener("click", async (e) => {
-  const user = auth.currentUser;
-  const userDocRef = doc(db, "users", user.uid);
-  const userDoc = await getDoc(userDocRef);
-  const data = userDoc.data();
-
-  if (e.target.classList.contains("edit-btn")) {
-    const category = e.target.dataset.category;
-    const newAmount = prompt(`Enter new amount for ${category}:`, "0");
-    const updatedBudgets = data.budgets.map((budget) =>
-      budget.category === category ? { ...budget, amount: parseFloat(newAmount) } : budget
-    );
-    await updateDoc(userDocRef, { budgets: updatedBudgets });
-    updateBudgetsList(updatedBudgets);
-  } else if (e.target.classList.contains("delete-btn")) {
-    const category = e.target.dataset.category;
-    const updatedBudgets = data.budgets.filter((budget) => budget.category !== category);
-    await updateDoc(userDocRef, { budgets: updatedBudgets });
-    updateBudgetsList(updatedBudgets);
-  }
+// Add User Preferences Loading
+document.addEventListener("DOMContentLoaded", () => {
+  loadUserPreferences();
 });
 
+// Load Spending Overview Data
+const spendingData = {
+  categories: ["Food", "Transportation", "Entertainment", "Bills", "Other"],
+  amounts: [150, 100, 75, 200, 50],
+};
+loadSpendingChart(spendingData);
 
-// Event listeners for bottom navigation
-document.getElementById("home-link").addEventListener("click", () => {
-  showSection("home-section");
-});
 
-document.getElementById("add-income-link").addEventListener("click", () => {
-  showSection("add-income-section");
-});
-
-document.getElementById("manage-budgets-link").addEventListener("click", () => {
-  showSection("manage-budgets-section");
-});
-
-document.getElementById("track-expenses-link").addEventListener("click", () => {
-  showSection("track-expenses-section");
-});
