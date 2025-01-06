@@ -11,60 +11,63 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- Authentication Container -->
     <div id="auth-container">
-      <div class="card">
-        <div class="logo">
-          <img src="logo.png" alt="Budget App Logo" />
-        </div>
-        <h1 class="app-title" id="form-title">Welcome Back!</h1>
-        <p class="subtitle">Log in to track your finances.</p>
-        <form id="auth-form">
-          <div class="input-group">
-            <label for="auth-email">Email</label>
-            <input
-              type="email"
-              id="auth-email"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-          <div class="input-group">
-            <label for="auth-password">Password</label>
-            <input
-              type="password"
-              id="auth-password"
-              placeholder="Enter your password"
-              required
-            />
-          </div>
-          <button type="submit" id="auth-button" class="btn-auth">Log In</button>
-        </form>
-        <p class="toggle-auth">
-          Don't have an account? <a href="#" id="toggle-link">Sign up here</a>.
-        </p>
+      <div class="logo">
+        <img src="logo.png" alt="Budget App Logo" />
       </div>
+    
+      <h1 class="app-title" id="form-title">Create an account</h1>
+    
+      <form id="auth-form">
+        <div class="input-group">
+          <label for="auth-email">Email address*</label>
+          <input type="email" id="auth-email" placeholder="Enter your email address" required />
+        </div>
+        <div class="input-group">
+          <label for="auth-password">Password*</label>
+          <input type="password" id="auth-password" placeholder="Create a strong password" required />
+        </div>
+        <button type="submit" id="auth-button" class="btn-auth">Continue</button>
+      </form>
+    
+      <p class="toggle-auth">
+        Already have an account? <a href="#" id="toggle-link">Login</a>
+      </p>
+    
+      <div class="divider"><span>OR</span></div>
+    
+      <button id="google-signin-button" class="btn-auth social-btn">
+        <i class="fab fa-google google-icon"></i> Continue with Google
+      </button>
+      <button id="microsoft-signin-button" class="btn-auth social-btn">
+        <i class="fab fa-microsoft microsoft-icon"></i> Continue with Microsoft
+      </button>
+      <button id="apple-signin-button" class="btn-auth social-btn">
+        <i class="fab fa-apple apple-icon"></i> Continue with Apple
+      </button>
     </div>
+    
 
     <!-- Dashboard Container -->
     <div id="dashboard-container" style="display: none;">
       <!-- Sidebar -->
       <!-- Bottom Navigation -->
       <nav class="bottom-nav">
-        <a href="#" id="home-link" class="nav-item">
+        <a href="#" class="nav-item">
           <i class="fa-solid fa-house"></i><span>Home</span>
         </a>
-        <a href="#" id="add-income-link" class="nav-item">
+        <a href="#" class="nav-item">
           <i class="fa-solid fa-dollar-sign"></i><span>Add Income</span>
         </a>
-        <a href="#" id="manage-budgets-link" class="nav-item">
+        <a href="#" class="nav-item">
           <i class="fa-solid fa-wallet"></i><span>Budgets</span>
         </a>
-        <a href="#" id="track-expenses-link" class="nav-item">
+        <a href="#" class="nav-item">
           <i class="fa-solid fa-list"></i><span>Expenses</span>
         </a>
         <button id="logout-button">Log Out</button>
       </nav>
+      
       
   
 
@@ -121,6 +124,7 @@
             </div>
             <button type="submit" class="btn-primary">Add Budget</button>
           </form>
+
           <ul id="budgets-list">
             <!-- Dynamic List Items -->
           </ul>
