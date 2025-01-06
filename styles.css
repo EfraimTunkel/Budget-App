@@ -178,7 +178,9 @@ body {
   #auth-container .app-title {
     font-size: 20px;
   }
-
+.input-group input{
+    padding-right: 10px;
+  }
   #auth-container .btn-auth,
   #auth-container .social-btn,
   #auth-container .input-group input {
