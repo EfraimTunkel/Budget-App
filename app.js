@@ -1,4 +1,3 @@
-
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
 import {
@@ -45,12 +44,13 @@ const initializeAppWithApiKey = async () => {
   }
 };
 
-// Initialize Firebase Auth and Firestore features
 const initializeFirebaseFeatures = (app) => {
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // Elements
+  // DOM Elements
+  const addBudgetForm = document.getElementById("add-budget-form");
+  const transactionForm = document.getElementById("transaction-form");
   const authContainer = document.getElementById("auth-container");
   const dashboardContainer = document.getElementById("dashboard-container");
   const authForm = document.getElementById("auth-form");
@@ -59,12 +59,17 @@ const initializeFirebaseFeatures = (app) => {
   const googleSignInButton = document.getElementById("google-signin-button");
   const logoutButton = document.getElementById("logout-button");
   const balanceDisplay = document.getElementById("balance");
-  const addIncomeForm = document.getElementById("add-income-form");
-  const addBudgetForm = document.getElementById("add-budget-form");
-  const addExpenseForm = document.getElementById("add-expense-form");
-  const budgetsList = document.getElementById("budgets-list");
-  const expensesSummary = document.getElementById("expenses-summary");
-  const expenseCategorySelect = document.getElementById("expense-category");
+  const addTransactionButton = document.getElementById("add-transaction-button");
+  const transactionPopup = document.getElementById("transaction-popup");
+  const closePopupButton = document.getElementById("close-popup");
+  
+const incomeTab = document.getElementById("income-tab");
+const expenseTab = document.getElementById("expense-tab");
+const incomeFields = document.getElementById("income-fields");
+const expenseFields = document.getElementById("expense-fields");
+
+  
+
   // Toggle Login/Sign-Up
   toggleLink.addEventListener("click", () => {
     const isLogin = authButton.textContent === "Log In";
@@ -73,8 +78,8 @@ const initializeFirebaseFeatures = (app) => {
       : "Welcome Back!";
     authButton.textContent = isLogin ? "Sign Up" : "Log In";
     toggleLink.textContent = isLogin
-      ? "Already have an account? Log in here."
-      : "Don't have an account? Sign up here.";
+      ? "Log in"
+      : "Sign up";
   });
 
   // Handle Email/Password Authentication
@@ -124,8 +129,8 @@ googleSignInButton.addEventListener("click", async () => {
   });
   
 
-  // Monitor Auth State
-  onAuthStateChanged(auth, (user) => {
+   // Monitor Auth State
+   onAuthStateChanged(auth, (user) => {
     if (user) {
       authContainer.style.display = "none";
       dashboardContainer.style.display = "block";
@@ -143,35 +148,114 @@ googleSignInButton.addEventListener("click", async () => {
     if (userDoc.exists()) {
       const data = userDoc.data();
       balanceDisplay.textContent = `$${data.balance.toFixed(2)}`;
-      updateBudgetsList(data.budgets);
-      updateExpensesSummary(data.expenses);
     } else {
-      await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
+      await setDoc(userDocRef, { balance: 0, incomes: [], expenses: [] });
       balanceDisplay.textContent = "$0.00";
-      updateBudgetsList([]);
-      updateExpensesSummary([]);
     }
   };
 
-  // Add Income
-  addIncomeForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const amount = parseFloat(document.getElementById("income-amount").value);
-    if (!isNaN(amount)) {
-      const user = auth.currentUser;
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
 
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        const newBalance = data.balance + amount;
-        await setDoc(userDocRef, { ...data, balance: newBalance });
-        balanceDisplay.textContent = `$${newBalance.toFixed(2)}`;
-        alert("Income added successfully!");
-        addIncomeForm.reset();
-      }
-    }
+
+  addTransactionButton.addEventListener("click", () => {
+    transactionPopup.classList.remove("hidden");
+    setActiveTab(incomeTab, incomeFields); // Default to Income
   });
+  
+  closePopupButton.addEventListener("click", () => {
+    transactionPopup.classList.add("hidden");
+  });
+  
+
+// Handle Income Form Submission
+document.getElementById("income-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Please log in first!");
+    return;
+  }
+
+  const amount = parseFloat(document.getElementById("popup-income-amount").value);
+  const source = document.getElementById("popup-income-source").value;
+
+  if (!amount || !source) {
+    alert("Please provide valid income details.");
+    return;
+  }
+
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+  const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
+
+  userData.incomes = [...(userData.incomes || []), { amount, source }];
+  userData.balance += amount;
+
+  await setDoc(userDocRef, userData, { merge: true });
+  balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
+  document.getElementById("income-form").reset();
+  transactionPopup.classList.add("hidden");
+  alert("Income added successfully!");
+});
+
+// Handle Expense Form Submission
+document.getElementById("expense-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Please log in first!");
+    return;
+  }
+
+  const amount = parseFloat(document.getElementById("popup-expense-amount").value);
+  const category = document.getElementById("popup-expense-category").value;
+
+  if (!amount || !category) {
+    alert("Please provide valid expense details.");
+    return;
+  }
+
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+  const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
+
+  userData.expenses = [...(userData.expenses || []), { amount, category }];
+  userData.balance -= amount;
+
+  await setDoc(userDocRef, userData, { merge: true });
+  balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
+  document.getElementById("expense-form").reset();
+  transactionPopup.classList.add("hidden");
+  alert("Expense added successfully!");
+});
+
+
+
+
+  incomeTab.addEventListener("click", () => {
+    incomeTab.classList.add("active");
+    expenseTab.classList.remove("active");
+    document.getElementById("income-form").classList.add("active");
+    document.getElementById("income-form").classList.remove("hidden");
+    document.getElementById("expense-form").classList.add("hidden");
+    document.getElementById("expense-form").classList.remove("active");
+  });
+  
+  expenseTab.addEventListener("click", () => {
+    expenseTab.classList.add("active");
+    incomeTab.classList.remove("active");
+    document.getElementById("expense-form").classList.add("active");
+    document.getElementById("expense-form").classList.remove("hidden");
+    document.getElementById("income-form").classList.add("hidden");
+    document.getElementById("income-form").classList.remove("active");
+  });
+  
+
+// Updated Event Listeners
+incomeTab.addEventListener("click", () => setActiveTab(incomeTab, incomeFields));
+expenseTab.addEventListener("click", () => setActiveTab(expenseTab, expenseFields));
+
 
   // Add Budget
   addBudgetForm.addEventListener("submit", async (e) => {
@@ -219,8 +303,8 @@ googleSignInButton.addEventListener("click", async () => {
     });
   };
 
-  // Logout
-  logoutButton.addEventListener("click", async () => {
+   // Logout
+   logoutButton.addEventListener("click", async () => {
     await signOut(auth);
     alert("Logged out successfully!");
     location.reload();
@@ -287,6 +371,9 @@ addIncomeForm.addEventListener("submit", async (e) => {
     showError("Please enter a valid income amount!");
     return;
   }
+
+  
+
 
   const user = auth.currentUser;
   const userDocRef = doc(db, "users", user.uid);
