@@ -45,7 +45,7 @@ body {
 /* Input Group */
 #auth-container .input-group {
   margin-bottom: 20px;
-  width: 100%;
+  width: 95%;
 }
 
 #auth-container .input-group label {
@@ -54,10 +54,11 @@ body {
   color: #606060;
   margin-bottom: 5px;
   text-align: left;
+  width: 95%;
 }
 
 #auth-container .input-group input {
-  width: 100%;
+  width: 95%;
   padding: 12px;
   font-size: 16px;
   border: 1px solid #ddd;
@@ -74,7 +75,7 @@ body {
 
 /* Buttons */
 #auth-container .btn-auth {
-  width: 100%;
+  width: 95%;
   padding: 12px;
   font-size: 16px;
   font-weight: bold;
@@ -557,7 +558,7 @@ section h2 {
 
 /* Input Fields */
 input, select {
-  width: 100%;
+  width: 95%;
   padding: 14px;
   font-size: 16px;
   border: 1px solid #ddd;
@@ -750,6 +751,30 @@ ul li:hover {
   }
 }
 
+/* Popup Content (Desktop Default) */
+.popup-content {
+  background: linear-gradient(135deg, #ffffff, #f9f9f9);
+  padding: 25px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Close Button */
 .close-button {
   position: absolute;
@@ -815,6 +840,94 @@ ul li:hover {
 }
 
 .transaction-fields input {
+  width: 95%;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  font-size: 16px;
+  background: #fafafa;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.transaction-fields input:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+/* Submit Button */
+.popup-content .btn-primary {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.popup-content .btn-primary:hover {
+  background: linear-gradient(135deg, #66bb6a, #2e7d32);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Fullscreen Popup for Mobile */
+@media (max-width: 768px) {
+  /* Popup Content (Default Desktop) */
+.popup-content {
+  background: linear-gradient(135deg, #ffffff, #f9f9f9);
+  padding: 25px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Close Button */
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.close-button:hover {
+  background-color: #f44336;
+  transform: rotate(90deg);
+  color: white;
+}
+
+/* Transaction Fields */
+.transaction-fields input {
   width: 100%;
   padding: 15px;
   margin-bottom: 15px;
@@ -850,25 +963,63 @@ ul li:hover {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Media Queries for Responsiveness */
+/* Mobile-Focused Styles */
 @media (max-width: 768px) {
   .popup-content {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
     padding: 20px;
-    border-radius: 12px;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 15px;
+    animation: slideUp 0.3s ease-out;
   }
 
-  .floating-button {
-    width: 60px;
-    height: 60px;
-    font-size: 24px;
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   .transaction-fields input {
-    font-size: 14px;
+    font-size: 16px;
+    padding: 12px;
     width: 95%;
   }
 
   .popup-content .btn-primary {
     font-size: 16px;
+    padding: 14px;
   }
+
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 22px;
+    width: 40px;
+    height: 40px;
+    color: #666;
+    background-color: #fff;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  .close-button:hover {
+    background-color: #f44336;
+    color: white;
+    transform: scale(1.1);
+  }
+}
+
 }
