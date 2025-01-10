@@ -178,7 +178,7 @@ body {
   #auth-container .app-title {
     font-size: 20px;
   }
-.input-group input{
+  .input-group input{
     padding-right: 10px;
   }
   #auth-container .btn-auth,
@@ -683,3 +683,192 @@ ul li:hover {
   }
 }
 
+
+
+/* Floating Button */
+.floating-button {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.floating-button:hover {
+  transform: scale(1.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Popup Overlay */
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup.hidden {
+  display: none;
+}
+
+/* Popup Content */
+.popup-content {
+  background: linear-gradient(135deg, #ffffff, #f8f8f8);
+  padding: 25px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Close Button */
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.close-button:hover {
+  background-color: #f44336;
+  transform: rotate(90deg);
+  color: white;
+}
+
+/* Toggle Buttons */
+.toggle-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.toggle-button {
+  width: 48%;
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.toggle-button.active {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-button:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, #66bb6a, #388e3c);
+}
+
+/* Transaction Fields */
+.transaction-fields {
+  display: none;
+}
+
+.transaction-fields.active {
+  display: block;
+}
+
+.transaction-fields input {
+  width: 100%;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  font-size: 16px;
+  background: #fafafa;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.transaction-fields input:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+/* Submit Button */
+.popup-content .btn-primary {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.popup-content .btn-primary:hover {
+  background: linear-gradient(135deg, #66bb6a, #2e7d32);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+  .popup-content {
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .floating-button {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+
+  .transaction-fields input {
+    font-size: 14px;
+    width: 95%;
+  }
+
+  .popup-content .btn-primary {
+    font-size: 16px;
+  }
+}
