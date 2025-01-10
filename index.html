@@ -56,9 +56,9 @@
         <a href="#" class="nav-item">
           <i class="fa-solid fa-house"></i><span>Home</span>
         </a>
-        <a href="#" class="nav-item">
-          <i class="fa-solid fa-dollar-sign"></i><span>Add Income</span>
-        </a>
+        <button id="add-transaction-button" class="floating-button">
+          <i class="fa fa-plus"></i>
+        </button>
         <a href="#" class="nav-item">
           <i class="fa-solid fa-wallet"></i><span>Budgets</span>
         </a>
@@ -100,35 +100,44 @@
           </form>
         </section>
 
-        <!-- Manage Budgets Section -->
-        <section id="manage-budgets-section" class="hidden">
-          <h2>Manage Budgets</h2>
-          <form id="add-budget-form">
-            <div class="input-group">
-              <label for="budget-category">Category Name</label>
-              <input
-                type="text"
-                id="budget-category"
-                placeholder="Category (e.g., Food)"
-                required
-              />
-            </div>
-            <div class="input-group">
-              <label for="budget-amount">Budget Amount</label>
-              <input
-                type="number"
-                id="budget-amount"
-                placeholder="Set a budget amount"
-                required
-              />
-            </div>
-            <button type="submit" class="btn-primary">Add Budget</button>
-          </form>
+      <!-- Manage Budgets Section -->
+<section id="manage-budgets-section">
+  <h2>Manage Budgets</h2>
+  <form id="add-budget-form">
+    <div class="input-group">
+      <label for="budget-category">Category Name</label>
+      <input
+        type="text"
+        id="budget-category"
+        placeholder="Category (e.g., Food)"
+        required
+      />
+    </div>
+    <div class="input-group">
+      <label for="budget-amount">Budget Amount</label>
+      <input
+        type="number"
+        id="budget-amount"
+        placeholder="Set a budget amount"
+        required
+      />
+    </div>
+    <button type="submit" class="btn-primary">Add Budget</button>
+  </form>
+  
+  <ul id="budgets-list">
+    <!-- Dynamic List Items -->
+  </ul>
+</section>
 
-          <ul id="budgets-list">
-            <!-- Dynamic List Items -->
-          </ul>
-        </section>
+<!-- Track Expenses Section -->
+<section id="track-expenses-section">
+  <h2>Track Expenses</h2>
+  <ul id="expenses-summary">
+    <!-- Dynamic Expense List -->
+  </ul>
+</section>
+
 
         <!-- Track Expenses Section -->
         <section id="track-expenses-section" class="hidden">
@@ -159,5 +168,54 @@
         </section>
       </main>
     </div>
+    <!-- Transaction Popup -->
+<div id="transaction-popup" class="popup hidden">
+  <div class="popup-content">
+    <button id="close-popup" class="close-button">&times;</button>
+    <div class="toggle-buttons">
+      <button id="income-tab" class="toggle-button active">Income</button>
+      <button id="expense-tab" class="toggle-button">Expense</button>
+    </div>
+    <!-- Income Form -->
+    <form id="income-form" class="transaction-fields active">
+      <input
+        type="number"
+        id="popup-income-amount"
+        name="popup-income-amount"
+        placeholder="Amount"
+        required
+      />
+      <input
+        type="text"
+        id="popup-income-source"
+        name="popup-income-source"
+        placeholder="Source (e.g., Salary)"
+        required
+      />
+      <button type="submit" class="btn-primary">Save Income</button>
+    </form>
+    <!-- Expense Form -->
+    <form id="expense-form" class="transaction-fields hidden">
+      <input
+        type="number"
+        id="popup-expense-amount"
+        name="popup-expense-amount"
+        placeholder="Amount"
+        required
+      />
+      <input
+        type="text"
+        id="popup-expense-category"
+        name="popup-expense-category"
+        placeholder="Category (e.g., Food)"
+        required
+      />
+      <button type="submit" class="btn-primary">Save Expense</button>
+    </form>
+  </div>
+</div>
+
+    
+
   </body>
 </html>
