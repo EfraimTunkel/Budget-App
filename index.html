@@ -4,8 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="logo.png" type="image/png">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   
     <script src="https://kit.fontawesome.com/2b0e4418c9.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <title>Budget App</title>
     <script type="module" src="app.js" defer></script>
     <link rel="stylesheet" href="styles.css" />
@@ -63,7 +65,7 @@
           <i class="fa-solid fa-wallet"></i><span>Budgets</span>
         </a>
         <a href="#" class="nav-item">
-          <i class="fa-solid fa-list"></i><span>Expenses</span>
+          <i class="fa-solid fa-list"></i><span>Transactions</span>
         </a>
         <button id="logout-button">Log Out</button>
       </nav>
@@ -74,148 +76,74 @@
       <!-- Main Content -->
       <main id="main-content">
         <header>
-            <h1>Dashboard</h1>
-            <p>Hello, <span id="username-display">User</span>!</p>
-            <p>Your current balance: <span id="balance">$0.00</span></p>
-          </header>
-          
-
-        <!-- Chart Section -->
-        <section id="chart-container" style="display: none;">
-          <h2>Spending Overview</h2>
-          <canvas id="spending-chart"></canvas>
+          <h1 id="greeting">Dashboard</h1>
+          <p id="username-display"></p>
+          <p>Your current balance: <span id="balance">$0.00</span></p>
+        </header>
+        
+     
+        <section id="chart-container" style="display: block;">
+          <h2>Spending and Income Trends</h2>
+          <canvas id="spending-chart" width="400" height="200"></canvas>
         </section>
-
-        <!-- Add Income Section -->
-        <section id="add-income-section" class="hidden">
-          <h2>Add Income</h2>
-          <form id="add-income-form">
-            <input
-              type="number"
-              id="income-amount"
-              placeholder="Enter amount"
-              required
-            />
-            <button type="submit" class="btn-primary">Add Income</button>
-          </form>
+        
+        <section id="line-chart-container" style="display: block;">
+          <h2>Income and Expenses Over Time</h2>
+          <canvas id="line-chart" width="400" height="200"></canvas>
         </section>
-
-      <!-- Manage Budgets Section -->
-<section id="manage-budgets-section">
-  <h2>Manage Budgets</h2>
-  <form id="add-budget-form">
-    <div class="input-group">
-      <label for="budget-category">Category Name</label>
-      <input
-        type="text"
-        id="budget-category"
-        placeholder="Category (e.g., Food)"
-        required
-      />
-    </div>
-    <div class="input-group">
-      <label for="budget-amount">Budget Amount</label>
-      <input
-        type="number"
-        id="budget-amount"
-        placeholder="Set a budget amount"
-        required
-      />
-    </div>
-    <button type="submit" class="btn-primary">Add Budget</button>
-  </form>
-  
-  <ul id="budgets-list">
-    <!-- Dynamic List Items -->
-  </ul>
-</section>
-
-<!-- Track Expenses Section -->
-<section id="track-expenses-section">
-  <h2>Track Expenses</h2>
-  <ul id="expenses-summary">
-    <!-- Dynamic Expense List -->
-  </ul>
-</section>
-
-
-        <!-- Track Expenses Section -->
-        <section id="track-expenses-section" class="hidden">
-          <h2>Track Expenses</h2>
-          <form id="add-expense-form">
-            <div class="input-group">
-              <label for="expense-category">Select Category</label>
-              <select id="expense-category" required>
-                <option value="" disabled selected>
-                  Choose a category
-                </option>
-              </select>
-            </div>
-            <div class="input-group">
-              <label for="expense-amount">Expense Amount</label>
-              <input
-                type="number"
-                id="expense-amount"
-                placeholder="Enter expense amount"
-                required
-              />
-            </div>
-            <button type="submit" class="btn-primary">Add Expense</button>
-          </form>
-          <ul id="expenses-summary">
-            <!-- Dynamic Expense List -->
-          </ul>
-        </section>
+        
+        
+        
+        
       </main>
     </div>
-    <!-- Transaction Popup -->
-<div id="transaction-popup" class="popup hidden">
-  <div class="popup-content">
-    <button id="close-popup" class="close-button">&times;</button>
-    <div class="toggle-buttons">
-      <button id="income-tab" class="toggle-button active">Income</button>
-      <button id="expense-tab" class="toggle-button">Expense</button>
-    </div>
-    <!-- Income Form -->
-    <form id="income-form" class="transaction-fields active">
-      <input
-        type="number"
-        id="popup-income-amount"
-        name="popup-income-amount"
-        placeholder="Amount"
-        required
-      />
-      <input
-        type="text"
-        id="popup-income-source"
-        name="popup-income-source"
-        placeholder="Source (e.g., Salary)"
-        required
-      />
-      <button type="submit" class="btn-primary">Save Income</button>
-    </form>
-    <!-- Expense Form -->
-    <form id="expense-form" class="transaction-fields hidden">
-      <input
-        type="number"
-        id="popup-expense-amount"
-        name="popup-expense-amount"
-        placeholder="Amount"
-        required
-      />
-      <input
-        type="text"
-        id="popup-expense-category"
-        name="popup-expense-category"
-        placeholder="Category (e.g., Food)"
-        required
-      />
-      <button type="submit" class="btn-primary">Save Expense</button>
-    </form>
-  </div>
-</div>
-
+  
     
-
+    <!-- Transaction Popup -->
+    <div id="transaction-popup" class="popup hidden">
+      <div class="popup-content">
+        <button id="close-popup" class="close-button">&times;</button>
+        <div class="toggle-buttons">
+          <button id="income-tab" class="toggle-button active">Income</button>
+          <button id="expense-tab" class="toggle-button">Expense</button>
+        </div>
+        <!-- Income Form -->
+        <form id="income-form" class="transaction-fields active">
+          <input
+            type="number"
+            id="popup-income-amount"
+            name="popup-income-amount"
+            placeholder="Amount"
+            required
+          />
+          <input
+            type="text"
+            id="popup-income-source"
+            name="popup-income-source"
+            placeholder="Source (e.g., Salary)"
+            required
+          />
+          <button type="submit" class="btn-primary">Save Income</button>
+        </form>
+        <!-- Expense Form -->
+        <form id="expense-form" class="transaction-fields hidden">
+          <input
+            type="number"
+            id="popup-expense-amount"
+            name="popup-expense-amount"
+            placeholder="Amount"
+            required
+          />
+          <input
+            type="text"
+            id="popup-expense-category"
+            name="popup-expense-category"
+            placeholder="Category (e.g., Food)"
+            required
+          />
+          <button type="submit" class="btn-primary">Save Expense</button>
+        </form>
+      </div>
+    </div>
   </body>
 </html>
