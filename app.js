@@ -68,8 +68,6 @@ const expenseTab = document.getElementById("expense-tab");
 const incomeFields = document.getElementById("income-fields");
 const expenseFields = document.getElementById("expense-fields");
 
-  
-
   // Toggle Login/Sign-Up
   toggleLink.addEventListener("click", () => {
     const isLogin = authButton.textContent === "Log In";
@@ -128,43 +126,195 @@ googleSignInButton.addEventListener("click", async () => {
     }
   });
   
+   // Monitor Authentication State
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    authContainer.style.display = "none"; // Hide the login/signup container
+    dashboardContainer.style.display = "block"; // Show the dashboard
+    loadDashboard(user); // Load the user's dashboard
+  } else {
+    authContainer.style.display = "block"; // Show the login/signup container
+    dashboardContainer.style.display = "none"; // Hide the dashboard
+  }
+});
+// Load Dashboard
+const loadDashboard = async (user) => {
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
 
-   // Monitor Auth State
-   onAuthStateChanged(auth, (user) => {
-    if (user) {
-      authContainer.style.display = "none";
-      dashboardContainer.style.display = "block";
-      loadDashboard(user);
+  // Extract the username from the user's email
+  const email = user.email;
+  const username = email.substring(0, email.indexOf("@")).replace(".", " ").replace("_", " ");
+
+  // Determine the greeting based on the time of day
+  const hours = new Date().getHours();
+  const greeting =
+    hours >= 5 && hours < 12
+      ? "Good Morning"
+      : hours >= 12 && hours < 18
+      ? "Good Afternoon"
+      : "Good Evening";
+
+  // Update the greeting message
+  const usernameDisplay = document.getElementById("username-display");
+  usernameDisplay.textContent = `${greeting}, ${username}`;
+
+  // Update the balance and load data from Firestore
+  if (userDoc.exists()) {
+    const data = userDoc.data();
+    balanceDisplay.textContent = `$${data.balance.toFixed(2)}`;
+ // Prepare data for charts
+ const incomeData = data.incomes ? data.incomes.map((item) => item.amount || 0) : [];
+ const expenseData = data.expenses ? data.expenses.map((item) => item.amount || 0) : [];
+ const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+
+ // Load charts
+ const chartData = prepareChartData(data.expenses);
+ loadSpendingChart(chartData.categories, chartData.amounts);
+ loadLineChart(labels, incomeData, expenseData);
+} else {
+ // If no user data exists, initialize default values in Firestore
+ await setDoc(userDocRef, { balance: 0, incomes: [], expenses: [] });
+ balanceDisplay.textContent = "$0.00";
+   // Load empty charts
+   loadSpendingChart([], []);
+   loadLineChart(["Jan", "Feb", "Mar"], [0, 0, 0], [0, 0, 0]);
+ }
+
+
+};
+
+// Prepare Data for Chart
+const prepareChartData = (expenses) => {
+  const categories = [];
+  const amounts = [];
+
+  expenses.forEach((expense) => {
+    const { category, amount } = expense;
+    const index = categories.indexOf(category);
+
+    if (index !== -1) {
+      amounts[index] += amount;
     } else {
-      authContainer.style.display = "block";
-      dashboardContainer.style.display = "none";
+      categories.push(category);
+      amounts.push(amount);
     }
   });
 
-  const loadDashboard = async (user) => {
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
+  return { categories, amounts };
+};
 
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      balanceDisplay.textContent = `$${data.balance.toFixed(2)}`;
-    } else {
-      await setDoc(userDocRef, { balance: 0, incomes: [], expenses: [] });
-      balanceDisplay.textContent = "$0.00";
-    }
-  };
+// Load Spending Chart
+const loadSpendingChart = (categories, amounts) => {
+  const ctx = document.getElementById("spending-chart").getContext("2d");
 
+  // Destroy any existing chart instance
+  if (window.spendingChart) {
+    window.spendingChart.destroy();
+  }
 
-
-  addTransactionButton.addEventListener("click", () => {
-    transactionPopup.classList.remove("hidden");
-    setActiveTab(incomeTab, incomeFields); // Default to Income
+  // Create a new Chart.js instance
+  window.spendingChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: categories,
+      datasets: [
+        {
+          label: "Spending Overview",
+          data: amounts,
+          backgroundColor: ["#4caf50", "#ff9800", "#2196f3", "#f44336", "#9c27b0"],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        tooltip: {
+          callbacks: {
+            label: (tooltipItem) => `${tooltipItem.label}: $${tooltipItem.raw}`,
+          },
+        },
+      },
+    },
   });
-  
-  closePopupButton.addEventListener("click", () => {
-    transactionPopup.classList.add("hidden");
+};
+// Load Line Chart
+const loadLineChart = (labels, incomeData, expenseData) => {
+  const ctx = document.getElementById("line-chart").getContext("2d");
+
+  // Destroy any existing chart instance
+  if (window.lineChart) {
+    window.lineChart.destroy();
+  }
+
+  // Create a new Chart.js instance
+  window.lineChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Income",
+          data: incomeData,
+          borderColor: "#4caf50",
+          backgroundColor: "rgba(76, 175, 80, 0.2)",
+          tension: 0.4,
+          fill: true,
+        },
+        {
+          label: "Expenses",
+          data: expenseData,
+          borderColor: "#f44336",
+          backgroundColor: "rgba(244, 67, 54, 0.2)",
+          tension: 0.4,
+          fill: true,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        tooltip: {
+          callbacks: {
+            label: (tooltipItem) => `$${tooltipItem.raw}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "Time",
+          },
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Amount ($)",
+          },
+        },
+      },
+    },
   });
-  
+};
+
+// Handle Add Transaction Button Click (Show Popup)
+addTransactionButton.addEventListener("click", () => {
+  transactionPopup.classList.remove("hidden");
+  setActiveTab(incomeTab, incomeFields); // Default to showing Income tab
+});
+
+// Handle Close Popup Button Click (Hide Popup)
+closePopupButton.addEventListener("click", () => {
+  transactionPopup.classList.add("hidden");
+});
 
 // Handle Income Form Submission
 document.getElementById("income-form").addEventListener("submit", async (e) => {
@@ -188,25 +338,33 @@ document.getElementById("income-form").addEventListener("submit", async (e) => {
   const userDoc = await getDoc(userDocRef);
   const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
 
+  // Add the new income and update the balance
   userData.incomes = [...(userData.incomes || []), { amount, source }];
   userData.balance += amount;
 
   await setDoc(userDocRef, userData, { merge: true });
+
+  // Update the balance display
   balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
+
+  // Reset the form and close the popup
   document.getElementById("income-form").reset();
   transactionPopup.classList.add("hidden");
+
+  // Success notification
   alert("Income added successfully!");
 });
 
+
 // Handle Expense Form Submission
 document.getElementById("expense-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+e.preventDefault();
 
-  const user = auth.currentUser;
-  if (!user) {
-    alert("Please log in first!");
-    return;
-  }
+const user = auth.currentUser;
+if (!user) {
+  alert("Please log in first!");
+  return;
+}
 
   const amount = parseFloat(document.getElementById("popup-expense-amount").value);
   const category = document.getElementById("popup-expense-category").value;
@@ -230,9 +388,6 @@ document.getElementById("expense-form").addEventListener("submit", async (e) => 
   alert("Expense added successfully!");
 });
 
-
-
-
   incomeTab.addEventListener("click", () => {
     incomeTab.classList.add("active");
     expenseTab.classList.remove("active");
@@ -251,12 +406,9 @@ document.getElementById("expense-form").addEventListener("submit", async (e) => 
     document.getElementById("income-form").classList.remove("active");
   });
   
-
 // Updated Event Listeners
 incomeTab.addEventListener("click", () => setActiveTab(incomeTab, incomeFields));
 expenseTab.addEventListener("click", () => setActiveTab(expenseTab, expenseFields));
-
-
   // Add Budget
   addBudgetForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -277,32 +429,7 @@ expenseTab.addEventListener("click", () => setActiveTab(expenseTab, expenseField
       }
     }
   });
-
-  // Helper Functions
-  const updateBudgetsList = (budgets) => {
-    budgetsList.innerHTML = "";
-    expenseCategorySelect.innerHTML = "<option value=\"\" disabled selected>Choose a category</option>";
-    budgets.forEach((budget) => {
-      const li = document.createElement("li");
-      li.textContent = `${budget.category}: $${budget.amount.toFixed(2)}`;
-      budgetsList.appendChild(li);
-
-      const option = document.createElement("option");
-      option.value = budget.category;
-      option.textContent = budget.category;
-      expenseCategorySelect.appendChild(option);
-    });
-  };
-
-  const updateExpensesSummary = (expenses) => {
-    expensesSummary.innerHTML = "";
-    expenses.forEach((expense) => {
-      const li = document.createElement("li");
-      li.textContent = `${expense.category}: $${expense.amount.toFixed(2)}`;
-      expensesSummary.appendChild(li);
-    });
-  };
-
+ 
    // Logout
    logoutButton.addEventListener("click", async () => {
     await signOut(auth);
@@ -310,6 +437,42 @@ expenseTab.addEventListener("click", () => setActiveTab(expenseTab, expenseField
     location.reload();
   });
 };
+document.addEventListener("DOMContentLoaded", () => {
+  const logoutButton = document.getElementById("logout-button");
+
+  if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+      try {
+        const auth = getAuth();
+        await signOut(auth);
+        alert("Logged out successfully!");
+        location.reload();
+      } catch (error) {
+        console.error("Logout Error:", error);
+        alert("An error occurred during logout.");
+      }
+    });
+  } else {
+    console.error("Logout button not found in the DOM.");
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Start the app by initializing with the API key
 initializeAppWithApiKey();
@@ -321,7 +484,6 @@ provider.setCustomParameters({
 // Toggle More Options
 const moreLink = document.getElementById("more-link");
 const moreOptions = document.getElementById("more-options");
-
 moreLink.addEventListener("click", () => {
   moreOptions.classList.toggle("hidden");
 });
@@ -350,9 +512,6 @@ document.querySelectorAll('.nav-more').forEach((more) => {
   // Example usage
   showToast("Income added successfully!");
  
-
-
-
   // Enhanced Error Handling
 const showError = (message) => {
   const errorToast = document.getElementById("toast-container");
@@ -363,79 +522,6 @@ const showError = (message) => {
 };
 
 
-// Add Income with Validation
-addIncomeForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const amount = parseFloat(document.getElementById("income-amount").value);
-  if (isNaN(amount) || amount <= 0) {
-    showError("Please enter a valid income amount!");
-    return;
-  }
-
-  
-
-
-  const user = auth.currentUser;
-  const userDocRef = doc(db, "users", user.uid);
-  const userDoc = await getDoc(userDocRef);
-
-  if (userDoc.exists()) {
-    const data = userDoc.data();
-    const newBalance = data.balance + amount;
-    await setDoc(userDocRef, { ...data, balance: newBalance });
-    balanceDisplay.textContent = `$${newBalance.toFixed(2)}`;
-    showToast("Income added successfully!");
-    addIncomeForm.reset();
-  }
-});
-
-// Load Charts for Spending Overview
-const loadSpendingChart = (data) => {
-  const ctx = document.getElementById("spending-chart").getContext("2d");
-  new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: data.categories,
-      datasets: [{
-        label: "Spending Overview",
-        data: data.amounts,
-        backgroundColor: ["#4caf50", "#ff9800", "#2196f3", "#f44336", "#9c27b0"],
-        borderWidth: 1,
-      }],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: "top",
-        },
-        tooltip: {
-          callbacks: {
-            label: (tooltipItem) => {
-              return `${tooltipItem.label}: $${tooltipItem.raw}`;
-            },
-          },
-        },
-      },
-    },
-  });
-};
-
-// Dark Mode Toggle
-const toggleDarkMode = () => {
-  document.body.classList.toggle("dark-mode");
-  const isDarkMode = document.body.classList.contains("dark-mode");
-  localStorage.setItem("darkMode", isDarkMode);
-};
-
-// Load User Preferences
-const loadUserPreferences = () => {
-  const isDarkMode = localStorage.getItem("darkMode") === "true";
-  if (isDarkMode) document.body.classList.add("dark-mode");
-};
-
-// Initialize Dark Mode Button
-document.getElementById("dark-mode-toggle").addEventListener("click", toggleDarkMode);
 
 // Sort Budgets
 const sortBudgets = (budgets, criteria) => {
@@ -479,11 +565,126 @@ document.addEventListener("DOMContentLoaded", () => {
   loadUserPreferences();
 });
 
-// Load Spending Overview Data
-const spendingData = {
-  categories: ["Food", "Transportation", "Entertainment", "Bills", "Other"],
-  amounts: [150, 100, 75, 200, 50],
+
+
+const setActiveTab = (activeTab, activeFields) => {
+  document.querySelectorAll(".toggle-button").forEach((button) => {
+    button.classList.remove("active");
+  });
+  document.querySelectorAll(".transaction-fields").forEach((field) => {
+    field.classList.add("hidden");
+  });
+  activeTab.classList.add("active");
+  activeFields.classList.remove("hidden");
 };
-loadSpendingChart(spendingData);
 
 
+
+ 
+
+  // Destroy the previous chart instance to prevent duplication
+  if (window.spendingChart) {
+    window.spendingChart.destroy();
+  }
+// Function to Load and Render the Line Chart
+const loadLineChart = (labels, incomeData, expenseData) => {
+  const ctx = document.getElementById("line-chart").getContext("2d");
+
+  // Destroy the previous chart instance to prevent duplication
+  if (window.lineChart) {
+    window.lineChart.destroy();
+  }
+
+  const loadLineChart = (labels, incomeData, expenseData) => {
+    const ctx = document.getElementById("line-chart").getContext("2d");
+  
+    // Destroy any existing chart instance
+    if (window.lineChart) {
+      window.lineChart.destroy();
+    }
+  
+    // Create a new Chart.js instance
+    window.lineChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Income",
+            data: incomeData,
+            borderColor: "#4caf50",
+            backgroundColor: "rgba(76, 175, 80, 0.2)",
+            tension: 0.4,
+            fill: true,
+          },
+          {
+            label: "Expenses",
+            data: expenseData,
+            borderColor: "#f44336",
+            backgroundColor: "rgba(244, 67, 54, 0.2)",
+            tension: 0.4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: "top",
+          },
+          tooltip: {
+            callbacks: {
+              label: (tooltipItem) => `$${tooltipItem.raw}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: "Time",
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: "Amount ($)",
+            },
+          },
+        },
+      },
+    });
+  };
+  
+  // Create a new Chart instance
+  window.spendingChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: categories,
+      datasets: [
+        {
+          label: "Spending Overview",
+          data: amounts,
+          backgroundColor: ["#4caf50", "#ff9800", "#2196f3", "#f44336", "#9c27b0", "#fcba03", "#0377fc", "#fc03d7"],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        tooltip: {
+          callbacks: {
+            label: (tooltipItem) => {
+              return `${tooltipItem.label}: $${tooltipItem.raw}`;
+            },
+          },
+        },
+      },
+    },
+  });
+};
