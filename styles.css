@@ -1034,6 +1034,7 @@ section h2 {
     background-color: #fff;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
     transition: background-color 0.3s ease, transform 0.2s ease;
+    border-radius:50%;
   }
 
   .close-button:hover {
