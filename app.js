@@ -1,6 +1,7 @@
 import { 
   initializeApp 
 } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+import { OAuthProvider } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
 
 import { 
   getAuth, 
@@ -132,28 +133,45 @@ const expenseFields = document.getElementById("expense-fields");
   // Handle Google Sign-In
   const provider = new GoogleAuthProvider();
 
-googleSignInButton.addEventListener("click", async () => {
+  googleSignInButton.addEventListener("click", async () => {
     try {
-      const provider = new GoogleAuthProvider(); // Create provider instance
-      const result = await signInWithPopup(auth, provider); // Use signInWithPopup for web
-      const user = result.user;
-  
-      // Create a Firestore document for new users
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-  
-      if (!userDoc.exists()) {
-        await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
-      }
-  
-      alert(`Welcome ${user.displayName}!`);
-      // Optionally redirect to dashboard or update UI
+        const provider = new GoogleAuthProvider(); 
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        // Firestore logic to create user document
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+            await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
+        }
+
+        alert(`Welcome ${user.displayName}!`);
     } catch (error) {
-      console.error("Google Sign-In Error:", error.message);
-      alert("Error signing in with Google. Check console for details.");
+        console.error("Google Sign-In Error:", error.message);
+        alert("Error signing in with Google.");
     }
-  });
-  
+});
+
+const microsoftButton = document.getElementById("microsoft-signin-button");
+
+microsoftButton.addEventListener("click", async () => {
+  const provider = new OAuthProvider('microsoft.com');
+
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    console.log(`Welcome ${user.displayName}`);
+    alert(`Signed in as ${user.email}`);
+  } catch (error) {
+    console.error("Microsoft Sign-In Error:", error);
+    alert(`Failed to sign in with Microsoft. ${error.message}`);
+  }
+});
+
+
    // Monitor Authentication State
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -716,3 +734,5 @@ const loadLineChart = (labels, incomeData, expenseData) => {
     },
   });
 };
+
+
