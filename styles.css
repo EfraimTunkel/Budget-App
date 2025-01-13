@@ -1031,3 +1031,21 @@ section h2 {
 }
 
 }
+
+
+
+
+
+
+#forgot-password-button {
+  background-color: transparent;
+  color: #4caf50;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#forgot-password-button:hover {
+  color: #388e3c;
+}
