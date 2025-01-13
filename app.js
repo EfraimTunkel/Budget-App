@@ -1,15 +1,24 @@
-// Import Firebase modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
+import { 
+  initializeApp 
+} from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  onAuthStateChanged, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signOut, 
+  sendPasswordResetEmail // Add this here
 } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  getDoc 
+} from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
 
 // Fetch the API key securely from the Firebase Cloud Function
 const fetchApiKey = async () => {
@@ -38,6 +47,25 @@ const initializeAppWithApiKey = async () => {
     };
 
     const app = initializeApp(firebaseConfig);
+    document.getElementById("forgot-password-button").addEventListener("click", async () => {
+      const email = document.getElementById("auth-email").value;
+    
+      if (!email) {
+        alert("Please enter your email address.");
+        return;
+      }
+    
+      const auth = getAuth();
+    
+      try {
+        await sendPasswordResetEmail(auth, email);
+        alert("Password reset email sent! Please check your inbox.");
+      } catch (error) {
+        console.error("Error resetting password:", error.message);
+        alert("Failed to send password reset email. Please try again.");
+      }
+    });
+    
     initializeFirebaseFeatures(app);
   } else {
     console.error("Failed to fetch API key. Firebase initialization aborted.");
