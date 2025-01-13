@@ -27,12 +27,19 @@
         </div>
         <div class="input-group">
           <label for="auth-password">Password*</label>
-          <input type="password" id="auth-password" placeholder="Create a strong password" required />
+          <div class="password-wrapper">
+            <input type="password" id="auth-password" placeholder="Create a strong password" required />
+            <button type="button" id="toggle-password-visibility" class="toggle-password">
+              <i class="fa fa-eye" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
+        
+        
+        
         <button type="submit" id="auth-button" class="btn-auth">Continue</button>
       </form>
-    
-    <p><button type="button" id="forgot-password-button">Forgot Password?</button></p>
+      <p><button type="button" id="forgot-password-button">Forgot Password?</button></p>
       <p class="toggle-auth">
         Already have an account? <a href="#" id="toggle-link">Login</a>
       </p>
@@ -146,5 +153,26 @@
         </form>
       </div>
     </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+  const toggleButton = document.getElementById("toggle-password-visibility");
+  const passwordInput = document.getElementById("auth-password");
+
+  toggleButton.addEventListener("click", () => {
+    const icon = toggleButton.querySelector("i");
+
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      icon.classList.remove("fa-eye");
+      icon.classList.add("fa-eye-slash");
+    } else {
+      passwordInput.type = "password";
+      icon.classList.remove("fa-eye-slash");
+      icon.classList.add("fa-eye");
+    }
+  });
+});
+
+    </script>
   </body>
 </html>
