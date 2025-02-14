@@ -161,6 +161,8 @@ const incomeTab = document.getElementById("income-tab");
 const expenseTab = document.getElementById("expense-tab");
 const incomeFields = document.getElementById("income-fields");
 const expenseFields = document.getElementById("expense-fields");
+// Grab the forgot-password-button element once at the top:
+const forgotPasswordBtn = document.getElementById("forgot-password-button");
 
   // Toggle Login/Sign-Up
   toggleLink.addEventListener("click", () => {
@@ -172,7 +174,16 @@ const expenseFields = document.getElementById("expense-fields");
     toggleLink.textContent = isLogin
       ? "Log in"
       : "Sign up";
+
+      const isNowLogin = (authButton.textContent === "Log In");
+      forgotPasswordBtn.style.display = isNowLogin ? "block" : "none";
   });
+// On page load, if the auth button says "Log In" or "Sign Up", set forgot password accordingly:
+document.addEventListener("DOMContentLoaded", () => {
+  const authBtnText = authButton.textContent; // e.g. "Continue" or "Sign Up" or "Log In"
+  const isLogin = (authBtnText === "Log In");
+  forgotPasswordBtn.style.display = isLogin ? "block" : "none";
+});
 
   // Handle Email/Password Authentication
   authForm.addEventListener("submit", async (e) => {
@@ -808,6 +819,8 @@ const loadLineChart = (labels, incomeData, expenseData) => {
     },
   });
 };
+
+
 
 
 
