@@ -74,8 +74,73 @@ const initializeAppWithApiKey = async () => {
 };
 
 const initializeFirebaseFeatures = (app) => {
+  // Now 'auth' and 'db' are in scope for everything in here
   const auth = getAuth(app);
   const db = getFirestore(app);
+
+  // All your existing code for signIn, signOut, etc.
+  // (the code that references 'auth' for transactions)
+
+  // NOW define your Settings modal code here:
+  const settingsButton = document.getElementById("settings-button");
+  const settingsModal = document.getElementById("settings-modal");
+  const closeSettingsButton = document.getElementById("close-settings");
+  const saveSettingsButton = document.getElementById("save-settings");
+  const profilePicInput = document.getElementById("profile-pic-input");
+  const profilePicPreview = document.getElementById("profile-pic-preview");
+
+  settingsButton.addEventListener("click", () => {
+    settingsModal.classList.add("show");
+    settingsModal.classList.remove("hide");
+  });
+
+  closeSettingsButton.addEventListener("click", () => {
+    settingsModal.classList.remove("show");
+    settingsModal.classList.add("hide");
+  });
+
+  saveSettingsButton.addEventListener("click", async () => {
+    const displayName = document.getElementById("display-name-input").value;
+    const newPhotoUrl = document.getElementById("profile-pic-preview").src;
+
+    try {
+      // Now 'auth' is accessible because we’re inside initializeFirebaseFeatures
+      const user = auth.currentUser;
+      if (!user) {
+        alert("No user is logged in.");
+        return;
+      }
+
+      const userDocRef = doc(db, "users", user.uid);
+      await setDoc(
+        userDocRef,
+        { displayName, photoUrl: newPhotoUrl },
+        { merge: true }
+      );
+
+      alert("Settings saved successfully!");
+      loadDashboard(user); // Refresh the header
+
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      alert("Failed to save settings. Check console for details.");
+    }
+
+    settingsModal.classList.remove("show");
+    settingsModal.classList.add("hide");
+  });
+
+  profilePicInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        profilePicPreview.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
 
   // DOM Elements
   const addBudgetForm = document.getElementById("add-budget-form");
@@ -173,16 +238,17 @@ microsoftButton.addEventListener("click", async () => {
 
 
    // Monitor Authentication State
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    authContainer.style.display = "none"; // Hide the login/signup container
-    dashboardContainer.style.display = "block"; // Show the dashboard
-    loadDashboard(user); // Load the user's dashboard
-  } else {
-    authContainer.style.display = "block"; // Show the login/signup container
-    dashboardContainer.style.display = "none"; // Hide the dashboard
-  }
-});
+   onAuthStateChanged(auth, (user) => {
+    if (user) {
+      authContainer.style.display = "none"; 
+      dashboardContainer.style.display = "block";
+      loadDashboard(user); 
+    } else {
+      authContainer.style.display = "block";
+      dashboardContainer.style.display = "none";
+    }
+  });
+  
 // Load Dashboard
 const loadDashboard = async (user) => {
   const userDocRef = doc(db, "users", user.uid);
@@ -200,15 +266,31 @@ const loadDashboard = async (user) => {
       : hours >= 12 && hours < 18
       ? "Good Afternoon"
       : "Good Evening";
-
-  // Update the greeting message
+  // Grab the DOM elements once
   const usernameDisplay = document.getElementById("username-display");
-  usernameDisplay.textContent = `${greeting}, ${username}`;
-
+  const userProfilePic = document.getElementById("user-profile-pic");  // Make sure this exists in your HTML
+  const balanceDisplay = document.getElementById("balance");
+ 
   // Update the balance and load data from Firestore
   if (userDoc.exists()) {
     const data = userDoc.data();
     balanceDisplay.textContent = `$${data.balance.toFixed(2)}`;
+
+    // If user has a displayName, use it; else fallback
+    const finalName = data.displayName ? data.displayName : username;
+
+    usernameDisplay.textContent = `${greeting}, ${finalName}`;
+    
+    // If user has a saved photoUrl, show it; else keep default
+    if (data.photoUrl) {
+      userProfilePic.src = data.photoUrl;
+    }
+     // Balance
+     if (typeof data.balance === "number") {
+      balanceDisplay.textContent = `$${data.balance.toFixed(2)}`;
+    } else {
+      balanceDisplay.textContent = "$0.00";
+    }
  // Prepare data for charts
  const incomeData = data.incomes ? data.incomes.map((item) => item.amount || 0) : [];
  const expenseData = data.expenses ? data.expenses.map((item) => item.amount || 0) : [];
@@ -222,6 +304,8 @@ const loadDashboard = async (user) => {
  // If no user data exists, initialize default values in Firestore
  await setDoc(userDocRef, { balance: 0, incomes: [], expenses: [] });
  balanceDisplay.textContent = "$0.00";
+ usernameDisplay.textContent = `${greeting}, ${username}`;
+
    // Load empty charts
    loadSpendingChart([], []);
    loadLineChart(["Jan", "Feb", "Mar"], [0, 0, 0], [0, 0, 0]);
@@ -483,6 +567,7 @@ expenseTab.addEventListener("click", () => setActiveTab(expenseTab, expenseField
     location.reload();
   });
 };
+
 document.addEventListener("DOMContentLoaded", () => {
   const logoutButton = document.getElementById("logout-button");
 
@@ -502,17 +587,6 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("Logout button not found in the DOM.");
   }
 });
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -734,5 +808,6 @@ const loadLineChart = (labels, incomeData, expenseData) => {
     },
   });
 };
+
 
 
