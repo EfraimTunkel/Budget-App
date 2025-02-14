@@ -5,21 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="logo.png" type="image/png">
    
+    <!-- Icons and Chart.js -->
     <script src="https://kit.fontawesome.com/2b0e4418c9.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <title>Budget App</title>
+    <!-- Make sure your script is deferred so it runs after DOM is parsed -->
     <script type="module" src="app.js" defer></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <!-- AUTH CONTAINER -->
     <div id="auth-container">
       <div class="logo">
         <img src="logo.png" alt="Budget App Logo" />
       </div>
-    
       <h1 class="app-title" id="form-title">Create an account</h1>
-    
+      
       <form id="auth-form">
         <div class="input-group">
           <label for="auth-email">Email address*</label>
@@ -34,12 +36,13 @@
             </button>
           </div>
         </div>
-        
-        
-        
         <button type="submit" id="auth-button" class="btn-auth">Continue</button>
       </form>
-      <p><button type="button" id="forgot-password-button">Forgot Password?</button></p>
+
+      <p>
+        <button type="button" id="forgot-password-button">Forgot Password?</button>
+      </p>
+
       <p class="toggle-auth">
         Already have an account? <a href="#" id="toggle-link">Login</a>
       </p>
@@ -52,63 +55,68 @@
       <button id="microsoft-signin-button" class="btn-auth social-btn">
         <i class="fab fa-microsoft microsoft-icon"></i> Continue with Microsoft
       </button>
-      
-      <button id="apple-signin-button" class="btn-auth social-btn">
-        <i class="fab fa-apple apple-icon"></i> Continue with Apple
-      </button>
+    
     </div>
     
 
-    <!-- Dashboard Container -->
+    <!-- DASHBOARD CONTAINER -->
     <div id="dashboard-container" style="display: none;">
-      <!-- Sidebar -->
       <!-- Bottom Navigation -->
-      <nav class="bottom-nav">
-        <a href="#" class="nav-item">
-          <i class="fa-solid fa-house"></i><span>Home</span>
-        </a>
-        <button id="add-transaction-button" class="floating-button">
-          <i class="fa fa-plus"></i>
-        </button>
-        <a href="#" class="nav-item">
-          <i class="fa-solid fa-wallet"></i><span>Budgets</span>
-        </a>
-        <a href="#" class="nav-item">
-          <i class="fa-solid fa-list"></i><span>Transactions</span>
-        </a>
-        <button id="logout-button">Log Out</button>
-      </nav>
-      
-      
-  
+      <!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <a href="#" class="nav-item">
+    <i class="fa-solid fa-house"></i><span>Home</span>
+  </a>
+  <button id="add-transaction-button" class="floating-button">
+    <i class="fa fa-plus"></i>
+  </button>
+  <a href="#" class="nav-item">
+    <i class="fa-solid fa-wallet"></i><span>Budgets</span>
+  </a>
+  <a href="#" class="nav-item">
+    <i class="fa-solid fa-list"></i><span>Transactions</span>
+  </a>
+  <!-- ADD THIS: The gear as a nav item -->
+  <a href="#" class="nav-item" id="settings-button">
+    <i class="fa-solid fa-gear"></i><span>Settings</span>
+  </a>
+  <button id="logout-button">Log Out</button>
+</nav>
 
-      <!-- Main Content -->
+      
+      <!-- MAIN CONTENT -->
       <main id="main-content">
-        <header>
-          <h1 id="greeting">Dashboard</h1>
-          <p id="username-display"></p>
-          <p>Your current balance: <span id="balance">$0.00</span></p>
-        </header>
-        
+        <!-- REMOVE your old <header> block 
+     that just had <h1 id="greeting">, <p id="username-display">, etc. -->
      
-        <section id="chart-container" style="display: block;">
+<!-- ADD this improved header -->
+<header class="dashboard-header">
+  <div class="user-info">
+    <!-- This image will display the user's profile pic from Firestore -->
+    <img id="user-profile-pic" src="default-avatar.png" alt="Profile Pic" />
+    
+    <!-- The greeting + username + balance can sit in a small text block -->
+    <div class="greeting-text">
+      <h1 id="greeting"><span id="username-display">User</span></h1>
+      <p>Your current balance: <span id="balance">$0.00</span></p>
+    </div>
+  </div>
+</header>
+
+        
+        <section id="chart-container">
           <h2>Spending and Income Trends</h2>
           <canvas id="spending-chart" width="400" height="200"></canvas>
         </section>
         
-        <section id="line-chart-container" style="display: block;">
+        <section id="line-chart-container">
           <h2>Income and Expenses Over Time</h2>
           <canvas id="line-chart" width="400" height="200"></canvas>
         </section>
-        
-        
-        
-        
       </main>
     </div>
   
-    
-    <!-- Transaction Popup -->
+    <!-- TRANSACTION POPUP -->
     <div id="transaction-popup" class="popup hidden">
       <div class="popup-content">
         <button id="close-popup" class="close-button">&times;</button>
@@ -118,62 +126,67 @@
         </div>
         <!-- Income Form -->
         <form id="income-form" class="transaction-fields active">
-          <input
-            type="number"
-            id="popup-income-amount"
-            name="popup-income-amount"
-            placeholder="Amount"
-            required
-          />
-          <input
-            type="text"
-            id="popup-income-source"
-            name="popup-income-source"
-            placeholder="Source (e.g., Salary)"
-            required
-          />
+          <input type="number" id="popup-income-amount" placeholder="Amount" required />
+          <input type="text" id="popup-income-source" placeholder="Source (e.g., Salary)" required />
           <button type="submit" class="btn-primary">Save Income</button>
         </form>
         <!-- Expense Form -->
         <form id="expense-form" class="transaction-fields hidden">
-          <input
-            type="number"
-            id="popup-expense-amount"
-            name="popup-expense-amount"
-            placeholder="Amount"
-            required
-          />
-          <input
-            type="text"
-            id="popup-expense-category"
-            name="popup-expense-category"
-            placeholder="Category (e.g., Food)"
-            required
-          />
+          <input type="number" id="popup-expense-amount" placeholder="Amount" required />
+          <input type="text" id="popup-expense-category" placeholder="Category (e.g., Food)" required />
           <button type="submit" class="btn-primary">Save Expense</button>
         </form>
       </div>
     </div>
+
+  
+
+    <!-- SETTINGS MODAL (starts hidden) -->
+    <div id="settings-modal" class="modal hide">
+      <div class="modal-content">
+        <h2>Settings</h2>
+        <!-- Profile Picture -->
+        <label for="profile-pic-input">Profile Picture:</label>
+        <input type="file" id="profile-pic-input" accept="image/*" />
+        <img id="profile-pic-preview" src="default-avatar.png"
+             alt="Profile Preview" style="width:100px;height:100px;border-radius:50%;"/>
+
+        <!-- Display Name -->
+        <label for="display-name-input">Display Name:</label>
+        <input type="text" id="display-name-input" />
+
+        <!-- Balance -->
+        <label for="balance-input">Starting Balance:</label>
+        <input type="number" id="balance-input" />
+
+        <!-- Modal Buttons -->
+        <div class="modal-buttons">
+          <button id="save-settings">Save</button>
+          <button id="close-settings">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SMALL SCRIPT FOR TOGGLING PASSWORD VISIBILITY -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-  const toggleButton = document.getElementById("toggle-password-visibility");
-  const passwordInput = document.getElementById("auth-password");
+        const toggleButton = document.getElementById("toggle-password-visibility");
+        const passwordInput = document.getElementById("auth-password");
 
-  toggleButton.addEventListener("click", () => {
-    const icon = toggleButton.querySelector("i");
-
-    if (passwordInput.type === "password") {
-      passwordInput.type = "text";
-      icon.classList.remove("fa-eye");
-      icon.classList.add("fa-eye-slash");
-    } else {
-      passwordInput.type = "password";
-      icon.classList.remove("fa-eye-slash");
-      icon.classList.add("fa-eye");
-    }
-  });
-});
-
+        toggleButton.addEventListener("click", () => {
+          const icon = toggleButton.querySelector("i");
+          if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+          } else {
+            passwordInput.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+          }
+        });
+      });
     </script>
   </body>
 </html>
+
