@@ -1254,24 +1254,25 @@ section h2 {
 }
 
 }
-
-
-
-
-
-
 #forgot-password-button {
+  display: none; /* Hide by default */
   background-color: transparent;
   color: #4caf50;
   border: none;
   text-decoration: underline;
   cursor: pointer;
   font-size: 14px;
+  text-align: center;  
+  margin: 0 auto;   
 }
-
 #forgot-password-button:hover {
   color: #388e3c;
 }
+
+
+
+
+
 
 
 
