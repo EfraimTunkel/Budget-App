@@ -120,9 +120,7 @@ body {
   color: #00a4ef;
 }
 
-#auth-container .apple-icon {
-  color: #000000;
-}
+
 
 #auth-container .social-btn:hover {
   border-color: #4caf50;
@@ -239,6 +237,159 @@ body {
 }
 
 /* DASHBOARD SECTION */
+/* The dark backdrop + position */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999; 
+  top: 0; 
+  left: 0;
+  width: 100%; 
+  height: 100%;
+  backdrop-filter: blur(2px); /* Subtle blur for the background */
+  justify-content: center;
+  align-items: center;
+}
+
+/* When shown, fade in with a semi-transparent background */
+.modal.show {
+  display: flex !important;
+  background: rgba(0, 0, 0, 0.6); /* Semi-transparent dark overlay */
+  animation: fadeInBackdrop 0.2s ease-out;
+}
+
+/* Hide by default (overridden by .show) */
+.modal.hide {
+  display: none !important;
+}
+.modal-content {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 25px 35px;
+  max-width: 400px;
+  width: 90%;       /* So it’s responsive on mobile */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  animation: scaleIn 0.3s ease-out;
+  position: relative;
+}
+
+/* Subtle scale-in keyframes */
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+/* The "Settings" title inside modal */
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+  text-align: center;
+}
+
+/* For the labels and inputs: spacing + mild styling */
+.modal-content label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #444;
+}
+
+.modal-content input[type="file"],
+.modal-content input[type="text"],
+.modal-content input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 15px;
+  transition: border-color 0.3s ease;
+}
+
+.modal-content input:focus {
+  border-color: #4caf50;
+}
+
+/* Profile pic preview with some margin */
+#profile-pic-preview {
+  display: block;
+  margin: 10px auto 15px;
+  width: 100px; 
+  height: 100px; 
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Buttons at the bottom */
+.modal-buttons {
+  display: flex;
+  justify-content: center; 
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.modal-buttons button {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+/* Save button - green look */
+#save-settings {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: #fff;
+}
+#save-settings:hover {
+  transform: translateY(-2px);
+}
+
+/* Cancel button - red or grey */
+#close-settings {
+  background: #f44336; 
+  color: #fff;
+}
+#close-settings:hover {
+  transform: translateY(-2px);
+}
+/* Example: Top-right corner close 'X' for the modal */
+.modal-content .close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #777;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.modal-content .close-button:hover {
+  color: #f44336;
+  transform: rotate(90deg);
+}
+
+/* Fade-in keyframes for the backdrop */
+@keyframes fadeInBackdrop {
+  from { background-color: rgba(0, 0, 0, 0); }
+  to   { background-color: rgba(0, 0, 0, 0.6); }
+}
+
 
 /* Dashboard Container */
 #dashboard-container {
@@ -251,32 +402,43 @@ body {
 }
 
 /* Dashboard Header */
-#dashboard-container header {
+.dashboard-header {
+  display: flex;              /* so content can sit side by side */
+  align-items: center;
+  justify-content: space-between;
   background: linear-gradient(45deg, #4caf50, #81c784);
   color: white;
-  padding: 25px;
-  text-align: center;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  position: relative;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  margin-bottom: 20px; /* a little spacing below */
+}
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
-#dashboard-container header h1 {
-  font-size: 32px;
+/* The greeting text portion */
+.greeting-text h1 {
+  margin: 0;
+  font-size: 24px;
+}
+.greeting-text p {
+  margin: 5px 0 0;
+  font-size: 16px;
   font-weight: bold;
-  margin-bottom: 5px;
-  letter-spacing: 1px;
+  color: #ffd700; /* golden color for the balance text? */
 }
 
-#dashboard-container header p {
-  font-size: 18px;
-  margin: 5px 0;
-}
-
-#dashboard-container header p span {
-  font-weight: bold;
-  color: #fdd835;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+/* The user’s profile pic: circle shape, small border, etc. */
+#user-profile-pic {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid white;
+  object-fit: cover;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 
@@ -358,6 +520,67 @@ body {
 #logout-button:active {
   transform: scale(0.98);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+#settings-button {
+  /* Desktop style: treat it like the other nav items */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: bold;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #4caf50; /* or same as other icons */
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+#settings-button i {
+  font-size: 20px; 
+  margin-bottom: 3px; 
+}
+#settings-button span {
+  font-size: 14px;
+}
+#settings-button:hover {
+  color: #2e7d32;
+  transform: translateY(-3px);
+}
+@media (max-width: 767px) {
+  #settings-button {
+    /* Hide or remove it from the nav flow,
+       and make it float near the bottom? */
+    position: fixed;
+    right: 20px;
+    bottom: 150px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none; 
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    transform: translateY(0);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  #settings-button i {
+    margin: 0;           /* No need for margin-bottom on a floating button */
+    font-size: 20px;
+  }
+
+  /* Hide the text on super small screens if you want just the gear icon */
+  #settings-button span {
+    display: none; 
+  }
+
+  /* Hover effect */
+  #settings-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* Desktop Navigation Improvements */
