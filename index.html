@@ -7,7 +7,7 @@
    
     <!-- Icons and Chart.js -->
     <script src="https://kit.fontawesome.com/2b0e4418c9.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <title>Budget App</title>
     <!-- Make sure your script is deferred so it runs after DOM is parsed -->
@@ -105,15 +105,20 @@
 </header>
 
         
-        <section id="chart-container">
-          <h2>Spending and Income Trends</h2>
-          <canvas id="spending-chart" width="400" height="200"></canvas>
-        </section>
-        
-        <section id="line-chart-container">
-          <h2>Income and Expenses Over Time</h2>
-          <canvas id="line-chart" width="400" height="200"></canvas>
-        </section>
+<!-- BEGIN charts-wrapper -->
+<div class="charts-wrapper">
+  <section id="chart-container">
+    <h2>Spending and Income Trends</h2>
+    <div id="spending-chart" style="width: 100%; height: 350px;"></div>
+  </section>
+
+  <section id="line-chart-container">
+    <h2>Income and Expenses Over Time</h2>
+    <div id="line-chart" style="width: 100%; height: 350px;"></div>
+  </section>
+</div>
+<!-- END charts-wrapper -->
+
       </main>
     </div>
   
@@ -190,4 +195,3 @@
     </script>
   </body>
 </html>
-
