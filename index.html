@@ -47,6 +47,11 @@
       <p class="toggle-auth">
         Already have an account? <a href="#" id="toggle-link">Login</a>
       </p>
+      
+      <p id="verification-message" class="hidden">
+        A verification email was sent to your inbox. Please verify your email before logging in.
+      </p>
+      
     
       <div class="divider"><span>OR</span></div>
     
@@ -122,28 +127,67 @@
       </main>
     </div>
   
-    <!-- TRANSACTION POPUP -->
-    <div id="transaction-popup" class="popup hidden">
-      <div class="popup-content">
-        <button id="close-popup" class="close-button">&times;</button>
-        <div class="toggle-buttons">
-          <button id="income-tab" class="toggle-button active">Income</button>
-          <button id="expense-tab" class="toggle-button">Expense</button>
-        </div>
-        <!-- Income Form -->
-        <form id="income-form" class="transaction-fields active">
-          <input type="number" id="popup-income-amount" placeholder="Amount" required />
-          <input type="text" id="popup-income-source" placeholder="Source (e.g., Salary)" required />
-          <button type="submit" class="btn-primary">Save Income</button>
-        </form>
-        <!-- Expense Form -->
-        <form id="expense-form" class="transaction-fields hidden">
-          <input type="number" id="popup-expense-amount" placeholder="Amount" required />
-          <input type="text" id="popup-expense-category" placeholder="Category (e.g., Food)" required />
-          <button type="submit" class="btn-primary">Save Expense</button>
-        </form>
-      </div>
+   <!-- TRANSACTION POPUP -->
+<div id="transaction-popup" class="popup hidden">
+  <div class="popup-content">
+    <button id="close-popup" class="close-button">&times;</button>
+
+    <!-- Toggle between Income and Expense -->
+    <div class="toggle-buttons">
+      <button id="income-tab" class="toggle-button active">Income</button>
+      <button id="expense-tab" class="toggle-button">Expense</button>
     </div>
+
+    <!-- INCOME FORM -->
+    <form id="income-form" class="transaction-fields active">
+      <input 
+        type="number"
+        id="popup-income-amount"
+        placeholder="Amount"
+        required
+      />
+
+      <!-- Income Category Dropdown -->
+      <select id="popup-income-source" class="category-dropdown" required></select>
+
+      <!-- "Add Source" Button -->
+      <button 
+        type="button" 
+        id="add-income-category-btn" 
+        class="add-cat-btn"
+      >
+        + Add Source
+      </button>
+
+      <button type="submit" class="btn-primary">Save Income</button>
+    </form>
+
+    <!-- EXPENSE FORM -->
+    <form id="expense-form" class="transaction-fields hidden">
+      <input
+        type="number"
+        id="popup-expense-amount"
+        placeholder="Amount"
+        required
+      />
+
+      <!-- Expense Category Dropdown -->
+      <select id="popup-expense-category" class="category-dropdown" required></select>
+
+      <!-- "Add Category" Button -->
+      <button 
+        type="button" 
+        id="add-expense-category-btn" 
+        class="add-cat-btn"
+      >
+        + Add Category
+      </button>
+
+      <button type="submit" class="btn-primary">Save Expense</button>
+    </form>
+  </div>
+</div>
+
 
   
 
