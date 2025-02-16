@@ -277,174 +277,120 @@ const loadDashboard = async (user) => {
       : hours >= 12 && hours < 18
       ? "Good Afternoon"
       : "Good Evening";
-  // Grab the DOM elements once
+
+  // Grab DOM elements once
   const usernameDisplay = document.getElementById("username-display");
-  const userProfilePic = document.getElementById("user-profile-pic");  // Make sure this exists in your HTML
+  const userProfilePic = document.getElementById("user-profile-pic");
   const balanceDisplay = document.getElementById("balance");
- 
-  // Update the balance and load data from Firestore
+
+  // If the user document exists in Firestore
   if (userDoc.exists()) {
     const data = userDoc.data();
-    balanceDisplay.textContent = `$${data.balance.toFixed(2)}`;
 
-    // If user has a displayName, use it; else fallback
-    const finalName = data.displayName ? data.displayName : username;
-
-    usernameDisplay.textContent = `${greeting}, ${finalName}`;
-    
-    // If user has a saved photoUrl, show it; else keep default
-    if (data.photoUrl) {
-      userProfilePic.src = data.photoUrl;
-    }
-     // Balance
-     if (typeof data.balance === "number") {
+    // Display balance
+    if (typeof data.balance === "number") {
       balanceDisplay.textContent = `$${data.balance.toFixed(2)}`;
     } else {
       balanceDisplay.textContent = "$0.00";
     }
- // Prepare data for charts
- const incomeData = data.incomes ? data.incomes.map((item) => item.amount || 0) : [];
- const expenseData = data.expenses ? data.expenses.map((item) => item.amount || 0) : [];
- const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
 
- // Load charts
- const chartData = prepareChartData(data.expenses);
- loadSpendingChart(chartData.categories, chartData.amounts);
- loadLineChart(labels, incomeData, expenseData);
-} else {
- // If no user data exists, initialize default values in Firestore
- await setDoc(userDocRef, { balance: 0, incomes: [], expenses: [] });
- balanceDisplay.textContent = "$0.00";
- usernameDisplay.textContent = `${greeting}, ${username}`;
+    // Display name or fallback
+    const finalName = data.displayName ? data.displayName : username;
+    usernameDisplay.textContent = `${greeting}, ${finalName}`;
 
-   // Load empty charts
-   loadSpendingChart([], []);
-   loadLineChart(["Jan", "Feb", "Mar"], [0, 0, 0], [0, 0, 0]);
- }
-
-
-};
-
-// Prepare Data for Chart
-const prepareChartData = (expenses) => {
-  const categories = [];
-  const amounts = [];
-
-  expenses.forEach((expense) => {
-    const { category, amount } = expense;
-    const index = categories.indexOf(category);
-
-    if (index !== -1) {
-      amounts[index] += amount;
-    } else {
-      categories.push(category);
-      amounts.push(amount);
+    // Profile pic if it exists
+    if (data.photoUrl) {
+      userProfilePic.src = data.photoUrl;
     }
-  });
 
-  return { categories, amounts };
-};
+    // Prepare data for charts
+    const incomeData = data.incomes ? data.incomes.map((item) => item.amount || 0) : [];
+    const expenseData = data.expenses ? data.expenses.map((item) => item.amount || 0) : [];
+    const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
 
-// Load Spending Chart
-const loadSpendingChart = (categories, amounts) => {
-  const ctx = document.getElementById("spending-chart").getContext("2d");
+    // Call your ApexCharts donut
+    (function renderSpendingChart() {
+      // Build category totals
+      const catMap = {};
+      (data.expenses || []).forEach((exp) => {
+        if (!catMap[exp.category]) catMap[exp.category] = 0;
+        catMap[exp.category] += exp.amount;
+      });
 
-  // Destroy any existing chart instance
-  if (window.spendingChart) {
-    window.spendingChart.destroy();
+      const spendingCategories = Object.keys(catMap);
+      const spendingAmounts = Object.values(catMap);
+
+      if (spendingCategories.length === 0) {
+        spendingCategories.push("No Expenses");
+        spendingAmounts.push(0);
+      }
+
+      const donutOptions = {
+        chart: {
+          type: 'donut',
+          height: 350
+        },
+        series: spendingAmounts,
+        labels: spendingCategories,
+        title: {
+          text: "Spending Overview",
+          align: "center",
+          style: { fontSize: '20px' }
+        },
+        legend: { position: 'bottom' }
+      };
+
+      const spendingChart = new ApexCharts(
+        document.querySelector("#spending-chart"),
+        donutOptions
+      );
+      spendingChart.render();
+    })();
+
+    // Call your ApexCharts line
+    (function renderLineChart() {
+      const lineOptions = {
+        chart: {
+          type: 'line',
+          height: 350
+        },
+        series: [
+          { name: "Income", data: incomeData },
+          { name: "Expenses", data: expenseData }
+        ],
+        xaxis: {
+          categories: labels,
+          title: { text: "Month" }
+        },
+        yaxis: {
+          title: { text: "Amount ($)" }
+        },
+        title: {
+          text: "Income vs Expenses",
+          align: "center",
+          style: { fontSize: '20px' }
+        },
+        legend: { position: 'top' }
+      };
+
+      const lineChart = new ApexCharts(
+        document.querySelector("#line-chart"),
+        lineOptions
+      );
+      lineChart.render();
+    })();
+
+  } else {
+    // If no user data exists, initialize defaults
+    await setDoc(userDocRef, { balance: 0, incomes: [], expenses: [] });
+    balanceDisplay.textContent = "$0.00";
+    usernameDisplay.textContent = `${greeting}, ${username}`;
+
+    // Optionally, render empty ApexCharts here
+    // e.g., a donut chart with no expenses, etc.
   }
-
-  // Create a new Chart.js instance
-  window.spendingChart = new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: categories,
-      datasets: [
-        {
-          label: "Spending Overview",
-          data: amounts,
-          backgroundColor: ["#4caf50", "#ff9800", "#2196f3", "#f44336", "#9c27b0"],
-          borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: "top",
-        },
-        tooltip: {
-          callbacks: {
-            label: (tooltipItem) => `${tooltipItem.label}: $${tooltipItem.raw}`,
-          },
-        },
-      },
-    },
-  });
 };
-// Load Line Chart
-const loadLineChart = (labels, incomeData, expenseData) => {
-  const ctx = document.getElementById("line-chart").getContext("2d");
 
-  // Destroy any existing chart instance
-  if (window.lineChart) {
-    window.lineChart.destroy();
-  }
-
-  // Create a new Chart.js instance
-  window.lineChart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: "Income",
-          data: incomeData,
-          borderColor: "#4caf50",
-          backgroundColor: "rgba(76, 175, 80, 0.2)",
-          tension: 0.4,
-          fill: true,
-        },
-        {
-          label: "Expenses",
-          data: expenseData,
-          borderColor: "#f44336",
-          backgroundColor: "rgba(244, 67, 54, 0.2)",
-          tension: 0.4,
-          fill: true,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: "top",
-        },
-        tooltip: {
-          callbacks: {
-            label: (tooltipItem) => `$${tooltipItem.raw}`,
-          },
-        },
-      },
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: "Time",
-          },
-        },
-        y: {
-          title: {
-            display: true,
-            text: "Amount ($)",
-          },
-        },
-      },
-    },
-  });
-};
 
 // Handle Add Transaction Button Click (Show Popup)
 addTransactionButton.addEventListener("click", () => {
@@ -726,97 +672,48 @@ const loadLineChart = (labels, incomeData, expenseData) => {
     window.lineChart.destroy();
   }
 
-  const loadLineChart = (labels, incomeData, expenseData) => {
-    const ctx = document.getElementById("line-chart").getContext("2d");
-  
-    // Destroy any existing chart instance
-    if (window.lineChart) {
-      window.lineChart.destroy();
-    }
-  
-    // Create a new Chart.js instance
-    window.lineChart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: "Income",
-            data: incomeData,
-            borderColor: "#4caf50",
-            backgroundColor: "rgba(76, 175, 80, 0.2)",
-            tension: 0.4,
-            fill: true,
-          },
-          {
-            label: "Expenses",
-            data: expenseData,
-            borderColor: "#f44336",
-            backgroundColor: "rgba(244, 67, 54, 0.2)",
-            tension: 0.4,
-            fill: true,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: "top",
-          },
-          tooltip: {
-            callbacks: {
-              label: (tooltipItem) => `$${tooltipItem.raw}`,
-            },
-          },
-        },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: "Time",
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: "Amount ($)",
-            },
-          },
-        },
-      },
-    });
-  };
-  
-  // Create a new Chart instance
-  window.spendingChart = new Chart(ctx, {
-    type: "doughnut",
+  window.lineChart = new Chart(ctx, {
+    type: 'line',
     data: {
-      labels: categories,
+      labels: labels,
       datasets: [
         {
-          label: "Spending Overview",
-          data: amounts,
-          backgroundColor: ["#4caf50", "#ff9800", "#2196f3", "#f44336", "#9c27b0", "#fcba03", "#0377fc", "#fc03d7"],
-          borderWidth: 1,
+          label: 'Income',
+          data: incomeData,
+          borderColor: 'green',
+          fill: false
         },
-      ],
+        {
+          label: 'Expenses',
+          data: expenseData,
+          borderColor: 'red',
+          fill: false
+        }
+      ]
     },
     options: {
       responsive: true,
-      plugins: {
-        legend: {
-          position: "top",
-        },
-        tooltip: {
-          callbacks: {
-            label: (tooltipItem) => {
-              return `${tooltipItem.label}: $${tooltipItem.raw}`;
-            },
-          },
-        },
+      title: {
+        display: true,
+        text: 'Income vs Expenses'
       },
-    },
+      scales: {
+        xAxes: [{
+          display: true,
+          scaleLabel: {
+            display: true,
+            labelString: 'Month'
+          }
+        }],
+        yAxes: [{
+          display: true,
+          scaleLabel: {
+            display: true,
+            labelString: 'Amount ($)'
+          }
+        }]
+      }
+    }
   });
 };
 
