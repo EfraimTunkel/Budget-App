@@ -802,44 +802,24 @@ section h2 {
   display: block;
 }
 
-/* Tooltip Styling */
-.chartjs-tooltip {
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  font-size: 0.9rem;
-  padding: 10px;
-  border-radius: 10px;
-  text-align: center;
-  pointer-events: none;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+@media (min-width: 768px) {
+  /* If you still want some gap above the charts, you can keep #main-content as-is */
+
+  /* This is the key addition: display the two chart sections side by side */
+  .charts-wrapper {
+    display: flex;
+    flex-direction: row;  /* or 'row' by default */
+    gap: 20px;            /* spacing between the two sections */
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  #chart-container,
+  #line-chart-container {
+    width: 48%; /* Each chart section takes nearly half the container */
+  }
 }
 
-/* Legend Styling */
-.chartjs-legend {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 15px;
-  font-size: 0.95rem;
-  font-weight: 500;
-}
-
-
-.chartjs-legend-item {
-  margin: 5px 12px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.chartjs-legend-item span {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  margin-right: 8px;
-  border-radius: 50%;
-  border: 2px solid #ddd;
-}
 /* Animations */
 @keyframes fadeIn {
   from {
@@ -1304,4 +1284,3 @@ section h2 {
 .toggle-password:hover {
   color: #4caf50;
 }
-
