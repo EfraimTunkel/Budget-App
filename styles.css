@@ -1084,6 +1084,48 @@ section h2 {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
+/* 1) Make the dropdown look a bit nicer */
+.category-dropdown {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  color: #333;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  /* remove default arrow in some browsers if you like */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 40px; /* space if you'd like to add a custom arrow */
+}
+
+.category-dropdown:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+/* 2) Style the “Add Source” / “Add Category” Buttons */
+.add-cat-btn {
+  display: inline-block;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #333;
+  margin-bottom: 10px; /* Some spacing */
+  transition: background 0.3s, transform 0.2s;
+}
+
+.add-cat-btn:hover {
+  background: #ccc;
+  transform: translateY(-2px);
+}
 
 /* Fullscreen Popup for Mobile */
 @media (max-width: 768px) {
@@ -1283,4 +1325,14 @@ section h2 {
 
 .toggle-password:hover {
   color: #4caf50;
+}
+
+.hidden {
+  display: none;
+}
+#verification-message {
+  color: red;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 10px;
 }
