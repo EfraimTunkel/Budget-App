@@ -79,7 +79,7 @@
   <a href="#" class="nav-item">
     <i class="fa-solid fa-wallet"></i><span>Budgets</span>
   </a>
-  <a href="#" class="nav-item">
+  <a href="#" class="nav-item" id="transactions-button">
     <i class="fa-solid fa-list"></i><span>Transactions</span>
   </a>
   <!-- ADD THIS: The gear as a nav item -->
@@ -139,28 +139,32 @@
     </div>
 
     <!-- INCOME FORM -->
-    <form id="income-form" class="transaction-fields active">
-      <input 
-        type="number"
-        id="popup-income-amount"
-        placeholder="Amount"
-        required
-      />
+   <!-- INCOME FORM -->
+<form id="income-form" class="transaction-fields active">
+  <input 
+    type="number"
+    id="popup-income-amount"
+    placeholder="Amount"
+    required
+  />
+  <div class="category-wrapper">
+    <select id="popup-income-source" class="category-dropdown" required>
+      <option value="">Select Source</option>
+      <!-- Options will be populated dynamically or pre-defined -->
+    </select>
+    <button type="button" id="edit-income-category-btn" class="edit-cat-btn">
+      <i class="fa fa-pencil"></i>
+    </button>
+    <button type="button" id="delete-income-category-btn" class="delete-cat-btn">
+      <i class="fa fa-trash"></i>
+    </button>
+  </div>
+  <button type="button" id="add-income-category-btn" class="add-cat-btn">
+    + Add Source
+  </button>
+  <button type="submit" class="btn-primary">Save Income</button>
+</form>
 
-      <!-- Income Category Dropdown -->
-      <select id="popup-income-source" class="category-dropdown" required></select>
-
-      <!-- "Add Source" Button -->
-      <button 
-        type="button" 
-        id="add-income-category-btn" 
-        class="add-cat-btn"
-      >
-        + Add Source
-      </button>
-
-      <button type="submit" class="btn-primary">Save Income</button>
-    </form>
 
     <!-- EXPENSE FORM -->
     <form id="expense-form" class="transaction-fields hidden">
@@ -171,18 +175,22 @@
         required
       />
 
-      <!-- Expense Category Dropdown -->
-      <select id="popup-expense-category" class="category-dropdown" required></select>
-
-      <!-- "Add Category" Button -->
-      <button 
-        type="button" 
-        id="add-expense-category-btn" 
-        class="add-cat-btn"
-      >
-        + Add Category
-      </button>
-
+      <div class="category-wrapper">
+        <select id="popup-expense-category" class="category-dropdown" required>
+          <option value="">Select Category</option>
+          <option value="Food">Food</option>
+          <option value="Transport">Transport</option>
+          <!-- more options -->
+        </select>
+        <button type="button" id="edit-expense-category-btn" class="edit-cat-btn">
+          <i class="fa fa-pencil"></i>
+        </button>
+        <button type="button" id="delete-expense-category-btn" class="delete-cat-btn">
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+      <button type="button" id="add-expense-category-btn" class="add-cat-btn">+ Add Category</button>
+      
       <button type="submit" class="btn-primary">Save Expense</button>
     </form>
   </div>
@@ -190,32 +198,109 @@
 
 
   
+<!-- SETTINGS MODAL -->
+<div id="settings-modal" class="modal hide">
+  <div class="modal-content">
+      <!-- Add a close icon button -->
+      <button id="close-settings-icon" class="close-button">×</button>
+      <h2>Settings</h2>
 
-    <!-- SETTINGS MODAL (starts hidden) -->
-    <div id="settings-modal" class="modal hide">
-      <div class="modal-content">
-        <h2>Settings</h2>
-        <!-- Profile Picture -->
-        <label for="profile-pic-input">Profile Picture:</label>
-        <input type="file" id="profile-pic-input" accept="image/*" />
-        <img id="profile-pic-preview" src="default-avatar.png"
-             alt="Profile Preview" style="width:100px;height:100px;border-radius:50%;"/>
-
-        <!-- Display Name -->
-        <label for="display-name-input">Display Name:</label>
-        <input type="text" id="display-name-input" />
-
-        <!-- Balance -->
-        <label for="balance-input">Starting Balance:</label>
-        <input type="number" id="balance-input" />
-
-        <!-- Modal Buttons -->
-        <div class="modal-buttons">
-          <button id="save-settings">Save</button>
-          <button id="close-settings">Cancel</button>
-        </div>
-      </div>
+    <!-- Profile Section -->
+    <div class="settings-section">
+      <h3>Profile</h3>
+      <label for="profile-pic-input" class="custom-file-label">Choose Image</label>
+      <input type="file" id="profile-pic-input" accept="image/*" />
+      <img id="profile-pic-preview" src="default-avatar.png" alt="Profile Preview" style="width:100px; height:100px; border-radius:50%;" />
+      
+      <label for="display-name-input">Display Name:</label>
+      <input type="text" id="display-name-input" />
     </div>
+    
+    
+    <!-- Appearance Section -->
+    <div class="settings-section">
+      <h3>Appearance</h3>
+      <label>
+        <input type="checkbox" id="theme-toggle" />
+        Enable Dark Mode
+      </label>
+    </div>
+
+    <!-- Notification Preferences Section -->
+    <div class="settings-section">
+      <h3>Notifications</h3>
+      <label>
+        <input type="checkbox" id="email-notifications" />
+        Email Notifications
+      </label>
+      <label>
+        <input type="checkbox" id="push-notifications" />
+        Push Notifications
+      </label>
+    </div>
+
+    <!-- Currency Preference Section -->
+    <div class="settings-section">
+      <h3>Currency</h3>
+      <select id="currency-select">
+        <option value="USD">USD - US Dollar</option>
+        <option value="EUR">EUR - Euro</option>
+        <option value="GBP">GBP - British Pound</option>
+      </select>
+    </div>
+    
+    <!-- Account Management Section -->
+    <div class="settings-section">
+      <h3>Account Management</h3>
+      <!-- Send a reset link to the user’s email -->
+      <button id="reset-password-button" style="background:#0288d1; color:#fff; margin-bottom:10px;">Reset Password</button>
+      <!-- Trigger the "Confirm Deletion" popup -->
+      <button id="delete-account-button" style="background:#f44336; color:#fff;">Delete Account</button>
+    </div>
+    
+    <!-- Modal Buttons -->
+    <div class="modal-buttons">
+      <button id="save-settings">Save Settings</button>
+      <button id="close-settings">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETION POPUP -->
+<div id="confirm-deletion-popup" class="popup hidden">
+  <div class="popup-content" style="max-width:400px;">
+    <button id="close-deletion-popup" class="close-button">&times;</button>
+    <h2>Confirm Deletion</h2>
+    <p>Please enter your current password to delete your account.</p>
+    <input type="password" id="delete-account-password" placeholder="Current password" />
+    <button id="confirm-delete-button" style="background:#f44336; color:#fff;">Confirm Delete</button>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<!-- New Transactions List Popup (for viewing transactions) -->
+<div id="transactions-popup" class="popup hidden">
+  <div class="popup-content">
+    <button id="close-transactions-popup" class="close-button">&times;</button>
+    <div class="toggle-buttons">
+      <button id="all-tab" class="toggle-button active">All</button>
+      <button id="income-tab-list" class="toggle-button">Income</button>
+      <button id="expense-tab-list" class="toggle-button">Expense</button>
+    </div>
+    <div id="transactions-list-content">
+      <!-- Transactions will be rendered here -->
+    </div>
+  </div>
+</div>
 
     <!-- SMALL SCRIPT FOR TOGGLING PASSWORD VISIBILITY -->
     <script>
