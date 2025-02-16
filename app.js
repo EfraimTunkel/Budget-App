@@ -5,15 +5,17 @@ import { OAuthProvider } from "https://www.gstatic.com/firebasejs/9.21.0/firebas
 
 import { 
   getAuth, 
-  
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   onAuthStateChanged, 
   GoogleAuthProvider, 
   signInWithPopup, 
   signOut, 
-  sendPasswordResetEmail, // Add this here
-  sendEmailVerification // ✅ Add this line
+  sendPasswordResetEmail, 
+  sendEmailVerification,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  deleteUser
 } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
 
 import { 
@@ -83,65 +85,207 @@ const initializeFirebaseFeatures = (app) => {
   // All your existing code for signIn, signOut, etc.
   // (the code that references 'auth' for transactions)
 
-  // NOW define your Settings modal code here:
-  const settingsButton = document.getElementById("settings-button");
-  const settingsModal = document.getElementById("settings-modal");
-  const closeSettingsButton = document.getElementById("close-settings");
-  const saveSettingsButton = document.getElementById("save-settings");
-  const profilePicInput = document.getElementById("profile-pic-input");
-  const profilePicPreview = document.getElementById("profile-pic-preview");
+  
+  // --- Settings Modal Enhancements ---
+  // Make sure to import everything you need at the top of your file, for example:
+// import { sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential, deleteUser } from "firebase/auth";
+// import { doc, getDoc, setDoc } from "firebase/firestore"; 
+// ... plus any other imports you use (e.g., getAuth, etc.)
 
-  settingsButton.addEventListener("click", () => {
-    settingsModal.classList.add("show");
-    settingsModal.classList.remove("hide");
-  });
+// --- Settings Modal Enhancements ---
+// DOM elements for the Settings modal
+const settingsButton = document.getElementById("settings-button");
+const settingsModal = document.getElementById("settings-modal");
+const closeSettingsButton = document.getElementById("close-settings");
+const saveSettingsButton = document.getElementById("save-settings");
 
-  closeSettingsButton.addEventListener("click", () => {
-    settingsModal.classList.remove("show");
-    settingsModal.classList.add("hide");
-  });
+// Profile Picture and Display Name
+const profilePicInput = document.getElementById("profile-pic-input");
+const profilePicPreview = document.getElementById("profile-pic-preview");
+const displayNameInput = document.getElementById("display-name-input");
 
-  saveSettingsButton.addEventListener("click", async () => {
-    const displayName = document.getElementById("display-name-input").value;
-    const newPhotoUrl = document.getElementById("profile-pic-preview").src;
+// Theme toggle
+const themeToggle = document.getElementById("theme-toggle");
 
-    try {
-      // Now 'auth' is accessible because we’re inside initializeFirebaseFeatures
-      const user = auth.currentUser;
-      if (!user) {
-        alert("No user is logged in.");
-        return;
+// Notification Preferences
+const emailNotificationsCheckbox = document.getElementById("email-notifications");
+const pushNotificationsCheckbox = document.getElementById("push-notifications");
+
+// Currency
+const currencySelect = document.getElementById("currency-select");
+
+// Reset Password button
+const resetPasswordButton = document.getElementById("reset-password-button");
+
+// Delete Account button and the "Confirm Deletion" popup
+const deleteAccountButton = document.getElementById("delete-account-button");
+const confirmDeletionPopup = document.getElementById("confirm-deletion-popup");
+const closeDeletionPopup = document.getElementById("close-deletion-popup");
+const deleteAccountPasswordInput = document.getElementById("delete-account-password");
+const confirmDeleteButton = document.getElementById("confirm-delete-button");
+
+// When the settings button is clicked, load existing settings from Firestore
+settingsButton.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (user) {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      // Profile Picture
+      profilePicPreview.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
+      // Display Name
+      displayNameInput.value = data.displayName ? data.displayName : "";
+      // Load preferences if they exist
+      if (data.preferences) {
+        // Theme
+        themeToggle.checked = data.preferences.theme === "dark";
+        // Notifications
+        emailNotificationsCheckbox.checked = data.preferences.emailNotifications || false;
+        pushNotificationsCheckbox.checked = data.preferences.pushNotifications || false;
+        // Currency
+        if (data.preferences.currency) {
+          currencySelect.value = data.preferences.currency;
+        }
       }
-
-      const userDocRef = doc(db, "users", user.uid);
-      await setDoc(
-        userDocRef,
-        { displayName, photoUrl: newPhotoUrl },
-        { merge: true }
-      );
-
-      alert("Settings saved successfully!");
-      loadDashboard(user); // Refresh the header
-
-    } catch (error) {
-      console.error("Error saving settings:", error);
-      alert("Failed to save settings. Check console for details.");
     }
+  }
+  settingsModal.classList.add("show");
+  settingsModal.classList.remove("hide");
+});
 
+// Close the settings modal (using the Cancel button)
+closeSettingsButton.addEventListener("click", () => {
+  settingsModal.classList.remove("show");
+  settingsModal.classList.add("hide");
+});
+
+// Also, if you want an "X" icon on the settings modal, ensure its HTML contains an element with id "close-settings-icon"
+// and wire it up like this:
+const closeSettingsIcon = document.getElementById("close-settings-icon");
+if (closeSettingsIcon) {
+  closeSettingsIcon.addEventListener("click", () => {
     settingsModal.classList.remove("show");
     settingsModal.classList.add("hide");
   });
+}
 
-  profilePicInput.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        profilePicPreview.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
+// Save settings (profile info + preferences)
+saveSettingsButton.addEventListener("click", async () => {
+  const displayName = displayNameInput.value;
+  const newPhotoUrl = profilePicPreview.src;
+  
+  // Gather additional preferences
+  const theme = themeToggle.checked ? "dark" : "light";
+  const emailNotifications = emailNotificationsCheckbox.checked;
+  const pushNotifications = pushNotificationsCheckbox.checked;
+  const currency = currencySelect.value;
+  
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("No user is logged in.");
+      return;
     }
-  });
+    const userDocRef = doc(db, "users", user.uid);
+    // Save profile and preference data
+    await setDoc(userDocRef, {
+      displayName,
+      photoUrl: newPhotoUrl,
+      preferences: {
+        theme,
+        emailNotifications,
+        pushNotifications,
+        currency,
+      },
+    }, { merge: true });
+    alert("Settings saved successfully!");
+    loadDashboard(user); // Refresh dashboard to reflect changes
+  } catch (error) {
+    console.error("Error saving settings:", error);
+    alert("Failed to save settings. Check console for details.");
+  }
+  
+  settingsModal.classList.remove("show");
+  settingsModal.classList.add("hide");
+});
+
+// Update profile picture preview immediately when a new file is selected
+profilePicInput.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      profilePicPreview.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// Reset Password: Send a password reset link to the user's email
+resetPasswordButton.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("No user is logged in.");
+    return;
+  }
+  try {
+    await sendPasswordResetEmail(auth, user.email);
+    alert("A password reset link has been sent to your email.");
+  } catch (error) {
+    console.error("Error sending reset email:", error);
+    alert("Failed to send reset email. Check console for details.");
+  }
+});
+
+// Delete Account: show the Confirm Deletion popup (make sure this popup is not nested inside the settings modal)
+deleteAccountButton.addEventListener("click", () => {
+  confirmDeletionPopup.classList.remove("hidden");
+});
+
+// Close the Confirm Deletion popup
+closeDeletionPopup.addEventListener("click", () => {
+  confirmDeletionPopup.classList.add("hidden");
+  deleteAccountPasswordInput.value = ""; // clear password
+});
+
+// Confirm Delete: re-authenticate with current password, then delete user
+confirmDeleteButton.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("No user is logged in.");
+    return;
+  }
+  const currentPassword = deleteAccountPasswordInput.value.trim();
+  if (!currentPassword) {
+    alert("Please enter your current password.");
+    return;
+  }
+  try {
+    // Re-authenticate the user
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+    
+    // If successful, delete the user
+    await deleteUser(user);
+    alert("Account deleted successfully.");
+    // Optionally redirect or reload
+    window.location.reload();
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    alert("Failed to delete account: " + error.message);
+  } finally {
+    confirmDeletionPopup.classList.add("hidden");
+    deleteAccountPasswordInput.value = "";
+  }
+});
+
+// Theme toggle: applying or removing "dark-mode" class on body
+themeToggle.addEventListener("change", () => {
+  document.body.classList.toggle("dark-mode", themeToggle.checked);
+});
+
+
 
 
   // DOM Elements
@@ -165,6 +309,13 @@ const incomeFields = document.getElementById("income-fields");
 const expenseFields = document.getElementById("expense-fields");
 // Grab the forgot-password-button element once at the top:
 const forgotPasswordBtn = document.getElementById("forgot-password-button");
+const transactionsButton = document.getElementById("transactions-button");
+const transactionsPopup = document.getElementById("transactions-popup");
+const closeTransactionsPopup = document.getElementById("close-transactions-popup");
+const allTab = document.getElementById("all-tab");
+const incomeTabList = document.getElementById("income-tab-list");
+const expenseTabList = document.getElementById("expense-tab-list");
+const transactionsListContent = document.getElementById("transactions-list-content");
 
   // Toggle Login/Sign-Up
   toggleLink.addEventListener("click", () => {
@@ -296,7 +447,132 @@ microsoftButton.addEventListener("click", async () => {
       dashboardContainer.style.display = "none";
     }
   });
-  
+  // Open the transactions list popup when the Transactions nav item is clicked
+transactionsButton.addEventListener("click", () => {
+  setActiveTransactionTab("all"); // default to 'All' tab
+  transactionsPopup.classList.remove("hidden");
+});
+
+// Close the popup when clicking the close button
+closeTransactionsPopup.addEventListener("click", () => {
+  transactionsPopup.classList.add("hidden");
+});
+
+// Listen for tab clicks and switch the view accordingly
+allTab.addEventListener("click", () => setActiveTransactionTab("all"));
+incomeTabList.addEventListener("click", () => setActiveTransactionTab("income"));
+expenseTabList.addEventListener("click", () => setActiveTransactionTab("expense"));
+
+async function setActiveTransactionTab(filter) {
+  // Remove the 'active' class from all tabs
+  allTab.classList.remove("active");
+  incomeTabList.classList.remove("active");
+  expenseTabList.classList.remove("active");
+
+  // Add the active class to the selected tab
+  if (filter === "all") {
+    allTab.classList.add("active");
+  } else if (filter === "income") {
+    incomeTabList.classList.add("active");
+  } else if (filter === "expense") {
+    expenseTabList.classList.add("active");
+  }
+
+  await loadTransactions(filter);
+}
+
+async function loadTransactions(filter) {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Please log in to view transactions.");
+    return;
+  }
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+  if (!userDoc.exists()) {
+    transactionsListContent.innerHTML = "<p>No transaction data found.</p>";
+    return;
+  }
+  const userData = userDoc.data();
+  let incomes = userData.incomes || [];
+  let expenses = userData.expenses || [];
+
+  // Annotate incomes and expenses with a type property
+  incomes = incomes.map(tx => ({ ...tx, type: "Income" }));
+  expenses = expenses.map(tx => ({ ...tx, type: "Expense" }));
+
+  // Combine transactions for the "All" tab
+  let allTransactions = incomes.concat(expenses);
+  // Sort transactions by timestamp descending (most recent first)
+  allTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  let transactionsToShow = [];
+  if (filter === "all") {
+    transactionsToShow = allTransactions;
+  } else if (filter === "income") {
+    transactionsToShow = incomes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  } else if (filter === "expense") {
+    transactionsToShow = expenses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  }
+
+  // Render the transactions list
+  transactionsListContent.innerHTML = "";
+  if (transactionsToShow.length === 0) {
+    transactionsListContent.innerHTML = "<p>No transactions found.</p>";
+    return;
+  }
+
+  // Create a table to display transactions
+  const table = document.createElement("table");
+  table.classList.add("transactions-table");
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  ["Type", "Category/Source", "Amount", "Time"].forEach(headerText => {
+    const th = document.createElement("th");
+    th.textContent = headerText;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  transactionsToShow.forEach(tx => {
+    const row = document.createElement("tr");
+    
+    // Type cell
+    const typeCell = document.createElement("td");
+    typeCell.textContent = tx.type;
+    row.appendChild(typeCell);
+    
+    // Category/Source cell (for Income use 'source'; for Expense use 'category')
+    const categoryCell = document.createElement("td");
+    categoryCell.textContent = tx.type === "Income" ? tx.source : tx.category;
+    row.appendChild(categoryCell);
+    
+    // Amount cell
+    const amountCell = document.createElement("td");
+    amountCell.textContent = `$${parseFloat(tx.amount).toFixed(2)}`;
+    row.appendChild(amountCell);
+    
+ // Time cell (formatted)
+const timeCell = document.createElement("td");
+if (tx.timestamp) {
+  const date = new Date(tx.timestamp);
+  timeCell.textContent = date.toLocaleString();
+} else {
+  timeCell.textContent = "N/A";  // or you could use new Date().toLocaleString() if you prefer
+}
+row.appendChild(timeCell);
+
+
+    tbody.appendChild(row);
+  });
+  table.appendChild(tbody);
+  transactionsListContent.appendChild(table);
+}
+
+
+
 // Load Dashboard
 const loadDashboard = async (user) => {
   const userDocRef = doc(db, "users", user.uid);
@@ -401,6 +677,99 @@ document.getElementById("add-income-category-btn").addEventListener("click", asy
   incomeSelect.appendChild(option);
   incomeSelect.value = newCat;
 });
+
+
+const expenseCategorySelect = document.getElementById("popup-expense-category");
+const editExpenseCategoryBtn = document.getElementById("edit-expense-category-btn");
+const deleteExpenseCategoryBtn = document.getElementById("delete-expense-category-btn");
+
+// Show both edit and delete buttons only when a valid category is selected
+expenseCategorySelect.addEventListener("change", () => {
+  if (expenseCategorySelect.value) {
+    editExpenseCategoryBtn.classList.add("visible");
+    deleteExpenseCategoryBtn.classList.add("visible");
+  } else {
+    editExpenseCategoryBtn.classList.remove("visible");
+    deleteExpenseCategoryBtn.classList.remove("visible");
+  }
+});
+
+// Delete functionality
+deleteExpenseCategoryBtn.addEventListener("click", () => {
+  if (confirm("Are you sure you want to delete this category?")) {
+    const selectedValue = expenseCategorySelect.value;
+    const optionToDelete = expenseCategorySelect.querySelector(`option[value="${selectedValue}"]`);
+    if (optionToDelete) {
+      optionToDelete.remove();
+    }
+    // Reset the select value
+    expenseCategorySelect.value = "";
+    // Hide the buttons
+    editExpenseCategoryBtn.classList.remove("visible");
+    deleteExpenseCategoryBtn.classList.remove("visible");
+  }
+});
+
+// Edit functionality
+editExpenseCategoryBtn.addEventListener("click", () => {
+  const selectedValue = expenseCategorySelect.value;
+  if (!selectedValue) return;
+  const newName = prompt("Edit category name:", selectedValue);
+  if (newName && newName !== selectedValue) {
+    // Update the option's value and text
+    const optionToEdit = expenseCategorySelect.querySelector(`option[value="${selectedValue}"]`);
+    if (optionToEdit) {
+      optionToEdit.value = newName;
+      optionToEdit.textContent = newName;
+      expenseCategorySelect.value = newName;
+    }
+  }
+});
+// Income Category Controls
+const incomeCategorySelect = document.getElementById("popup-income-source");
+const editIncomeCategoryBtn = document.getElementById("edit-income-category-btn");
+const deleteIncomeCategoryBtn = document.getElementById("delete-income-category-btn");
+
+// Show edit and delete buttons only when a category is selected
+incomeCategorySelect.addEventListener("change", () => {
+  if (incomeCategorySelect.value) {
+    editIncomeCategoryBtn.classList.add("visible");
+    deleteIncomeCategoryBtn.classList.add("visible");
+  } else {
+    editIncomeCategoryBtn.classList.remove("visible");
+    deleteIncomeCategoryBtn.classList.remove("visible");
+  }
+});
+
+// Delete the selected income source when the delete button is clicked
+deleteIncomeCategoryBtn.addEventListener("click", () => {
+  if (confirm("Are you sure you want to delete this source?")) {
+    const selectedValue = incomeCategorySelect.value;
+    const optionToDelete = incomeCategorySelect.querySelector(`option[value="${selectedValue}"]`);
+    if (optionToDelete) {
+      optionToDelete.remove();
+    }
+    incomeCategorySelect.value = "";
+    editIncomeCategoryBtn.classList.remove("visible");
+    deleteIncomeCategoryBtn.classList.remove("visible");
+  }
+});
+
+// Edit the selected income source when the edit button is clicked
+editIncomeCategoryBtn.addEventListener("click", () => {
+  const selectedValue = incomeCategorySelect.value;
+  if (!selectedValue) return;
+  const newName = prompt("Edit source name:", selectedValue);
+  if (newName && newName !== selectedValue) {
+    const optionToEdit = incomeCategorySelect.querySelector(`option[value="${selectedValue}"]`);
+    if (optionToEdit) {
+      optionToEdit.value = newName;
+      optionToEdit.textContent = newName;
+      incomeCategorySelect.value = newName;
+    }
+  }
+});
+
 
 // Then in the actual expense submit:
 document.getElementById("expense-form").addEventListener("submit", async (e) => {
@@ -890,6 +1259,42 @@ const loadLineChart = (labels, incomeData, expenseData) => {
 
 
 
+
+
+
+
+
+
+
+const expenseCategorySelect = document.getElementById("popup-expense-category");
+const deleteExpenseCategoryBtn = document.getElementById("delete-expense-category-btn");
+
+// Show delete button only when a category is selected (non-empty)
+expenseCategorySelect.addEventListener("change", () => {
+  if (expenseCategorySelect.value) {
+    deleteExpenseCategoryBtn.classList.add("visible");
+  } else {
+    deleteExpenseCategoryBtn.classList.remove("visible");
+  }
+});
+
+// Delete the selected category when the button is clicked
+deleteExpenseCategoryBtn.addEventListener("click", () => {
+  if (confirm("Are you sure you want to delete this category?")) {
+    // Optionally, update Firestore here to remove the category from the user's data
+
+    // Remove the option from the dropdown
+    const selectedValue = expenseCategorySelect.value;
+    const optionToDelete = expenseCategorySelect.querySelector(`option[value="${selectedValue}"]`);
+    if (optionToDelete) {
+      optionToDelete.remove();
+    }
+    // Reset the select value
+    expenseCategorySelect.value = "";
+    // Hide the delete button
+    deleteExpenseCategoryBtn.classList.remove("visible");
+  }
+});
 
 
 
