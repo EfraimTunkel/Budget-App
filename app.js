@@ -5,13 +5,15 @@ import { OAuthProvider } from "https://www.gstatic.com/firebasejs/9.21.0/firebas
 
 import { 
   getAuth, 
+  
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   onAuthStateChanged, 
   GoogleAuthProvider, 
   signInWithPopup, 
   signOut, 
-  sendPasswordResetEmail // Add this here
+  sendPasswordResetEmail, // Add this here
+  sendEmailVerification // ✅ Add this line
 } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
 
 import { 
@@ -190,22 +192,57 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     const email = document.getElementById("auth-email").value;
     const password = document.getElementById("auth-password").value;
-
+  
     try {
       if (authButton.textContent === "Log In") {
+        // Existing login flow (we’ll adjust the login function separately)
         await signInWithEmailAndPassword(auth, email, password);
         alert("Logged in successfully!");
       } else {
+        // Sign-Up flow:
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const userDocRef = doc(db, "users", userCredential.user.uid);
-        await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
-        alert("Account created successfully!");
+        const user = userCredential.user;
+        
+        // Send the verification email
+        await sendEmailVerification(user);
+        
+        await user.reload();
+        if (!user.emailVerified) {
+            alert("Please verify your email before logging in.");
+            await signOut(auth); // Log them out
+            return;
+        }
+        
+        alert("A verification email has been sent. Please check your inbox and verify your email before logging in.");
       }
     } catch (error) {
       console.error("Authentication Error:", error.message);
+      alert(error.message);
     }
   });
-
+  
+  
+  const signInWithEmail = async (email, password) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+  
+      // ✅ Check if email is verified
+      await user.reload(); // Refresh user data
+  
+      if (!user.emailVerified) {
+        alert("Please verify your email before logging in.");
+        await signOut(auth); // Log them out
+        return;
+      }
+  
+      alert("Login successful!");
+    } catch (error) {
+      console.error("Login Error:", error.message);
+      alert(error.message);
+    }
+  };
+  
   // Handle Google Sign-In
   const provider = new GoogleAuthProvider();
 
@@ -285,7 +322,141 @@ const loadDashboard = async (user) => {
 
   // If the user document exists in Firestore
   if (userDoc.exists()) {
-    const data = userDoc.data();
+    // Inside loadDashboard(user):
+const data = userDoc.data();
+
+// 1) Populate expense dropdown
+const expenseSelect = document.getElementById("popup-expense-category");
+expenseSelect.innerHTML = "";
+if (data.categories && data.categories.expense) {
+  data.categories.expense.forEach((cat) => {
+    const option = document.createElement("option");
+    option.value = cat;
+    option.textContent = cat;
+    expenseSelect.appendChild(option);
+  });
+} else {
+  // fallback if no categories
+  const option = document.createElement("option");
+  option.value = "";
+  option.textContent = "No expense categories yet";
+  expenseSelect.appendChild(option);
+}
+
+// 2) Populate income dropdown
+const incomeSelect = document.getElementById("popup-income-source");
+incomeSelect.innerHTML = "";
+if (data.categories && data.categories.income) {
+  data.categories.income.forEach((cat) => {
+    const option = document.createElement("option");
+    option.value = cat;
+    option.textContent = cat;
+    incomeSelect.appendChild(option);
+  });
+} else {
+  const option = document.createElement("option");
+  option.value = "";
+  option.textContent = "No income categories yet";
+  incomeSelect.appendChild(option);
+}
+
+// Add event to add new expense category
+document.getElementById("add-expense-category-btn").addEventListener("click", async () => {
+  const newCat = prompt("Enter new expense category:");
+  if (!newCat) return;
+
+  if (!data.categories) {
+    data.categories = { income: [], expense: [] };
+  }
+  if (!data.categories.expense.includes(newCat)) {
+    data.categories.expense.push(newCat);
+  }
+  await setDoc(userDocRef, data, { merge: true });
+
+  // Update the dropdown
+  const option = document.createElement("option");
+  option.value = newCat;
+  option.textContent = newCat;
+  expenseSelect.appendChild(option);
+  expenseSelect.value = newCat;
+});
+
+// Similarly for the income category
+document.getElementById("add-income-category-btn").addEventListener("click", async () => {
+  const newCat = prompt("Enter new income source:");
+  if (!newCat) return;
+
+  if (!data.categories) {
+    data.categories = { income: [], expense: [] };
+  }
+  if (!data.categories.income.includes(newCat)) {
+    data.categories.income.push(newCat);
+  }
+  await setDoc(userDocRef, data, { merge: true });
+
+  // Update the dropdown
+  const option = document.createElement("option");
+  option.value = newCat;
+  option.textContent = newCat;
+  incomeSelect.appendChild(option);
+  incomeSelect.value = newCat;
+});
+
+// Then in the actual expense submit:
+document.getElementById("expense-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const amount = parseFloat(document.getElementById("popup-expense-amount").value);
+  const category = document.getElementById("popup-expense-category").value;
+
+  if (!amount || !category) {
+    alert("Please provide valid expense details.");
+    return;
+  }
+
+  const now = new Date();
+  userData.expenses.push({
+    amount,
+    category,
+    timestamp: now.toISOString()
+  });
+  userData.balance -= amount;
+
+  await setDoc(userDocRef, userData, { merge: true });
+  balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
+
+  // Reset & close
+  document.getElementById("expense-form").reset();
+  transactionPopup.classList.add("hidden");
+  alert("Expense added successfully!");
+});
+
+// Income form similarly
+document.getElementById("income-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const amount = parseFloat(document.getElementById("popup-income-amount").value);
+  const source = document.getElementById("popup-income-source").value;
+
+  if (!amount || !source) {
+    alert("Please provide valid income details.");
+    return;
+  }
+
+  const now = new Date();
+  userData.incomes.push({
+    amount,
+    source,
+    timestamp: now.toISOString()
+  });
+  userData.balance += amount;
+
+  await setDoc(userDocRef, userData, { merge: true });
+  balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
+
+  // Reset & close
+  document.getElementById("income-form").reset();
+  transactionPopup.classList.add("hidden");
+  alert("Income added successfully!");
+});
 
     // Display balance
     if (typeof data.balance === "number") {
@@ -716,6 +887,10 @@ const loadLineChart = (labels, incomeData, expenseData) => {
     }
   });
 };
+
+
+
+
 
 
 
