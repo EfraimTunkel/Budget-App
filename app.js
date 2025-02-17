@@ -387,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
   
-      alert("Login successful!");
+     
     } catch (error) {
       console.error("Login Error:", error.message);
       alert(error.message);
@@ -411,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
             await setDoc(userDocRef, { balance: 0, budgets: [], expenses: [] });
         }
 
-        alert(`Welcome ${user.displayName}!`);
+       
     } catch (error) {
         console.error("Google Sign-In Error:", error.message);
         alert("Error signing in with Google.");
@@ -428,7 +428,7 @@ microsoftButton.addEventListener("click", async () => {
     const user = result.user;
 
     console.log(`Welcome ${user.displayName}`);
-    alert(`Signed in as ${user.email}`);
+    
   } catch (error) {
     console.error("Microsoft Sign-In Error:", error);
     alert(`Failed to sign in with Microsoft. ${error.message}`);
@@ -491,6 +491,7 @@ async function loadTransactions(filter) {
   const userDoc = await getDoc(userDocRef);
   if (!userDoc.exists()) {
     transactionsListContent.innerHTML = "<p>No transaction data found.</p>";
+    window.transactionsData = []; // clear any previous data
     return;
   }
   const userData = userDoc.data();
@@ -514,6 +515,9 @@ async function loadTransactions(filter) {
   } else if (filter === "expense") {
     transactionsToShow = expenses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }
+
+  // Save transactions data globally for the download function
+  window.transactionsData = transactionsToShow;
 
   // Render the transactions list
   transactionsListContent.innerHTML = "";
@@ -554,22 +558,49 @@ async function loadTransactions(filter) {
     amountCell.textContent = `$${parseFloat(tx.amount).toFixed(2)}`;
     row.appendChild(amountCell);
     
- // Time cell (formatted)
-const timeCell = document.createElement("td");
-if (tx.timestamp) {
-  const date = new Date(tx.timestamp);
-  timeCell.textContent = date.toLocaleString();
-} else {
-  timeCell.textContent = "N/A";  // or you could use new Date().toLocaleString() if you prefer
-}
-row.appendChild(timeCell);
-
+    // Time cell (formatted)
+    const timeCell = document.createElement("td");
+    if (tx.timestamp) {
+      const date = new Date(tx.timestamp);
+      timeCell.textContent = date.toLocaleString();
+    } else {
+      timeCell.textContent = "N/A";
+    }
+    row.appendChild(timeCell);
 
     tbody.appendChild(row);
   });
   table.appendChild(tbody);
   transactionsListContent.appendChild(table);
 }
+document.getElementById("download-transactions").addEventListener("click", () => {
+  const transactions = window.transactionsData || [];
+  if (transactions.length === 0) {
+    alert("No transactions to download.");
+    return;
+  }
+  // Build CSV headers
+  let csv = "Type,Category/Source,Amount,Time\n";
+  transactions.forEach(tx => {
+    const type = tx.type;
+    const categorySource = tx.type === "Income" ? tx.source : tx.category;
+    const amount = parseFloat(tx.amount).toFixed(2);
+    let time = "";
+    if (tx.timestamp) {
+      time = new Date(tx.timestamp).toLocaleString();
+    }
+    // Wrap text values in quotes in case they contain commas
+    csv += `"${type}","${categorySource}",${amount},"${time}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "transactions.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
 
 
 
@@ -600,6 +631,65 @@ const loadDashboard = async (user) => {
   if (userDoc.exists()) {
     // Inside loadDashboard(user):
 const data = userDoc.data();
+   
+    // Update mobile profile images
+    const mobileProfileIcon = document.getElementById("mobile-profile-icon");
+    const mobileProfilePagePhoto = document.getElementById("profile-page-photo");
+    mobileProfileIcon.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
+    mobileProfilePagePhoto.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
+  
+    // Get the mobile modal elements
+    const profilePageModal = document.getElementById("profile-page");
+    const profilePageClose = document.getElementById("profile-page-close");
+    const profilePageSettings = document.getElementById("profile-page-settings");
+    const profilePageLogout = document.getElementById("profile-page-logout");
+  
+   // When the mobile profile icon is clicked, show the profile modal smoothly
+   mobileProfileIcon.addEventListener("click", () => {
+    profilePageModal.classList.add("show");
+  });
+  
+  profilePageClose.addEventListener("click", () => {
+    profilePageModal.classList.remove("show");
+  });
+  
+  
+    // When the mobile Settings button is clicked,
+    // load the user’s profile name and icon into the settings modal
+    // then open the settings modal.
+    profilePageSettings.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          // Update settings modal elements with user data
+          const profilePicPreview = document.getElementById("profile-pic-preview");
+          const displayNameInput = document.getElementById("display-name-input");
+          profilePicPreview.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
+          displayNameInput.value = data.displayName ? data.displayName : "";
+        }
+      }
+      // Open settings modal and close mobile profile modal
+      settingsModal.classList.remove("hide");
+      settingsModal.classList.add("show");
+      profilePageModal.classList.remove("show");
+      profilePageModal.classList.add("hide");
+    });
+  
+    // When the mobile Log Out button is clicked,
+    // sign out the user and reload the page.
+    profilePageLogout.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        
+        location.reload();
+      } catch (error) {
+        console.error("Mobile logout error:", error);
+        alert("An error occurred during logout.");
+      }
+    });
 
 // 1) Populate expense dropdown
 const expenseSelect = document.getElementById("popup-expense-category");
@@ -781,6 +871,11 @@ document.getElementById("expense-form").addEventListener("submit", async (e) => 
     alert("Please provide valid expense details.");
     return;
   }
+  
+  const user = auth.currentUser;
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+  const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
 
   const now = new Date();
   userData.expenses.push({
@@ -793,11 +888,11 @@ document.getElementById("expense-form").addEventListener("submit", async (e) => 
   await setDoc(userDocRef, userData, { merge: true });
   balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
 
-  // Reset & close
   document.getElementById("expense-form").reset();
   transactionPopup.classList.add("hidden");
-  alert("Expense added successfully!");
+ 
 });
+
 
 // Income form similarly
 document.getElementById("income-form").addEventListener("submit", async (e) => {
@@ -809,6 +904,11 @@ document.getElementById("income-form").addEventListener("submit", async (e) => {
     alert("Please provide valid income details.");
     return;
   }
+  
+  const user = auth.currentUser;
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+  const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
 
   const now = new Date();
   userData.incomes.push({
@@ -821,11 +921,11 @@ document.getElementById("income-form").addEventListener("submit", async (e) => {
   await setDoc(userDocRef, userData, { merge: true });
   balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
 
-  // Reset & close
   document.getElementById("income-form").reset();
   transactionPopup.classList.add("hidden");
-  alert("Income added successfully!");
+  
 });
+
 
     // Display balance
     if (typeof data.balance === "number") {
@@ -842,7 +942,7 @@ document.getElementById("income-form").addEventListener("submit", async (e) => {
     if (data.photoUrl) {
       userProfilePic.src = data.photoUrl;
     }
-
+   
     // Prepare data for charts
     const incomeData = data.incomes ? data.incomes.map((item) => item.amount || 0) : [];
     const expenseData = data.expenses ? data.expenses.map((item) => item.amount || 0) : [];
@@ -856,19 +956,19 @@ document.getElementById("income-form").addEventListener("submit", async (e) => {
         if (!catMap[exp.category]) catMap[exp.category] = 0;
         catMap[exp.category] += exp.amount;
       });
-
+    
       const spendingCategories = Object.keys(catMap);
       const spendingAmounts = Object.values(catMap);
-
+    
       if (spendingCategories.length === 0) {
         spendingCategories.push("No Expenses");
         spendingAmounts.push(0);
       }
-
+    
       const donutOptions = {
         chart: {
           type: 'donut',
-          height: 350
+          height: 450
         },
         series: spendingAmounts,
         labels: spendingCategories,
@@ -877,22 +977,35 @@ document.getElementById("income-form").addEventListener("submit", async (e) => {
           align: "center",
           style: { fontSize: '20px' }
         },
-        legend: { position: 'bottom' }
+        legend: { position: 'bottom' },
+        responsive: [{
+          breakpoint: 768,
+          options: {
+            chart: {
+              height: 450
+            },
+            title: {
+              style: { fontSize: '16px' }
+            },
+            legend: {
+              fontSize: '12px'
+            }
+          }
+        }]
       };
-
+    
       const spendingChart = new ApexCharts(
         document.querySelector("#spending-chart"),
         donutOptions
       );
       spendingChart.render();
     })();
-
-    // Call your ApexCharts line
+    
     (function renderLineChart() {
       const lineOptions = {
         chart: {
           type: 'line',
-          height: 350
+          height: 450
         },
         series: [
           { name: "Income", data: incomeData },
@@ -910,15 +1023,32 @@ document.getElementById("income-form").addEventListener("submit", async (e) => {
           align: "center",
           style: { fontSize: '20px' }
         },
-        legend: { position: 'top' }
+        legend: { position: 'top' },
+        responsive: [{
+          breakpoint: 768,
+          options: {
+            chart: {
+              height: 250
+            },
+            title: {
+              style: {
+                fontSize: '16px'
+              }
+            },
+            legend: {
+              fontSize: '12px'
+            }
+          }
+        }]
       };
-
+    
       const lineChart = new ApexCharts(
         document.querySelector("#line-chart"),
         lineOptions
       );
       lineChart.render();
     })();
+    
 
   } else {
     // If no user data exists, initialize defaults
@@ -979,7 +1109,7 @@ document.getElementById("income-form").addEventListener("submit", async (e) => {
   transactionPopup.classList.add("hidden");
 
   // Success notification
-  alert("Income added successfully!");
+  
 });
 
 
@@ -1012,7 +1142,7 @@ if (!user) {
   balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
   document.getElementById("expense-form").reset();
   transactionPopup.classList.add("hidden");
-  alert("Expense added successfully!");
+ 
 });
 
   incomeTab.addEventListener("click", () => {
@@ -1060,7 +1190,7 @@ expenseTab.addEventListener("click", () => setActiveTab(expenseTab, expenseField
    // Logout
    logoutButton.addEventListener("click", async () => {
     await signOut(auth);
-    alert("Logged out successfully!");
+    
     location.reload();
   });
 };
@@ -1073,7 +1203,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const auth = getAuth();
         await signOut(auth);
-        alert("Logged out successfully!");
+   
         location.reload();
       } catch (error) {
         console.error("Logout Error:", error);
