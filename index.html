@@ -9,7 +9,7 @@
     <script src="https://kit.fontawesome.com/2b0e4418c9.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-    <title>Budget App</title>
+    <title>Cash Rocket</title>
     <!-- Make sure your script is deferred so it runs after DOM is parsed -->
     <script type="module" src="app.js" defer></script>
     <link rel="stylesheet" href="styles.css" />
@@ -67,27 +67,61 @@
 
     <!-- DASHBOARD CONTAINER -->
     <div id="dashboard-container" style="display: none;">
-      <!-- Bottom Navigation -->
-      <!-- Bottom Navigation -->
-<nav class="bottom-nav">
-  <a href="#" class="nav-item">
-    <i class="fa-solid fa-house"></i><span>Home</span>
-  </a>
-  <button id="add-transaction-button" class="floating-button">
-    <i class="fa fa-plus"></i>
-  </button>
-  <a href="#" class="nav-item">
-    <i class="fa-solid fa-wallet"></i><span>Budgets</span>
-  </a>
-  <a href="#" class="nav-item" id="transactions-button">
-    <i class="fa-solid fa-list"></i><span>Transactions</span>
-  </a>
-  <!-- ADD THIS: The gear as a nav item -->
-  <a href="#" class="nav-item" id="settings-button">
-    <i class="fa-solid fa-gear"></i><span>Settings</span>
-  </a>
-  <button id="logout-button">Log Out</button>
-</nav>
+      
+      <nav class="bottom-nav">
+        <!-- Home (shown on all) -->
+        <a href="#" class="nav-item show-on-all" id="home-button">
+          <i class="fa-solid fa-house"></i><span>Home</span>
+        </a>
+      
+        <!-- The floating add transaction button (shown on all) -->
+        <button id="add-transaction-button" class="floating-button show-on-all">
+          <i class="fa fa-plus"></i>
+        </button>
+      
+        <!-- Budgets (shown on all) -->
+        <a href="#" class="nav-item show-on-all" id="budgets-button">
+          <i class="fa-solid fa-wallet"></i><span>Budgets</span>
+        </a>
+      
+        <!-- Transactions (shown on all) -->
+        <a href="#" class="nav-item show-on-all" id="transactions-button">
+          <i class="fa-solid fa-list"></i><span>Transactions</span>
+        </a>
+      
+        <!-- Settings (hidden on mobile, shown on desktop) -->
+        <a href="#" class="nav-item hide-on-mobile" id="settings-button">
+          <i class="fa-solid fa-gear"></i><span>Settings</span>
+        </a>
+      
+        <!-- Log Out (hidden on mobile, shown on desktop) -->
+        <button id="logout-button" class="hide-on-mobile">
+          Log Out
+        </button>
+      
+        <!-- Profile icon (hidden on desktop, shown on mobile) -->
+        <div class="profile-icon-container hide-on-desktop">
+          <img src="default-avatar.png" alt="Profile Icon" id="mobile-profile-icon">
+        </div>
+        
+        
+      </nav>
+      
+      <!-- Mobile Profile Page Modal (hidden on desktop, shown on mobile) -->
+      <div id="profile-page" class="profile-page modal hide-on-desktop">
+        <div class="profile-page-content">
+          <img src="default-avatar.png" alt="Profile Photo" id="profile-page-photo">
+          <h2>Your Profile</h2>
+          <button id="profile-page-settings">Settings</button>
+          <button id="profile-page-logout">Log Out</button>
+          <button id="profile-page-close">Close</button>
+        </div>
+      </div>
+      
+      
+
+      
+
 
       
       <!-- MAIN CONTENT -->
@@ -253,9 +287,9 @@
     <div class="settings-section">
       <h3>Account Management</h3>
       <!-- Send a reset link to the user’s email -->
-      <button id="reset-password-button" style="background:#0288d1; color:#fff; margin-bottom:10px;">Reset Password</button>
+      <button id="reset-password-button" >Reset Password</button>
       <!-- Trigger the "Confirm Deletion" popup -->
-      <button id="delete-account-button" style="background:#f44336; color:#fff;">Delete Account</button>
+      <button id="delete-account-button" >Delete Account</button>
     </div>
     
     <!-- Modal Buttons -->
@@ -273,7 +307,7 @@
     <h2>Confirm Deletion</h2>
     <p>Please enter your current password to delete your account.</p>
     <input type="password" id="delete-account-password" placeholder="Current password" />
-    <button id="confirm-delete-button" style="background:#f44336; color:#fff;">Confirm Delete</button>
+    <button id="confirm-delete-button" >Confirm Delete</button>
   </div>
 </div>
 
@@ -287,20 +321,42 @@
 
 
 
-<!-- New Transactions List Popup (for viewing transactions) -->
+<!-- Transactions Popup -->
 <div id="transactions-popup" class="popup hidden">
-  <div class="popup-content">
-    <button id="close-transactions-popup" class="close-button">&times;</button>
-    <div class="toggle-buttons">
-      <button id="all-tab" class="toggle-button active">All</button>
-      <button id="income-tab-list" class="toggle-button">Income</button>
-      <button id="expense-tab-list" class="toggle-button">Expense</button>
+  <div class="transactions-popup-content">
+
+    <!-- Sticky header section -->
+    <div class="transactions-popup-header">
+      <!-- Top row: Download on the left, X icon on the right -->
+      <div class="transactions-top-row">
+    <button id="download-transactions" class="btn-download">
+  <i class="fa-regular fa-circle-down"></i>
+</button>
+
+        <button id="close-transactions-popup" class="close-btn-icon">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Row for toggle buttons -->
+      <div class="toggle-buttons">
+        <button id="all-tab" class="toggle-button active">All</button>
+        <button id="income-tab-list" class="toggle-button">Income</button>
+        <button id="expense-tab-list" class="toggle-button">Expense</button>
+      </div>
     </div>
-    <div id="transactions-list-content">
-      <!-- Transactions will be rendered here -->
+    
+    <!-- Scrollable body section -->
+    <div class="transactions-popup-body">
+      <div id="transactions-list-content">
+        <!-- Transactions will be rendered here -->
+      </div>
     </div>
   </div>
 </div>
+
+
+
 
     <!-- SMALL SCRIPT FOR TOGGLING PASSWORD VISIBILITY -->
     <script>
