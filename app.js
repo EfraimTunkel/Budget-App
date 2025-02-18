@@ -28,7 +28,7 @@ import {
 // Fetch the API key securely from the Firebase Cloud Function
 const fetchApiKey = async () => {
   try {
-    const response = await fetch("https://us-central1-budgetapp-5d500.cloudfunctions.net/getApiKey");
+    const response = await fetch("https://getapikey-ahmnn5lmka-uc.a.run.app/");
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
     return data.apiKey;
