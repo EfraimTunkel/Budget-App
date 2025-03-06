@@ -160,75 +160,97 @@
 
       </main>
     </div>
-  
+    
    <!-- TRANSACTION POPUP -->
-<div id="transaction-popup" class="popup hidden">
+<div id="cr-transaction-popup" class="popup hidden">
   <div class="popup-content">
-    <button id="close-popup" class="close-button">&times;</button>
+    <button id="cr-close-transaction-popup" class="close-button">&times;</button>
 
     <!-- Toggle between Income and Expense -->
     <div class="toggle-buttons">
-      <button id="income-tab" class="toggle-button active">Income</button>
-      <button id="expense-tab" class="toggle-button">Expense</button>
+      <button id="cr-income-tab" class="toggle-button active">Income</button>
+      <button id="cr-expense-tab" class="toggle-button">Expense</button>
     </div>
 
     <!-- INCOME FORM -->
-   <!-- INCOME FORM -->
-<form id="income-form" class="transaction-fields active">
-  <input 
-    type="number"
-    id="popup-income-amount"
-    placeholder="Amount"
-    required
-  />
-  <div class="category-wrapper">
-    <select id="popup-income-source" class="category-dropdown" required>
-      <option value="">Select Source</option>
-      <!-- Options will be populated dynamically or pre-defined -->
-    </select>
-    <button type="button" id="edit-income-category-btn" class="edit-cat-btn">
-      <i class="fa fa-pencil"></i>
-    </button>
-    <button type="button" id="delete-income-category-btn" class="delete-cat-btn">
-      <i class="fa fa-trash"></i>
-    </button>
-  </div>
-  <button type="button" id="add-income-category-btn" class="add-cat-btn">
-    + Add Source
-  </button>
-  <button type="submit" class="btn-primary">Save Income</button>
-</form>
-
-
-    <!-- EXPENSE FORM -->
-    <form id="expense-form" class="transaction-fields hidden">
-      <input
+    <form id="cr-income-form" class="transaction-fields active">
+      <input 
         type="number"
-        id="popup-expense-amount"
+        id="cr-popup-income-amount"
         placeholder="Amount"
         required
       />
 
+      <!-- A single Select Source button + hidden field -->
       <div class="category-wrapper">
-        <select id="popup-expense-category" class="category-dropdown" required>
-          <option value="">Select Category</option>
-          <option value="Food">Food</option>
-          <option value="Transport">Transport</option>
-          <!-- more options -->
-        </select>
-        <button type="button" id="edit-expense-category-btn" class="edit-cat-btn">
-          <i class="fa fa-pencil"></i>
+        <button type="button" id="cr-select-income-category-btn" class="btn-category-select">
+          Select Source
         </button>
-        <button type="button" id="delete-expense-category-btn" class="delete-cat-btn">
-          <i class="fa fa-trash"></i>
-        </button>
+        <input type="hidden" id="cr-chosen-income-category" name="incomeCategory" />
+        <span id="cr-chosen-income-category-text"></span>
       </div>
-      <button type="button" id="add-expense-category-btn" class="add-cat-btn">+ Add Category</button>
-      
+
+      <button type="submit" class="btn-primary">Save Income</button>
+    </form>
+
+    <!-- EXPENSE FORM -->
+    <form id="cr-expense-form" class="transaction-fields hidden">
+      <input
+        type="number"
+        id="cr-popup-expense-amount"
+        placeholder="Amount"
+        required
+      />
+
+      <!-- A single Select Category button + hidden field -->
+      <div class="category-wrapper">
+        <button type="button" id="cr-select-expense-category-btn" class="btn-category-select">
+          Select Category
+        </button>
+        <input type="hidden" id="cr-chosen-expense-category" name="expenseCategory" />
+        <span id="cr-chosen-expense-category-text"></span>
+      </div>
+
       <button type="submit" class="btn-primary">Save Expense</button>
     </form>
   </div>
 </div>
+
+<!-- CATEGORY SELECTION POPUP -->
+<!-- CATEGORY SELECTION POPUP -->
+<div id="cr-category-overlay" class="overlay hidden">
+  <div class="thispopup">
+    <!-- Close button (X) -->
+    <button class="thisclose-btn" id="cr-close-category-popup">&times;</button>
+
+    <!-- Top tab headers for the category overlay -->
+    <div class="category-tabs">
+      <div id="cr-cat-expense-tab" class="category-tab active">Expense</div>
+      <div id="cr-cat-income-tab" class="category-tab income-tab">Income</div>
+    </div>
+
+    <!-- Grid of categories from Firestore -->
+    <div id="cr-category-list" class="category-list">
+      <!-- Categories will be injected here by JS -->
+    </div>
+
+    <!-- Plus button (only one, defined here) to reveal the add-new category form -->
+    <button id="cr-show-add-cat-form">+</button>
+
+    <!-- Add New Category Form (initially hidden) -->
+    <div id="cr-add-cat-form" class="add-cat-form hidden">
+      <label for="cr-new-cat-name">Category Name:</label>
+      <input type="text" id="cr-new-cat-name" placeholder="Enter name" />
+      <p>Pick an icon:</p>
+      <div id="cr-icons-grid" class="icons-grid">
+        <!-- Icon choices injected via JavaScript -->
+      </div>
+      <button id="cr-save-new-cat-btn">Save Category</button>
+    </div>
+  </div>
+</div>
+
+
 
 
   
