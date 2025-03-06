@@ -8,6 +8,7 @@
     <!-- Icons and Chart.js -->
     <script src="https://kit.fontawesome.com/2b0e4418c9.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <title>Cash Rocket</title>
     <!-- Make sure your script is deferred so it runs after DOM is parsed -->
@@ -124,41 +125,48 @@
 
 
       
-      <!-- MAIN CONTENT -->
-      <main id="main-content">
-        <!-- REMOVE your old <header> block 
-     that just had <h1 id="greeting">, <p id="username-display">, etc. -->
-     
-<!-- ADD this improved header -->
-<header class="dashboard-header">
-  <div class="user-info">
-    <!-- This image will display the user's profile pic from Firestore -->
-    <img id="user-profile-pic" src="default-avatar.png" alt="Profile Pic" />
-    
-    <!-- The greeting + username + balance can sit in a small text block -->
-    <div class="greeting-text">
-      <h1 id="greeting"><span id="username-display">User</span></h1>
-      <p>Your current balance: <span id="balance">$0.00</span></p>
+    <!-- MAIN CONTENT -->
+<main id="main-content">
+  <!-- Improved Header -->
+  <header class="dashboard-header">
+    <div class="user-info">
+      <!-- User profile picture -->
+      <img id="user-profile-pic" src="default-avatar.png" alt="Profile Pic" />
+      <!-- Greeting, username, balance -->
+      <div class="greeting-text">
+        <h1 id="greeting"><span id="username-display">User</span></h1>
+        <p>Your current balance: <span id="balance">$0.00</span></p>
+      </div>
     </div>
+  </header>
+
+  <!-- Charts Wrapper -->
+  <div class="charts-wrapper">
+   
+
+    <div id="balance-chart" style="width: 100%; height: 350px;"></div>
+    <section id="chart-container">
+      <h2>Spending and Income Trends</h2>
+      <div id="spending-chart" style="width: 100%; height: 350px;"></div>
+    </section>
+    <section class="recent-transactions-section">
+      <h2>Recent Transactions</h2>
+      <div class="recent-transactions-tabs">
+        <button id="recent-all-tab" class="recent-tab active">All</button>
+        <button id="recent-income-tab" class="recent-tab">Income</button>
+        <button id="recent-expense-tab" class="recent-tab">Expense</button>
+      </div>
+      <div id="recent-transactions-list">
+        <!-- Last 6 transactions will be injected here -->
+      </div>
+      <button id="view-all-transactions" class="view-all-btn">View All Transactions</button>
+    </section>
+    
+    
+    
   </div>
-</header>
+</main>
 
-        
-<!-- BEGIN charts-wrapper -->
-<div class="charts-wrapper">
-  <section id="chart-container">
-    <h2>Spending and Income Trends</h2>
-    <div id="spending-chart" style="width: 100%; height: 350px;"></div>
-  </section>
-
-  <section id="line-chart-container">
-    <h2>Income and Expenses Over Time</h2>
-    <div id="line-chart" style="width: 100%; height: 350px;"></div>
-  </section>
-</div>
-<!-- END charts-wrapper -->
-
-      </main>
     </div>
     
    <!-- TRANSACTION POPUP -->
