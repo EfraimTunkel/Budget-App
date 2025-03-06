@@ -1,4 +1,6 @@
-import { 
+
+  
+  import { 
   initializeApp 
 } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
 import { OAuthProvider } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
@@ -80,6 +82,7 @@ const initializeAppWithApiKey = async () => {
     console.error("Failed to fetch API key. Firebase initialization aborted.");
   }
 };
+
 ///////////////////////////////////////////////////
 // BEGIN: New Category Selection Code (with Firestore)
 // Supports separate Expense & Income categories in the overlay
@@ -570,8 +573,7 @@ const expenseFields = document.getElementById("expense-fields");
 // Grab the forgot-password-button element once at the top:
 const forgotPasswordBtn = document.getElementById("forgot-password-button");
 const transactionsButton = document.getElementById("transactions-button");
-const transactionsPopup = document.getElementById("transactions-popup");
-const closeTransactionsPopup = document.getElementById("close-transactions-popup");
+
 const allTab = document.getElementById("all-tab");
 const incomeTabList = document.getElementById("income-tab-list");
 const expenseTabList = document.getElementById("expense-tab-list");
@@ -714,18 +716,79 @@ microsoftButton.addEventListener("click", async () => {
     }
   });
   
+// BEGGING OF THE TRANSACTION LISTING CODE
+/***************************************************
+  TRANSACTIONS PANEL – FULL SCREEN, CARD STYLE, WITH BACK BUTTON
+****************************************************/
 
+// Helper: Looks up the category icon URL from the stored categories
+function getCategoryIcon(tx) {
+  // For income transactions, use the incomeCategories array; for expense, expenseCategories.
+  let categoryName = tx.type === "Income" ? tx.source : tx.category;
+  let categoryList = tx.type === "Income" ? incomeCategories : expenseCategories;
+  if (!categoryName || !categoryList) return null;
+  const found = categoryList.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
+  return found ? `./icons/${found.icon}` : null;
+}
 
-// Listen for tab clicks and switch the view accordingly
-// 1) Define the function first
-// 1) Define the function first
+// Helper: Render a single transaction as a card
+function renderTransactionCard(tx) {
+  const card = document.createElement("div");
+  card.classList.add("transaction-card");
+
+  // Icon area: if a category icon exists, use it; otherwise use a default icon.
+  const icon = document.createElement("div");
+  icon.classList.add("transaction-icon");
+  const categoryIconUrl = getCategoryIcon(tx);
+  if (categoryIconUrl) {
+    icon.innerHTML = `<img src="${categoryIconUrl}" alt="${tx.type === "Income" ? tx.source : tx.category}" />`;
+  } else {
+    // Default icon (Font Awesome money icon)
+    icon.innerHTML = `<i class="fa fa-money-bill-wave"></i>`;
+  }
+
+  // Details container
+  const details = document.createElement("div");
+  details.classList.add("transaction-details");
+  
+  const nameEl = document.createElement("div");
+  nameEl.classList.add("transaction-name");
+  nameEl.textContent = tx.type === "Income" ? tx.source : tx.category;
+  
+  const timeEl = document.createElement("div");
+  timeEl.classList.add("transaction-time");
+  const date = tx.timestamp ? new Date(tx.timestamp) : new Date();
+  timeEl.textContent = date.toLocaleString();
+  
+  details.appendChild(nameEl);
+  details.appendChild(timeEl);
+  
+  // Amount element
+  const amountEl = document.createElement("div");
+  amountEl.classList.add("transaction-amount");
+  const amt = parseFloat(tx.amount).toFixed(2);
+  amountEl.textContent = (tx.type === "Income" ? "+$" : "-$") + amt;
+  if (tx.type === "Income") {
+    amountEl.classList.add("positive");
+  } else {
+    amountEl.classList.add("negative");
+  }
+  
+  // Assemble card
+  card.appendChild(icon);
+  card.appendChild(details);
+  card.appendChild(amountEl);
+  return card;
+}
+
+// Function to set active tab and load transactions accordingly
 async function setActiveTransactionTab(filter) {
-  // Remove the 'active' class from all tabs
+  // Remove 'active' class from all tab buttons
   allTab.classList.remove("active");
   incomeTabList.classList.remove("active");
   expenseTabList.classList.remove("active");
 
-  // Add the active class to the selected tab
+  // Add 'active' to the selected tab
   if (filter === "all") {
     allTab.classList.add("active");
   } else if (filter === "income") {
@@ -733,33 +796,11 @@ async function setActiveTransactionTab(filter) {
   } else if (filter === "expense") {
     expenseTabList.classList.add("active");
   }
-
-  // Load the relevant transactions from Firestore
+  
   await loadTransactions(filter);
 }
 
-// 2) Attach event listeners
-// (These lines are essential for switching on tab clicks)
-allTab.addEventListener("click", () => setActiveTransactionTab("all"));
-incomeTabList.addEventListener("click", () => setActiveTransactionTab("income"));
-expenseTabList.addEventListener("click", () => setActiveTransactionTab("expense"));
-
-// Already present: open the popup with "All" active
-transactionsButton.addEventListener("click", () => {
-  setActiveTransactionTab("all"); // default to 'All' tab
-  transactionsPopup.classList.remove("hidden");
-});
-
-// Already present: close the popup
-closeTransactionsPopup.addEventListener("click", () => {
-  transactionsPopup.classList.add("hidden");
-});
-
-// Close the popup when clicking the close button
-closeTransactionsPopup.addEventListener("click", () => {
-  transactionsPopup.classList.add("hidden");
-});
-
+// Function to load transactions from Firestore and render them as cards
 async function loadTransactions(filter) {
   const user = auth.currentUser;
   if (!user) {
@@ -770,20 +811,19 @@ async function loadTransactions(filter) {
   const userDoc = await getDoc(userDocRef);
   if (!userDoc.exists()) {
     transactionsListContent.innerHTML = "<p>No transaction data found.</p>";
-    window.transactionsData = []; // clear any previous data
+    window.transactionsData = [];
     return;
   }
   const userData = userDoc.data();
   let incomes = userData.incomes || [];
   let expenses = userData.expenses || [];
 
-  // Annotate incomes and expenses with a type property
+  // Annotate each with a type property
   incomes = incomes.map(tx => ({ ...tx, type: "Income" }));
   expenses = expenses.map(tx => ({ ...tx, type: "Expense" }));
 
-  // Combine transactions for the "All" tab
-  let allTransactions = incomes.concat(expenses);
-  // Sort transactions by timestamp descending (most recent first)
+  // Combine all transactions and sort by timestamp descending
+  let allTransactions = [...incomes, ...expenses];
   allTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   let transactionsToShow = [];
@@ -794,81 +834,60 @@ async function loadTransactions(filter) {
   } else if (filter === "expense") {
     transactionsToShow = expenses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }
-
-  // Save transactions data globally for the download function
+  
   window.transactionsData = transactionsToShow;
 
-  // Render the transactions list
+  // Render transaction cards
   transactionsListContent.innerHTML = "";
   if (transactionsToShow.length === 0) {
     transactionsListContent.innerHTML = "<p>No transactions found.</p>";
     return;
   }
-
-  // Create a table to display transactions
-  const table = document.createElement("table");
-  table.classList.add("transactions-table");
-  const thead = document.createElement("thead");
-  const headerRow = document.createElement("tr");
-  ["Type", "Category/Source", "Amount", "Time"].forEach(headerText => {
-    const th = document.createElement("th");
-    th.textContent = headerText;
-    headerRow.appendChild(th);
-  });
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
-
-  const tbody = document.createElement("tbody");
   transactionsToShow.forEach(tx => {
-    const row = document.createElement("tr");
-    
-    // Type cell
-    const typeCell = document.createElement("td");
-    typeCell.textContent = tx.type;
-    row.appendChild(typeCell);
-    
-    // Category/Source cell (for Income use 'source'; for Expense use 'category')
-    const categoryCell = document.createElement("td");
-    categoryCell.textContent = tx.type === "Income" ? tx.source : tx.category;
-    row.appendChild(categoryCell);
-    
-    // Amount cell
-    const amountCell = document.createElement("td");
-    amountCell.textContent = `$${parseFloat(tx.amount).toFixed(2)}`;
-    row.appendChild(amountCell);
-    
-    // Time cell (formatted)
-    const timeCell = document.createElement("td");
-    if (tx.timestamp) {
-      const date = new Date(tx.timestamp);
-      timeCell.textContent = date.toLocaleString();
-    } else {
-      timeCell.textContent = "N/A";
-    }
-    row.appendChild(timeCell);
-
-    tbody.appendChild(row);
+    const card = renderTransactionCard(tx);
+    transactionsListContent.appendChild(card);
   });
-  table.appendChild(tbody);
-  transactionsListContent.appendChild(table);
 }
+
+// Attach event listeners for the transaction tabs
+allTab.addEventListener("click", () => setActiveTransactionTab("all"));
+incomeTabList.addEventListener("click", () => setActiveTransactionTab("income"));
+expenseTabList.addEventListener("click", () => setActiveTransactionTab("expense"));
+
+// Event listener for opening the full-screen transactions panel
+transactionsButton.addEventListener("click", () => {
+  setActiveTransactionTab("all"); // Default to All
+  transactionsPage.classList.remove("hidden");
+  transactionsPage.classList.add("show");
+});
+
+// Get references for the full-screen transactions panel and its back button
+const transactionsPage = document.getElementById("transactions-page");
+const closeTransactionsPage = document.getElementById("close-transactions-page");
+
+// When the back button is clicked, remove the 'show' class (which brings it on-screen),
+// then after the transition delay, add the 'hidden' class so it’s completely off-screen.
+closeTransactionsPage.addEventListener("click", () => {
+  transactionsPage.classList.remove("show");
+  setTimeout(() => {
+    transactionsPage.classList.add("hidden");
+  }, 300); // 300ms should match your CSS transition duration
+});
+
+
+// CSV download remains unchanged
 document.getElementById("download-transactions").addEventListener("click", () => {
   const transactions = window.transactionsData || [];
   if (transactions.length === 0) {
     alert("No transactions to download.");
     return;
   }
-  // Build CSV headers
   let csv = "Type,Category/Source,Amount,Time\n";
   transactions.forEach(tx => {
     const type = tx.type;
     const categorySource = tx.type === "Income" ? tx.source : tx.category;
     const amount = parseFloat(tx.amount).toFixed(2);
-    let time = "";
-    if (tx.timestamp) {
-      time = new Date(tx.timestamp).toLocaleString();
-    }
-    // Wrap text values in quotes in case they contain commas
+    const time = tx.timestamp ? new Date(tx.timestamp).toLocaleString() : "";
     csv += `"${type}","${categorySource}",${amount},"${time}"\n`;
   });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -880,6 +899,8 @@ document.getElementById("download-transactions").addEventListener("click", () =>
   URL.revokeObjectURL(url);
 });
 
+
+// END OF THE TRANSACTION LISTING CODE
 
 
 
@@ -1515,9 +1536,10 @@ const loadLineChart = (labels, incomeData, expenseData) => {
 
 
 
-  
-  
-  
-  
+
+
+
+
+
 
 
