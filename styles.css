@@ -1511,171 +1511,184 @@ section h2 {
 
 
 
-
-/* ---------- Transactions Popup Container ---------- */
-#transactions-popup.popup {
-  z-index: 1200; /* Ensure it's above other overlays */
-}
-
-/* The main popup content container */
-.transactions-popup-content {
-  background: #ffffff;
-  border-radius: 16px;
-  width: 90%;
-  max-width: 450px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  animation: fadeInPopup 0.3s ease-out;
-  display: flex;
-  flex-direction: column;
-  max-height: 80vh; /* limit total height on desktop */
-  overflow: hidden; /* so the body can scroll internally */
-  position: relative;
-}
-
-/* Widen for desktop */
-@media (min-width: 769px) {
-  .transactions-popup-content {
-    width: 60%;
-    max-width: 800px;
-  }
-}
-
-/* ---------- Sticky Header ---------- */
-.transactions-popup-header {
-  position: sticky;
+/************************************************
+  Full-Screen Transactions Panel
+************************************************/
+.transactions-page {
+  position: fixed;
   top: 0;
-  background: #fff;
-  z-index: 10;
-  border-bottom: 1px solid #ddd;
-  padding: 10px;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f9f9f9;
+  z-index: 1200;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  transform: translateX(100%); /* Off-screen by default */
+  transition: transform 0.3s ease;
+}
+.transactions-page.hidden {
+  pointer-events: none;
+}
+.transactions-page.show {
+  transform: translateX(0);
 }
 
-/* Top row for Download button (left) and X icon (right) */
-.transactions-top-row {
+/************************************************
+  Header (Top Bar)
+************************************************/
+.transactions-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-
-/* Download button as a round icon button */
-.btn-download {
-  background: none;
+.transactions-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333;
+}
+.thisbtn-back {
+  background: transparent;
   border: none;
-  font-size: 28px; /* Adjust size as needed */
-  color: #4caf50; /* Primary color, change as desired */
+  font-size: 1.6rem;
+  color: #4caf50; /* or #333, etc. Something not white */
   cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: background-color 0.2s;
+  padding: 1rem;
+
 }
 
+.thisbtn-back:hover {
+
+  border-radius: 50%;
+  cursor: pointer;
+}
+.btn-download {
+  background: #4caf50;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
 .btn-download:hover {
- 
   transform: scale(1.1);
 }
 
-
-/* Close button with round shape */
-.close-btn-icon {
-  background: none;
+/************************************************
+  Tabs (All / Income / Expense)
+************************************************/
+.transactions-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.transactions-tab {
+  flex: 1;
+  text-align: center;
+  padding: 0.5rem;
   border: none;
-  color: #4caf50;
-  font-size: 24px;
-  padding: 6px;
-  border-radius: 50%; /* Makes the button round */
-  transition: background-color 0.3s ease;
+  background-color: #f0f0f0;
+  font-weight: 600;
+  color: #555;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.transactions-tab.active {
+  background-color: #4caf50;
+  color: #fff;
+}
+.transactions-tab:hover {
+  background-color: #66bb6a;
+  color: #fff;
+}
+
+/************************************************
+  Scrollable Transactions List
+************************************************/
+.transactions-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  background: #fafafa;
+}
+
+/************************************************
+  Transaction Card Styling
+************************************************/
+.transaction-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+.transaction-card:hover {
+  transform: translateY(-2px);
+}
+.transaction-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #eee;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  margin-right: 0.75rem;
 }
-
-
-
-
-
-/* Toggle buttons row */
-.toggle-buttons {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 0; /* can adjust if you like */
-}
-
-.toggle-button {
-  flex: 1;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  background: #f0f0f0;
-  color: #333;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-.toggle-button.active {
-  background: #4caf50;
-  color: #fff;
-  transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.toggle-button:hover {
-  background: #66bb6a;
-  color: #fff;
-}
-
-/* ---------- Scrollable Body ---------- */
-.transactions-popup-body {
-  flex: 1;                /* fill the remaining vertical space */
-  overflow-y: auto;       /* vertical scroll if needed */
-  scrollbar-width: none;  /* Firefox hidden scrollbar */
-  -ms-overflow-style: none; /* IE/Edge hidden scrollbar */
-}
-.transactions-popup-body::-webkit-scrollbar {
-  width: 0; /* Chrome/Safari/Opera hidden scrollbar */
-}
-
-/* ---------- Table Styling (Optional) ---------- */
-.transactions-popup-body .transactions-table {
+.transaction-icon img {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-  font-size: 14px;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  height: 100%;
+  object-fit: contain; /* or cover */
+  border-radius: 50%;
 }
 
-.transactions-popup-body .transactions-table th,
-.transactions-popup-body .transactions-table td {
-  border: 1px solid #ddd;
-  padding: 12px 15px;
-  text-align: left;
+.transaction-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.transaction-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+.transaction-time {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 4px;
+}
+.transaction-amount {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-left: auto;
+}
+.transaction-amount.positive {
+  color: #4caf50;
+}
+.transaction-amount.negative {
+  color: #f44336;
 }
 
-.transactions-popup-body .transactions-table th {
-  background-color: #4caf50;
-  color: #fff;
-  text-transform: uppercase;
-}
-
-.transactions-popup-body .transactions-table tbody tr:nth-child(even) {
-  background-color: #f8f8f8;
-}
-
-.transactions-popup-body .transactions-table tbody tr:hover {
-  background-color: #f1f1f1;
-}
-
-/* ---------- Animations ---------- */
+/************************************************
+  Animations
+************************************************/
 @keyframes fadeInPopup {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
@@ -1683,27 +1696,10 @@ section h2 {
   }
 }
 
-/* Full-screen for mobile */
+/* Mobile adjustments */
 @media (max-width: 768px) {
-  .transactions-popup-content {
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    max-height: none;
+  .transactions-page {
     border-radius: 0;
-    box-shadow: none;
-    animation: slideUpPopup 0.3s ease-out;
-  }
-
-  @keyframes slideUpPopup {
-    from {
-      transform: translateY(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
   }
 }
 
@@ -2392,7 +2388,5 @@ section h2 {
   background-color: #ecfcee !important;    /* A very light green background */
   box-shadow: 0 0 4px rgba(76, 175, 80, 0.6); /* A slight glow */
 }
-
-
 
 
