@@ -1861,7 +1861,7 @@ section h2 {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 /* 1) Make the dropdown look a bit nicer */
-.category-dropdown {
+.btn-category-select {
   width: 100%;
   padding: 15px;
   margin-bottom: 15px;
@@ -1879,9 +1879,10 @@ section h2 {
   padding-right: 40px; /* space if you'd like to add a custom arrow */
 }
 
-.category-dropdown:focus {
+.btn-category-select:hover {
   border-color: #4caf50;
   box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+  cursor: pointer;
 }
 
 /* 2) Style the “Add Source” / “Add Category” Buttons */
@@ -2051,6 +2052,345 @@ section h2 {
   }
 }
 
+}
+
+/************************************************
+  OVERLAY (dark background)
+************************************************/
+#cr-category-overlay {
+  position: fixed;
+  inset: 0; /* top:0; left:0; right:0; bottom:0 */
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end; /* bottom sheet look on mobile */
+  justify-content: center;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+#cr-category-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/************************************************
+  POPUP CONTAINER (the white “sheet”)
+************************************************/
+#cr-category-overlay .thispopup {
+  background: #fff;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 24px 24px 0 0; /* top-round corners for a bottom-sheet style */
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.2);
+  position: relative;
+  padding: 16px 24px 24px; /* add bottom padding for content */
+  animation: slideUp 0.3s ease forwards;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/************************************************
+  CLOSE BUTTON (the “X” in top-right)
+************************************************/
+#cr-close-category-popup.thisclose-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #999;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+#cr-close-category-popup.thisclose-btn:hover {
+  background-color: rgba(0,0,0,0.07);
+  color: #666;
+}
+
+/************************************************
+  TAB HEADERS: “Expense” | “Income”
+************************************************/
+
+
+/************************************************
+  CATEGORY GRID (the icon cards)
+************************************************/
+#cr-category-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 16px;
+  padding-bottom: 15px; /* spacing */
+  margin-bottom: 10px;  /* spacing from bottom or add-cat form */
+  justify-items: center;
+}
+
+/* Each category card: pastel square with icon + label */
+.category-card {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background-color: #f9f9f9; /* pastel background */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+  border: 1px solid #eee;
+}
+.category-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+
+/* Icon inside the card */
+.category-card img {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 6px;
+}
+
+/* Category name text */
+.category-card div {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  max-width: 80%;
+}
+.category-card.selected {
+  border: 2px solid #4caf50 !important;
+  background-color: #ecfcee !important;
+  box-shadow: 0 0 4px rgba(76, 175, 80, 0.6);
+}
+/************************************************
+  “+ Add New Category” or the SUB-FORM TRIGGER
+************************************************/
+
+#cr-show-add-cat-form {
+  display: inline-block;
+  background-color: #fafafa;
+  border: 1px dashed #ccc;
+  border-radius: 16px;
+  width: 72px;
+  height: 72px;
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: bold;
+  color: #999;
+  text-align: center;
+  line-height: 72px;
+  transition: border-color 0.2s, color 0.2s, transform 0.2s;
+}
+#cr-show-add-cat-form:hover {
+  border-color: #aaa;
+  color: #666;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+#cr-show-add-cat-form:active {
+  transform: translateY(1px);
+}
+
+/************************************************
+  ADD-NEW-CATEGORY FORM (hidden by default)
+************************************************/
+#cr-add-cat-form {
+  border-top: 1px solid #eee;
+  margin-top: 8px;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#cr-add-cat-form.hidden {
+  display: none;
+}
+
+#cr-add-cat-form label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+}
+#cr-add-cat-form input[type="text"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.25s;
+}
+#cr-add-cat-form input[type="text"]:focus {
+  border-color: #4caf50;
+  outline: none;
+}
+#cr-add-cat-form p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/************************************************
+  ICONS GRID (inside the add-new form)
+************************************************/
+#cr-icons-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+#cr-icons-grid button {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  transition: border-color 0.25s, box-shadow 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#cr-icons-grid button:hover {
+  border-color: #4caf50;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+
+#cr-icons-grid img {
+  width: 24px;
+  height: 24px;
+}
+
+/* When a button is selected, show a green border, light green background, and a glow */
+#cr-icons-grid button.selected-icon {
+  border: 2px solid #4caf50 !important;
+  background-color: #ecfcee !important;
+  box-shadow: 0 0 4px rgba(76, 175, 80, 0.6);
+}
+
+/* The chosen icon highlight */
+
+
+/************************************************
+  SAVE NEW CATEGORY BUTTON
+************************************************/
+#cr-save-new-cat-btn {
+  align-self: center;
+  background: #2196f3;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.25s, transform 0.2s;
+}
+#cr-save-new-cat-btn:hover {
+  background-color: #1e88e5;
+  transform: translateY(-2px);
+}
+#cr-save-new-cat-btn:active {
+  background-color: #1976d2;
+  transform: translateY(1px);
+}
+
+/************************************************
+  RESPONSIVE MEDIA QUERIES
+************************************************/
+@media (max-width: 768px) {
+  #cr-category-overlay .thispopup {
+    border-radius: 20px 20px 0 0;
+    max-width: 100%;
+    padding: 14px 18px 18px;
+  }
+  .category-tab {
+    font-size: 14px;
+  }
+  .category-card {
+    width: 60px;
+    height: 60px;
+  }
+  .category-card img {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 4px;
+  }
+  .category-card div {
+    font-size: 12px;
+  }
+  #cr-show-add-cat-form {
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 769px) {
+  #cr-category-overlay .thispopup {
+    border-radius: 24px; /* all around on desktop if you prefer */
+    align-self: center; /* center it vertically */
+  }
+}
+/************************************************
+  TAB HEADERS: “Expense” | “Income”
+************************************************/
+/************************************************
+  CATEGORY OVERLAY TABS: “Expense” | “Income”
+************************************************/
+/************************************************
+  CATEGORY OVERLAY TABS: “Expense” | “Income”
+************************************************/
+.category-tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.category-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.25s, border-color 0.25s;
+}
+
+/* Active styling for Expense tab in overlay */
+#cr-cat-expense-tab.active {
+  color: #ff5252;
+  border-color: #ff5252;
+}
+
+/* Active styling for Income tab in overlay */
+#cr-cat-income-tab.active {
+  color: #4caf50;
+  border-color: #4caf50;
+}
+.selected-icon {
+  border: 2px solid #4caf50 !important;  /* A green border to indicate selection */
+  background-color: #ecfcee !important;    /* A very light green background */
+  box-shadow: 0 0 4px rgba(76, 175, 80, 0.6); /* A slight glow */
 }
 
 
