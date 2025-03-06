@@ -339,42 +339,33 @@
 
 
 
-
-
-
-
-<!-- Transactions Popup -->
-<div id="transactions-popup" class="popup hidden">
-  <div class="transactions-popup-content">
-
-    <!-- Sticky header section -->
-    <div class="transactions-popup-header">
-      <!-- Top row: Download on the left, X icon on the right -->
-      <div class="transactions-top-row">
+<!-- Full-Screen Transactions Panel -->
+<div id="transactions-page" class="transactions-page hidden">
+  <div class="transactions-header">
+    <!-- Back/Close Button -->
+    <button id="close-transactions-page" class="thisbtn-back">
+      <i class="fa-solid fa-circle-left"></i>
+    </button>
+    <!-- Title -->
+    <h2>Transactions</h2>
+    <!-- Download Button -->
     <button id="download-transactions" class="btn-download">
-  <i class="fa-regular fa-circle-down"></i>
-</button>
-
-        <button id="close-transactions-popup" class="close-btn-icon">
-          <i class="fa fa-times"></i>
-        </button>
-      </div>
-
-      <!-- Row for toggle buttons -->
-      <div class="toggle-buttons">
-        <button id="all-tab" class="toggle-button active">All</button>
-        <button id="income-tab-list" class="toggle-button">Income</button>
-        <button id="expense-tab-list" class="toggle-button">Expense</button>
-      </div>
-    </div>
-    
-    <!-- Scrollable body section -->
-    <div class="transactions-popup-body">
-      <div id="transactions-list-content">
-        <!-- Transactions will be rendered here -->
-      </div>
-    </div>
+      <i class="fa-regular fa-circle-down"></i>
+    </button>
   </div>
+  
+  
+  <!-- Tabs for filtering transactions -->
+  <div class="transactions-tabs">
+    <button id="all-tab" class="transactions-tab active">All</button>
+    <button id="income-tab-list" class="transactions-tab">Income</button>
+    <button id="expense-tab-list" class="transactions-tab">Expense</button>
+  </div>
+  
+  <!-- Main scrollable area for transactions -->
+  <section id="transactions-list-content" class="transactions-list">
+    <!-- Transaction cards will be injected here by JS -->
+  </section>
 </div>
 
 
