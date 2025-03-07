@@ -875,7 +875,6 @@ body {
 .dashboard-header p {
   font-size: 1rem;
 }
-
 /************************************************
   Summary Boxes (Expense & Income)
 ************************************************/
@@ -883,41 +882,67 @@ body {
   display: flex;
   justify-content: center;
   gap: 20px;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  margin-top: 1.5rem; /* Optional extra spacing from above sections */
 }
 
 .summary-box {
   flex: 1;
-  max-width: 250px;
+  max-width: 300px;
   background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  padding: 20px;
+  border-radius: 16px; /* Slightly larger radius for a friendlier look */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06); /* Softer shadow */
+  padding: 1.5rem 1rem; /* Balanced padding */
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Optional background gradient on hover for an extra effect */
+.summary-box::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(76, 175, 80, 0.07), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: scale(0.8);
+  pointer-events: none; /* so it won't block clicks */
+}
+
+.summary-box:hover::before {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .summary-box:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
 }
 
+/* Title inside the box (e.g., "Expense" / "Income") */
 .summary-box h3 {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 }
 
+/* Large amount in the center */
 .summary-box .amount {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 0.3rem;
 }
 
+/* Smaller text for transaction count */
 .summary-box .transactions-count {
   font-size: 0.9rem;
-  color: #999;
+  color: #777;
 }
 
 /* Negative (expense) and positive (income) coloring */
@@ -929,6 +954,16 @@ body {
 .summary-box.income-box .amount,
 .summary-box.income-box .positive {
   color: #4caf50;
+}
+
+/************************************************
+  Responsive Tweaks for Smaller Screens
+************************************************/
+@media (max-width: 768px) {
+  .summary-box {
+    max-width: 100%;    /* Let them take full width on mobile */
+    margin: 0 auto;     /* Center them if you like */
+  }
 }
 
 /************************************************
