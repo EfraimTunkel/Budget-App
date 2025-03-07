@@ -1029,6 +1029,32 @@ body {
   font-size: 14px;
 }
 
+
+/* The icon wrapper – small circle background, center the icon */
+.recent-tx-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #eee; /* or #f0f0f0, adjust color as needed */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* so it doesn't get squashed */
+}
+
+/* If the icon is an <img> */
+.recent-tx-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain; /* or cover */
+}
+
+/* If the icon is a <i class="fa fa-money-bill-wave"> fallback,
+   you can style it like this: */
+.recent-tx-icon-wrapper i {
+  font-size: 16px;
+  color: #888;
+}
 .recent-tx-item:last-child {
   border-bottom: none;
 }
