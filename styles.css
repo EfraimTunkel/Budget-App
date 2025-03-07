@@ -1562,7 +1562,7 @@ body {
   display: flex;
   align-items: center;
   cursor: pointer;
-  margin-right: 20px;
+  margin-right: 30px;
 }
 .profile-icon-container img {
   width: 40px;
