@@ -1082,190 +1082,200 @@
       if (data.photoUrl) {
         userProfilePic.src = data.photoUrl;
       }
-     
+      updateSummaryBoxes(data);
       // Prepare data for charts
 // Prepare data for charts
+// Improved Example Data – replace these with your real data arrays (dates must be ISO format)
+const labels = [
+  "2023-02-06T00:00:00",
+  "2023-02-11T00:00:00",
+  "2023-02-15T00:00:00",
+  "2023-02-20T00:00:00",
+  "2023-02-25T00:00:00",
+  "2023-03-01T00:00:00",
+  "2023-03-06T00:00:00"
+];
+const balanceData = [0, 300, 700, 1200, 1500, 1500, 1800];
+
+const options = {
+  series: [{
+    name: "Net Balance",
+    data: balanceData
+  }],
+  chart: {
+    type: 'area',
+    height: 350,
+    zoom: { enabled: false },
+    toolbar: { show: false },
+    dropShadow: {
+      enabled: true,
+      top: 4,
+      left: 0,
+      blur: 6,
+      opacity: 0.2
+    }
+  },
+  dataLabels: { enabled: false },
+  stroke: {
+    curve: 'smooth',
+    width: 3
+  },
+  fill: {
+    type: 'gradient',
+    gradient: {
+      shadeIntensity: 1,
+      opacityFrom: 0.4,
+      opacityTo: 0,
+      stops: [0, 90, 100]
+    }
+  },
+  title: {
+    text: 'Account Balance Analysis',
+    align: 'left',
+    style: { fontSize: '18px', fontWeight: 'bold' }
+  },
+  subtitle: {
+    text: 'Balance Over Time',
+    align: 'left',
+    style: { fontSize: '14px' }
+  },
+  labels: labels,
+  xaxis: {
+    type: 'datetime',
+    labels: {
+      format: 'MMM d',
+      style: { fontSize: '14px' }
+    },
+    axisBorder: { show: false },
+    axisTicks: { show: false }
+  },
+  yaxis: {
+    opposite: true,
+    labels: { style: { fontSize: '14px' } },
+    axisBorder: { show: false },
+    axisTicks: { show: false }
+  },
+  tooltip: {
+    theme: 'light',
+    x: {
+      format: 'MMM dd, yyyy'
+    }
+  },
+  legend: {
+    horizontalAlign: 'left'
+  },
+  grid: {
+    borderColor: "#e0e0e0",
+    strokeDashArray: 4
+  }
+};
+
+const balanceChart = new ApexCharts(
+  document.querySelector("#balance-chart"),
+  options
+);
+balanceChart.render();
 
 
-const labels = ["Feb 6", "Feb 11", "Feb 15", "Feb 20", "Feb 25", "Mar 1", "Mar 6"];
-const balanceData = [0, 300, 700, 1200, 1500, 1500, 1800]; // example data
-(function renderBalanceChart() {
-  // The single series for your balance
-  const options = {
+(function renderSpendingChart() {
+  // Build category totals
+  const catMap = {};
+  (data.expenses || []).forEach(exp => {
+    if (!catMap[exp.category]) catMap[exp.category] = 0;
+    catMap[exp.category] += exp.amount;
+  });
+
+  const spendingCategories = Object.keys(catMap);
+  const spendingAmounts = Object.values(catMap);
+
+  // If no expenses, show a single slice
+  if (spendingCategories.length === 0) {
+    spendingCategories.push("No Expenses");
+    spendingAmounts.push(0);
+  }
+
+  // Fancy donut options
+  const donutOptions = {
     chart: {
-      type: 'area',
+      type: 'donut',
       height: 350,
       toolbar: { show: false },
       dropShadow: {
         enabled: true,
-        top: 5,
-        left: 0,
-        blur: 5,
-        opacity: 0.2,
-        color: '#000'
+        top: 2,
+        left: 2,
+        blur: 4,
+        color: '#000',
+        opacity: 0.1
+      }
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          size: '60%',
+          labels: {
+            show: true,
+            name: {
+              fontSize: '14px'
+            },
+            value: {
+              fontSize: '18px',
+              formatter: val => val
+            },
+            total: {
+              show: true,
+              label: 'Total',
+              fontSize: '16px',
+              color: '#333',
+              formatter: function (w) {
+                // Sum all slices
+                return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+              }
+            }
+          }
+        }
       }
     },
     dataLabels: { enabled: false },
-    stroke: {
-      curve: 'smooth',
-      width: 3
-    },
-    series: [
-      {
-        name: "Balance",
-        data: balanceData // e.g. [0, 300, 700, 1200, 1500, 1500, 1800]
-      }
-    ],
-    colors: ['#4285F4'], // pick your line color
+    series: spendingAmounts,
+    labels: spendingCategories,
+    colors: ['#66bb6a','#ffa726','#ef5350','#26c6da','#ab47bc','#ffee58'],
     fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        inverseColors: false,
-        opacityFrom: 0.4,
-        opacityTo: 0.0,
-        stops: [0, 90, 100]
+      type: 'gradient'
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ['#fff'] // white stroke separating slices
+    },
+   
+    legend: {
+      position: 'bottom',
+      fontSize: '14px'
+    },
+    responsive: [{
+      breakpoint: 768,
+      options: {
+        chart: {
+          height: 300
+        },
+        legend: {
+          fontSize: '12px'
+        },
+        title: {
+          style: { fontSize: '16px' }
+        }
       }
-    },
-    xaxis: {
-      categories: labels, // e.g. ["Feb 6", "Feb 11", ...]
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-      labels: {
-        style: { fontSize: '14px' }
-      }
-    },
-    yaxis: {
-      labels: {
-        style: { fontSize: '14px' }
-      },
-      axisBorder: { show: false },
-      axisTicks: { show: false }
-    },
-    grid: {
-      borderColor: "rgba(0,0,0,0.1)",
-      strokeDashArray: 4 // dotted lines
-    },
-    legend: { show: false }, // hide legend since there's only one series
-    title: {
-      text: "Balance Over Time",
-      align: "center",
-      style: { fontSize: '18px', fontWeight: 'bold' }
-    }
+    }]
   };
 
-  const chart = new ApexCharts(
-    document.querySelector("#balance-chart"),
-    options
+  const spendingChart = new ApexCharts(
+    document.querySelector("#spending-chart"),
+    donutOptions
   );
-  chart.render();
+  spendingChart.render();
 })();
 
-
-      // Call your ApexCharts donut
-      (function renderSpendingChart() {
-        // Build category totals
-        const catMap = {};
-        (data.expenses || []).forEach(exp => {
-          if (!catMap[exp.category]) catMap[exp.category] = 0;
-          catMap[exp.category] += exp.amount;
-        });
-      
-        const spendingCategories = Object.keys(catMap);
-        const spendingAmounts = Object.values(catMap);
-      
-        // If no expenses, show a single slice
-        if (spendingCategories.length === 0) {
-          spendingCategories.push("No Expenses");
-          spendingAmounts.push(0);
-        }
-      
-        // Fancy donut options
-        const donutOptions = {
-          chart: {
-            type: 'donut',
-            height: 350,
-            dropShadow: {
-              enabled: true,
-              top: 2,
-              left: 2,
-              blur: 4,
-              color: '#000',
-              opacity: 0.1
-            },
-            toolbar: { show: false }
-          },
-          plotOptions: {
-            pie: {
-              donut: {
-                size: '60%',
-                labels: {
-                  show: true,
-                  name: {
-                    fontSize: '14px'
-                  },
-                  value: {
-                    fontSize: '18px',
-                    formatter: val => val
-                  },
-                  total: {
-                    show: true,
-                    label: 'Total',
-                    fontSize: '16px',
-                    color: '#333',
-                    formatter: function (w) {
-                      // Sum all slices
-                      return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                    }
-                  }
-                }
-              }
-            }
-          },
-          dataLabels: { enabled: false },
-          series: spendingAmounts,
-          labels: spendingCategories,
-          // pick any color palette you like
-          colors: ['#66bb6a','#ffa726','#ef5350','#26c6da','#ab47bc','#ffee58'],
-          fill: {
-            type: 'gradient'
-          },
-          stroke: {
-            show: true,
-            width: 2,
-            colors: ['#fff'] // white stroke separating slices
-          },
-          title: {
-            text: "Spending Overview",
-            align: "center",
-            style: { fontSize: '18px', fontWeight: 'bold' }
-          },
-          legend: {
-            position: 'bottom',
-            fontSize: '14px'
-          },
-          responsive: [{
-            breakpoint: 768,
-            options: {
-              chart: {
-                height: 300
-              },
-              legend: {
-                fontSize: '12px'
-              },
-              title: {
-                style: { fontSize: '16px' }
-              }
-            }
-          }]
-        };
-      
-        const spendingChart = new ApexCharts(
-          document.querySelector("#spending-chart"),
-          donutOptions
-        );
-        spendingChart.render();
-      })();
       
       
     // --- Recent Transactions Section ---
@@ -1279,6 +1289,8 @@ let allTransactions = [...incomes, ...expenses];
 allTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
 // Function to render the recent transactions list (only last 6 for the chosen filter)
+// Use the same getCategoryIcon(tx) you have in your app
+// to get the correct icon URL from the user's categories.
 function renderRecentTransactions(filter) {
   let filteredTransactions;
   if (filter === "income") {
@@ -1288,7 +1300,7 @@ function renderRecentTransactions(filter) {
   } else {
     filteredTransactions = allTransactions;
   }
-  
+
   const recent = filteredTransactions.slice(0, 6);
   const container = document.getElementById("recent-transactions-list");
   container.innerHTML = ""; // Clear any previous content
@@ -1297,26 +1309,58 @@ function renderRecentTransactions(filter) {
     container.innerHTML = "<p>No recent transactions.</p>";
     return;
   }
-  
+
   recent.forEach(tx => {
-    // Create a card/row for each transaction
-    const card = document.createElement("div");
-    card.classList.add("recent-tx-item");
+    const item = document.createElement("div");
+    item.classList.add("recent-tx-item");
+
+    // Get the category icon (if any)
+    const categoryIconUrl = getCategoryIcon(tx);
+    // Fallback icon if no custom icon is found
+    const iconHtml = categoryIconUrl
+      ? `<img src="${categoryIconUrl}" alt="icon" class="recent-tx-icon" />`
+      : `<i class="fa fa-money-bill-wave"></i>`;
 
     const txLabel = tx.type === "Income" ? tx.source : tx.category;
     const date = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : "N/A";
     const sign = tx.type === "Income" ? "+" : "-";
     const amount = parseFloat(tx.amount).toFixed(2);
 
-    card.innerHTML = `
+    // Build the row’s HTML
+    item.innerHTML = `
+      <div class="recent-tx-icon-wrapper">
+        ${iconHtml}
+      </div>
       <span class="tx-label">${txLabel}</span>
       <span class="tx-date">${date}</span>
       <span class="tx-amount ${tx.type === "Income" ? "positive" : "negative"}">
         ${sign}$${amount}
       </span>
     `;
-    container.appendChild(card);
+
+    container.appendChild(item);
   });
+}
+
+function updateSummaryBoxes(data) {
+  // Get incomes and expenses arrays from your user data
+  const incomes = data.incomes || [];
+  const expenses = data.expenses || [];
+  
+  // Calculate totals
+  const totalIncome = incomes.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+  const totalExpense = expenses.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+  
+  // Count transactions
+  const incomeCount = incomes.length;
+  const expenseCount = expenses.length;
+  
+  // Update the DOM elements with these values
+  document.querySelector('.income-box .amount').textContent = `$${totalIncome.toFixed(2)}`;
+  document.querySelector('.income-box .transactions-count').textContent = `${incomeCount} transactions`;
+  
+  document.querySelector('.expense-box .amount').textContent = `$${totalExpense.toFixed(2)}`;
+  document.querySelector('.expense-box .transactions-count').textContent = `${expenseCount} transactions`;
 }
 
 // Helper to update active recent tab styling
@@ -1642,62 +1686,21 @@ document.getElementById("view-all-transactions").addEventListener("click", () =>
       window.spendingChart.destroy();
     }
   // Function to Load and Render the Line Chart
-  const loadLineChart = (labels, incomeData, expenseData) => {
-    const ctx = document.getElementById("line-chart").getContext("2d");
-  
-    // Destroy the previous chart instance to prevent duplication
-    if (window.lineChart) {
-      window.lineChart.destroy();
-    }
-  
-    window.lineChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: 'Income',
-            data: incomeData,
-            borderColor: 'green',
-            fill: false
-          },
-          {
-            label: 'Expenses',
-            data: expenseData,
-            borderColor: 'red',
-            fill: false
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        title: {
-          display: true,
-          text: 'Income vs Expenses'
-        },
-        scales: {
-          xAxes: [{
-            display: true,
-            scaleLabel: {
-              display: true,
-              labelString: 'Month'
-            }
-          }],
-          yAxes: [{
-            display: true,
-            scaleLabel: {
-              display: true,
-              labelString: 'Amount ($)'
-            }
-          }]
-        }
-      }
-    });
-  };
+ 
   
   
   
   
+  
+  
+  
+  
+  
+  
+  
+  
+
+
 
 
 
