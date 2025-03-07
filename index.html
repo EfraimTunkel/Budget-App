@@ -120,52 +120,65 @@
       </div>
       
       
-
+      <main id="main-content">
+        <!-- Header / Greeting -->
+        <header class="dashboard-header">
+          <div class="user-info">
+            <img id="user-profile-pic" src="default-avatar.png" alt="Profile Pic" />
+            <div class="greeting-text">
+              <h1 id="greeting"><span id="username-display">User</span></h1>
+              <p>Your current balance: <span id="balance">$0.00</span></p>
+            </div>
+          </div>
+        </header>
       
-
-
+        <!-- Summary Boxes (Expense & Income) -->
+        <section class="summary-boxes-section">
+          <div class="summary-box expense-box">
+            <h3>Expense</h3>
+            <div class="amount negative">$0.00</div>
+            <div class="transactions-count">0 transactions</div>
+          </div>
+          <div class="summary-box income-box">
+            <h3>Income</h3>
+            <div class="amount positive">$0.00</div>
+            <div class="transactions-count">0 transactions</div>
+          </div>
+        </section>
       
-    <!-- MAIN CONTENT -->
-<main id="main-content">
-  <!-- Improved Header -->
-  <header class="dashboard-header">
-    <div class="user-info">
-      <!-- User profile picture -->
-      <img id="user-profile-pic" src="default-avatar.png" alt="Profile Pic" />
-      <!-- Greeting, username, balance -->
-      <div class="greeting-text">
-        <h1 id="greeting"><span id="username-display">User</span></h1>
-        <p>Your current balance: <span id="balance">$0.00</span></p>
-      </div>
-    </div>
-  </header>
-
-  <!-- Charts Wrapper -->
-  <div class="charts-wrapper">
-   
-
-    <div id="balance-chart" style="width: 100%; height: 350px;"></div>
-    <section id="chart-container">
-      <h2>Spending and Income Trends</h2>
-      <div id="spending-chart" style="width: 100%; height: 350px;"></div>
-    </section>
-    <section class="recent-transactions-section">
-      <h2>Recent Transactions</h2>
-      <div class="recent-transactions-tabs">
-        <button id="recent-all-tab" class="recent-tab active">All</button>
-        <button id="recent-income-tab" class="recent-tab">Income</button>
-        <button id="recent-expense-tab" class="recent-tab">Expense</button>
-      </div>
-      <div id="recent-transactions-list">
-        <!-- Last 6 transactions will be injected here -->
-      </div>
-      <button id="view-all-transactions" class="view-all-btn">View All Transactions</button>
-    </section>
-    
-    
-    
-  </div>
-</main>
+        <!-- Main 2-column layout for line chart + recent transactions -->
+        <div class="dashboard-grid">
+          <!-- Left column: net balance line chart -->
+          <section class="line-chart-section">
+            <h2>Balance Over Time</h2>
+            <div id="balance-chart" class="chart-canvas"></div>
+          </section>
+      
+          <!-- Right column: recent transactions list -->
+          <section class="transactions-section">
+            <h2>Recent Transactions</h2>
+            <div class="recent-transactions-tabs">
+              <button id="recent-all-tab" class="recent-tab active">All</button>
+              <button id="recent-income-tab" class="recent-tab">Income</button>
+              <button id="recent-expense-tab" class="recent-tab">Expense</button>
+            </div>
+            <div id="recent-transactions-list">
+              <!-- Last 6 transactions injected here -->
+            </div>
+            <button id="view-all-transactions" class="view-all-btn">
+              View All Transactions
+            </button>
+          </section>
+          </div> <!-- end .dashboard-grid -->
+          
+          <!-- Donut Chart: Spending Overview -->
+          <section class="donut-chart-section">
+            <h2>Spending Overview</h2>
+            <div id="spending-chart" class="chart-canvas"></div>
+          </section>
+          </main>
+          
+      
 
     </div>
     
@@ -358,7 +371,7 @@
     <h2>Transactions</h2>
     <!-- Download Button -->
     <button id="download-transactions" class="btn-download">
-      <i class="fa-regular fa-circle-down"></i>
+      <i class="fa-solid fa-cloud-arrow-down"></i>
     </button>
   </div>
   
