@@ -378,10 +378,10 @@ body {
 
 /* Dashboard Container */
 #dashboard-container {
-  width: 95%;
+  width: 100%;
   max-width: 1200px;
   margin: 20px auto;
-  padding: 20px;
+
   border-radius: 20px;
  
 }
@@ -808,150 +808,25 @@ body {
   }
 }
 
-
-  
-/* Main Content */
+/************************************************
+  Overall Layout
+************************************************/
 #main-content {
-  padding: 20px 30px;
-  max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem;
+  max-width: 1400px;
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  border-radius: 20px;
-  background: linear-gradient(145deg, #f4f4f4, #ffffff);
-  animation: fadeIn 0.8s ease;
+  gap: 2rem;
+  background-color: #fafafa; /* Light background */
+  animation: fadeIn 0.6s ease; /* Subtle fade-in */
 }
 
-/* Header Section */
-header {
-  background: linear-gradient(135deg, #4caf50, #81c784);
-  color: white;
-  text-align: center;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-}
-
-header::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent 70%);
-  transform: scale(0);
-  transition: transform 0.5s ease;
-}
-
-header:hover::before {
-  transform: scale(1);
-}
-
-header h1 {
-  font-size: 36px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
-}
-
-header p {
-  font-size: 18px;
-  margin-top: 8px;
-}
-
-header p span {
-  font-weight: bold;
-  color: #fdd835;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-/* Sections */
-section {
-  padding: 25px;
-  background: linear-gradient(145deg, #ffffff, #f7f7f7);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease, background-color 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-section:hover {
-  transform: translateY(-5px);
-  background-color: #f0f0f0;
-}
-
-section h2 {
-  font-size: 26px;
-  font-weight: bold;
-  color: #4caf50;
-  text-align: center;
-  margin-bottom: 20px;
-}
-/* Chart Containers */
-#chart-container,
-#line-chart-container {
-  margin: 20px auto;
-  padding: 30px;
-  max-width: 600px;
-  background: linear-gradient(145deg, #ffffff, #f7f7f7);
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  transition: transform 0.3s ease, background-color 0.3s ease;
-}
-
-#chart-container:hover,
-#line-chart-container:hover {
-  transform: translateY(-5px);
-  background-color: #f0f0f0;
-}
-
-
-#chart-container h2,
-#line-chart-container h2 {
-  font-size: 24px;
-  font-weight: bold;
-  color: #4caf50;
-  margin-bottom: 15px;
-}
-
-
-/* Chart Canvas */
-#spending-chart,
-#line-chart {
-  max-width: 100%;
-  height: auto;
-  margin: 0 auto;
-  display: block;
-}
-
-@media (min-width: 768px) {
-  /* If you still want some gap above the charts, you can keep #main-content as-is */
-
-  /* This is the key addition: display the two chart sections side by side */
-  .charts-wrapper {
-    display: flex;
-    flex-direction: row;  /* or 'row' by default */
-    gap: 20px;            /* spacing between the two sections */
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-
-  #chart-container,
-  #line-chart-container {
-    width: 48%; /* Each chart section takes nearly half the container */
-  }
-}
-
-/* Animations */
+/* Fade-in keyframes */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -959,66 +834,311 @@ section h2 {
   }
 }
 
-/* Responsive Design */
+/************************************************
+  Header (Greeting)
+************************************************/
+.dashboard-header {
+  background: linear-gradient(135deg, #4caf50, #66bb6a);
+  color: #fff;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-header:hover {
+  background: linear-gradient(135deg, #43a047, #66bb6a);
+}
+
+.dashboard-header .user-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.dashboard-header img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+
+.dashboard-header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.5px;
+}
+
+.dashboard-header p {
+  font-size: 1rem;
+}
+
+/************************************************
+  Summary Boxes (Expense & Income)
+************************************************/
+.summary-boxes-section {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.summary-box {
+  flex: 1;
+  max-width: 250px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.summary-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.summary-box h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.summary-box .amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.summary-box .transactions-count {
+  font-size: 0.9rem;
+  color: #999;
+}
+
+/* Negative (expense) and positive (income) coloring */
+.summary-box.expense-box .amount,
+.summary-box.expense-box .negative {
+  color: #f44336;
+}
+
+.summary-box.income-box .amount,
+.summary-box.income-box .positive {
+  color: #4caf50;
+}
+
+/************************************************
+  Dashboard Grid (Line Chart + Recent Transactions)
+************************************************/
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px; /* line chart = 1fr, transactions = 360px */
+  gap: 2rem;
+}
+
+.line-chart-section {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transition: background-color 0.2s;
+}
+
+.line-chart-section:hover {
+  background-color: #fefefe;
+}
+
+.line-chart-section h2 {
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  color: #333;
+  text-align: center;
+}
+
+/************************************************
+  Transactions Section (Right Column)
+************************************************/
+.transactions-section {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transition: background-color 0.2s;
+  max-height: 100%;
+}
+
+.transactions-section:hover {
+  background-color: #fefefe;
+}
+
+.transactions-section h2 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: #333;
+  text-align: center;
+}
+
+/************************************************
+  Recent Transactions Tabs
+************************************************/
+.recent-transactions-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.recent-tab {
+  flex: 1;
+  background: #eee;
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0.5rem;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+  transition: background 0.3s;
+  text-align: center;
+}
+
+.recent-tab:hover {
+  background: #ddd;
+}
+
+.recent-tab.active {
+  background: #4caf50;
+  color: #fff;
+}
+
+/************************************************
+  Recent Transactions List
+************************************************/
+#recent-transactions-list {
+  min-height: 120px;
+  margin-bottom: 1rem;
+}
+
+.recent-tx-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.recent-tx-item:last-child {
+  border-bottom: none;
+}
+
+.tx-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.tx-date {
+  color: #999;
+}
+
+.tx-amount {
+  font-weight: bold;
+  margin-left: auto;
+}
+
+.tx-amount.positive {
+  color: #4caf50;
+}
+
+.tx-amount.negative {
+  color: #f44336;
+}
+
+.view-all-btn {
+  width: 100%;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 0.3rem;
+  background: #4caf50;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.view-all-btn:hover {
+  background: #43a047;
+}
+
+/************************************************
+  Donut Chart Section (Below the 2-column layout)
+************************************************/
+.donut-chart-section {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transition: background-color 0.2s;
+}
+
+.donut-chart-section:hover {
+  background-color: #fefefe;
+}
+
+.donut-chart-section h2 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: #333;
+  text-align: center;
+}
+
+.chart-canvas {
+  width: 100%;
+  height: 350px;
+}
+
+/************************************************
+  Responsive Adjustments
+************************************************/
+@media (max-width: 992px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr; /* single column on smaller screens */
+  }
+  .transactions-section {
+    margin-top: 2rem;
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   #main-content {
-    padding: 15px;
+    padding: 1rem;
+    gap: 1.5rem;
   }
 
-  header h1 {
-    font-size: 28px;
+  .dashboard-header {
+    padding: 1.5rem;
   }
 
-  header p {
-    font-size: 16px;
+  .dashboard-header h1 {
+    font-size: 1.5rem;
   }
 
-  section {
-    padding: 15px;
+  .dashboard-header p {
+    font-size: 0.9rem;
   }
 
-  section h2 {
-    font-size: 20px;
-  }
-
-  ul li {
-    padding: 12px;
-  }
-
-  .btn-primary {
-    font-size: 14px;
-  
-  }
-  #chart-container,
-  #line-chart-container {
+  .summary-box {
     max-width: 100%;
-    padding: 20px;
-    margin: 15px 0;
-}
-#chart-container h2,
-#line-chart-container h2 {
-  font-size: 20px;
-}
-}
-@media (min-width: 768px) {
-  #main-content {
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
   }
 
-  #chart-container,
-  #line-chart-container {
-    width: 48%;
-    display: inline-block;
-    vertical-align: top;
-  }
-
-  #chart-container h2,
-  #line-chart-container h2 {
-    font-size: 24px;
+  .line-chart-section h2,
+  .transactions-section h2,
+  .donut-chart-section h2 {
+    font-size: 1.1rem;
   }
 }
+
 
 
 
@@ -1553,16 +1673,16 @@ section h2 {
 .thisbtn-back {
   background: transparent;
   border: none;
-  font-size: 1.6rem;
+  font-size: 2.2rem;
   color: #4caf50; /* or #333, etc. Something not white */
   cursor: pointer;
   transition: background-color 0.2s;
   padding: 1rem;
-
+  transition: transform 0.2s ease;
 }
 
 .thisbtn-back:hover {
-
+  transform: scale(1.1);
   border-radius: 50%;
   cursor: pointer;
 }
@@ -2497,18 +2617,18 @@ section h2 {
   width: 200px;
   margin: 1rem auto 0;
   padding: 0.75rem;
-  background-color: #4caf50;
-  color: #fff;
+  background-color: #f3f8f3;
+  color: #4caf50;
   border: none;
-  border-radius: 8px;
-  font-weight: bold;
+  border-radius: 10px;
+  
   cursor: pointer;
   transition: background 0.3s;
   text-align: center;
 }
 
 .view-all-btn:hover {
-  background-color: #388e3c;
+  background-color: #e9f0e9;
 }
 
 
