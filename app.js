@@ -1176,7 +1176,6 @@ const balanceChart = new ApexCharts(
 );
 balanceChart.render();
 
-
 (function renderSpendingChart() {
   // Build category totals
   const catMap = {};
@@ -1194,7 +1193,6 @@ balanceChart.render();
     spendingAmounts.push(0);
   }
 
-  // Fancy donut options
   const donutOptions = {
     chart: {
       type: 'donut',
@@ -1207,7 +1205,13 @@ balanceChart.render();
         blur: 4,
         color: '#000',
         opacity: 0.1
-      }
+      },
+      /*
+        Offset to shift the donut chart to the right
+        so the legend on the left doesn't overlap it.
+        Adjust as needed for your design.
+      */
+      offsetX: 70
     },
     plotOptions: {
       pie: {
@@ -1215,9 +1219,7 @@ balanceChart.render();
           size: '60%',
           labels: {
             show: true,
-            name: {
-              fontSize: '14px'
-            },
+            name: { fontSize: '14px' },
             value: {
               fontSize: '18px',
               formatter: val => val
@@ -1239,31 +1241,43 @@ balanceChart.render();
     dataLabels: { enabled: false },
     series: spendingAmounts,
     labels: spendingCategories,
-    colors: ['#66bb6a','#ffa726','#ef5350','#26c6da','#ab47bc','#ffee58'],
-    fill: {
-      type: 'gradient'
-    },
+    colors: ['#66bb6a', '#ffa726', '#ef5350', '#26c6da', '#ab47bc', '#ffee58'],
+    fill: { type: 'gradient' },
     stroke: {
       show: true,
       width: 2,
       colors: ['#fff'] // white stroke separating slices
     },
-   
+    /*
+      Keep legend on the left for all screens.
+      Adjust offsetY if you want it aligned differently vertically.
+    */
     legend: {
-      position: 'bottom',
-      fontSize: '14px'
+      position: 'left',
+      horizontalAlign: 'center',
+      offsetY: 0,
+      fontSize: '14px',
+      markers: {
+        width: 14,
+        height: 14,
+        radius: 7
+      }
     },
+    /*
+      You can still use responsive if you want to tweak
+      height or offset on smaller screens, but keep position: 'left'.
+    */
     responsive: [{
       breakpoint: 768,
       options: {
         chart: {
-          height: 300
+          height: 300,
+          // offsetX: 40 // optional: reduce offset on mobile if needed
         },
         legend: {
-          fontSize: '12px'
-        },
-        title: {
-          style: { fontSize: '16px' }
+          fontSize: '12px',
+          position: 'left', // remain on the left
+          horizontalAlign: 'center'
         }
       }
     }]
@@ -1275,6 +1289,7 @@ balanceChart.render();
   );
   spendingChart.render();
 })();
+
 
       
       
