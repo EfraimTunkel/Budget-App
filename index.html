@@ -150,7 +150,7 @@
         <div class="dashboard-grid">
           <!-- Left column: net balance line chart -->
           <section class="line-chart-section">
-            <h2>Balance Over Time</h2>
+            
             <div id="balance-chart" class="chart-canvas"></div>
           </section>
       
@@ -181,61 +181,118 @@
       
 
     </div>
-    
-   <!-- TRANSACTION POPUP -->
-<div id="cr-transaction-popup" class="popup hidden">
-  <div class="popup-content">
-    <button id="cr-close-transaction-popup" class="close-button">&times;</button>
 
-    <!-- Toggle between Income and Expense -->
-    <div class="toggle-buttons">
-      <button id="cr-income-tab" class="toggle-button active">Income</button>
-      <button id="cr-expense-tab" class="toggle-button">Expense</button>
+
+ <!-- TRANSACTION POPUP -->
+<div id="cr-transaction-popup" class="popup hidden">
+  <div class="popup-content transaction-container">
+    <!-- Loading spinner (hidden by default) -->
+    <div id="transaction-loading" class="loading-spinner hidden">
+      <div class="spinner"></div>
+      <p>Saving...</p>
     </div>
 
-    <!-- INCOME FORM -->
-    <form id="cr-income-form" class="transaction-fields active">
-      <input 
-        type="number"
-        id="cr-popup-income-amount"
-        placeholder="Amount"
-        required
-      />
+    <!-- Close Button -->
+    <button id="cr-close-transaction-popup" class="close-button">&times;</button>
 
-      <!-- A single Select Source button + hidden field -->
-      <div class="category-wrapper">
-        <button type="button" id="cr-select-income-category-btn" class="btn-category-select">
-          Select Source
-        </button>
-        <input type="hidden" id="cr-chosen-income-category" name="incomeCategory" />
-        <span id="cr-chosen-income-category-text"></span>
+    <!-- Header area: gradient background, toggle, amount, clock -->
+    <div class="transaction-header">
+      <div class="header-top">
+        <!-- Income/Expense Toggle -->
+        <div class="toggle-buttons fancy-toggle">
+          <button id="cr-income-tab" class="toggle-button active">Income</button>
+          <button id="cr-expense-tab" class="toggle-button">Expense</button>
+        </div>
+
+        <!-- Real-time clock on the right -->
+        <div class="transaction-clock" id="transaction-clock">--:--</div>
       </div>
 
-      <button type="submit" class="btn-primary">Save Income</button>
-    </form>
-
-    <!-- EXPENSE FORM -->
-    <form id="cr-expense-form" class="transaction-fields hidden">
-      <input
-        type="number"
-        id="cr-popup-expense-amount"
-        placeholder="Amount"
-        required
-      />
-
-      <!-- A single Select Category button + hidden field -->
-      <div class="category-wrapper">
-        <button type="button" id="cr-select-expense-category-btn" class="btn-category-select">
-          Select Category
-        </button>
-        <input type="hidden" id="cr-chosen-expense-category" name="expenseCategory" />
-        <span id="cr-chosen-expense-category-text"></span>
+      <!-- Big amount display (will change based on Income/Expense) -->
+      <div class="header-amount">
+        <!-- We will show $0 by default, user enters amount below -->
+        <span id="header-amount-text">$0</span>
       </div>
+    </div>
 
-      <button type="submit" class="btn-primary">Save Expense</button>
-    </form>
+    <!-- Body area: date, forms, notes, attachment -->
+    <div class="transaction-body">
+      <!-- e.g. "Today" or you can dynamically set the date -->
+      <div class="transaction-date">Today</div>
+
+      <!-- INCOME FORM (active by default) -->
+      <form id="cr-income-form" class="transaction-fields active">
+        <input
+          type="text"
+          id="cr-income-title"
+          placeholder="Title (e.g., Salary, Gift)"
+        />
+
+        <textarea
+          id="cr-income-notes"
+          placeholder="Notes (optional)"
+        ></textarea>
+
+        <!-- Amount Field -->
+        <input 
+          type="number"
+          id="cr-popup-income-amount"
+          placeholder="Amount"
+          required
+        />
+
+        <!-- Category (Source) Selection -->
+        <div class="category-wrapper">
+          <button type="button" id="cr-select-income-category-btn" class="btn-category-select">
+            Select Source
+          </button>
+          <input type="hidden" id="cr-chosen-income-category" />
+          <span id="cr-chosen-income-category-text"></span>
+        </div>
+
+   
+        <!-- Save Button -->
+        <button type="submit" class="btn-primary">Save Income</button>
+      </form>
+
+      <!-- EXPENSE FORM (hidden initially) -->
+      <form id="cr-expense-form" class="transaction-fields hidden">
+        <input
+          type="text"
+          id="cr-expense-title"
+          placeholder="Title (e.g., Groceries, Rent)"
+        />
+
+        <textarea
+          id="cr-expense-notes"
+          placeholder="Notes (optional)"
+        ></textarea>
+
+        <input
+          type="number"
+          id="cr-popup-expense-amount"
+          placeholder="Amount"
+          required
+        />
+
+        <!-- Category Selection -->
+        <div class="category-wrapper">
+          <button type="button" id="cr-select-expense-category-btn" class="btn-category-select">
+            Select Category
+          </button>
+          <input type="hidden" id="cr-chosen-expense-category" />
+          <span id="cr-chosen-expense-category-text"></span>
+        </div>
+
+  
+        <!-- Save Button -->
+        <button type="submit" class="btn-primary">Save Expense</button>
+      </form>
+    </div>
   </div>
 </div>
+
+
 
 <!-- CATEGORY SELECTION POPUP -->
 <!-- CATEGORY SELECTION POPUP -->
@@ -246,8 +303,9 @@
 
     <!-- Top tab headers for the category overlay -->
     <div class="category-tabs">
-      <div id="cr-cat-expense-tab" class="category-tab active">Expense</div>
+    
       <div id="cr-cat-income-tab" class="category-tab income-tab">Income</div>
+      <div id="cr-cat-expense-tab" class="category-tab active">Expense</div>
     </div>
 
     <!-- Grid of categories from Firestore -->
