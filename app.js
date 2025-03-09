@@ -4,7 +4,7 @@
     initializeApp 
   } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
   import { OAuthProvider } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
-  
+ 
   import { 
     getAuth, 
     signInWithEmailAndPassword, 
@@ -39,8 +39,11 @@
     }
   };
   // Make them global
-  let auth;
-  let db;
+// Global variables
+let auth;
+let db;
+let storage; // Declare storage here as a global variable
+
   // Initialize Firebase with dynamically fetched API key
   const initializeAppWithApiKey = async () => {
     const apiKey = await fetchApiKey();
@@ -78,6 +81,7 @@
       });
       
       initializeFirebaseFeatures(app);
+      
     } else {
       console.error("Failed to fetch API key. Firebase initialization aborted.");
     }
@@ -398,9 +402,9 @@
   ///////////////////////////////////////////////////
   
   const initializeFirebaseFeatures = (app) => {
-    // Now 'auth' and 'db' are in scope for everything in here
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    auth = getAuth(app);
+    db = getFirestore(app);
+   
   
     // All your existing code for signIn, signOut, etc.
     // (the code that references 'auth' for transactions)
@@ -1047,82 +1051,189 @@
           alert("An error occurred during logout.");
         }
       });
-  
-  
-  
-  
-  
-  
-  
-  // Then in the actual expense submit:
-  document.getElementById("cr-expense-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const amount = parseFloat(document.getElementById("cr-popup-expense-amount").value);
-    // Get the selected expense category from the hidden input
-    const category = document.getElementById("cr-chosen-expense-category").value;
-  
-    if (!amount || !category) {
-      alert("Please provide valid expense details.");
+      // -------------------------
+// Real-time Clock Setup
+// -------------------------
+const transactionClock = document.getElementById("transaction-clock");
+
+function updateTransactionClock() {
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  let displayHour = hours % 12 || 12;
+  let ampm = hours >= 12 ? "PM" : "AM";
+  transactionClock.textContent = `${displayHour}:${minutes} ${ampm}`;
+}
+setInterval(updateTransactionClock, 1000);
+updateTransactionClock();
+
+// -------------------------
+// Global Element References
+// -------------------------
+const transactionLoading = document.getElementById("transaction-loading");
+
+
+// Header Amount Display
+const headerAmountText = document.getElementById("header-amount-text");
+
+
+// -------------------------
+// Form Input Listeners for Updating Big Amount Display
+// -------------------------
+const incomeAmountInput = document.getElementById("cr-popup-income-amount");
+const expenseAmountInput = document.getElementById("cr-popup-expense-amount");
+
+incomeAmountInput.addEventListener("input", () => {
+  headerAmountText.textContent = `$${incomeAmountInput.value || 0}`;
+});
+expenseAmountInput.addEventListener("input", () => {
+  headerAmountText.textContent = `$${expenseAmountInput.value || 0}`;
+});
+
+// -------------------------
+// Income Form Submission 
+// -------------------------
+document.getElementById("cr-income-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  transactionLoading.classList.remove("hidden");
+
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Please log in first!");
       return;
     }
-    
-    const user = auth.currentUser;
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-    const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
-  
-    const now = new Date();
-    userData.expenses.push({
-      amount,
-      category,
-      timestamp: now.toISOString()
-    });
-    userData.balance -= amount;
-  
-    await setDoc(userDocRef, userData, { merge: true });
-    balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
-  
-    document.getElementById("cr-expense-form").reset();
-    // Close the transaction popup (using the new ID)
-    document.getElementById("cr-transaction-popup").classList.add("hidden");
-  });
-  
-  
-  
-  
-  // Income form similarly
-  document.getElementById("cr-income-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const amount = parseFloat(document.getElementById("cr-popup-income-amount").value);
-    // Get the selected income source from the hidden input
+
+    // Grab form fields
+    const amount = parseFloat(incomeAmountInput.value);
     const source = document.getElementById("cr-chosen-income-category").value;
-  
+    const title = document.getElementById("cr-income-title").value.trim();
+    const notes = document.getElementById("cr-income-notes").value.trim();
+
     if (!amount || !source) {
       alert("Please provide valid income details.");
       return;
     }
-    
-    const user = auth.currentUser;
+
+   
+
+    // Prepare and update user data in Firestore
     const userDocRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
     const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
-  
     const now = new Date();
+
     userData.incomes.push({
       amount,
       source,
-      timestamp: now.toISOString()
+      timestamp: now.toISOString(),
+      title: title || "",
+      notes: notes || ""
+     
     });
     userData.balance += amount;
-  
+
     await setDoc(userDocRef, userData, { merge: true });
     balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
-  
+
+    // Reset form & UI
     document.getElementById("cr-income-form").reset();
-    document.getElementById("cr-transaction-popup").classList.add("hidden");
-  });
-  
-  
+    crChosenIncomeCategoryText.textContent = "";
+   
+    transactionPopup.classList.add("hidden");
+
+  } catch (error) {
+    console.error("Error saving income:", error);
+    alert("Failed to save income.");
+  } finally {
+    transactionLoading.classList.add("hidden");
+  }
+});
+
+// -------------------------
+// Expense Form Submission 
+// -------------------------
+document.getElementById("cr-expense-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  transactionLoading.classList.remove("hidden");
+
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Please log in first!");
+      return;
+    }
+
+    // Grab form fields
+    const amount = parseFloat(expenseAmountInput.value);
+    const category = document.getElementById("cr-chosen-expense-category").value;
+    const title = document.getElementById("cr-expense-title").value.trim();
+    const notes = document.getElementById("cr-expense-notes").value.trim();
+
+    if (!amount || !category) {
+      alert("Please provide valid expense details.");
+      return;
+    }
+
+ 
+
+    // Prepare and update user data in Firestore
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+    const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
+    const now = new Date();
+
+    userData.expenses.push({
+      amount,
+      category,
+      timestamp: now.toISOString(),
+      title: title || "",
+      notes: notes || ""
+    
+    });
+    userData.balance -= amount;
+
+    await setDoc(userDocRef, userData, { merge: true });
+    balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
+
+    // Reset form & UI
+    document.getElementById("cr-expense-form").reset();
+    crChosenExpenseCategoryText.textContent = "";
+    
+    transactionPopup.classList.add("hidden");
+
+  } catch (error) {
+    console.error("Error saving expense:", error);
+    alert("Failed to save expense.");
+  } finally {
+    transactionLoading.classList.add("hidden");
+  }
+});
+
+// -------------------------
+// Tab Toggling: Income vs Expense
+// -------------------------
+expenseTab.addEventListener("click", () => {
+  expenseTab.classList.add("active");
+  incomeTab.classList.remove("active");
+  document.getElementById("cr-expense-form").classList.add("active");
+  document.getElementById("cr-expense-form").classList.remove("hidden");
+  document.getElementById("cr-income-form").classList.add("hidden");
+  document.getElementById("cr-income-form").classList.remove("active");
+  headerAmountText.style.color = "#d32f2f"; // red for expense
+});
+
+incomeTab.addEventListener("click", () => {
+  incomeTab.classList.add("active");
+  expenseTab.classList.remove("active");
+  document.getElementById("cr-income-form").classList.add("active");
+  document.getElementById("cr-income-form").classList.remove("hidden");
+  document.getElementById("cr-expense-form").classList.add("hidden");
+  document.getElementById("cr-expense-form").classList.remove("active");
+  headerAmountText.style.color = "#2e7d32"; // green for income
+});
+
+
   
       // Display balance
       if (typeof data.balance === "number") {
@@ -1517,77 +1628,6 @@ document.getElementById("view-all-transactions").addEventListener("click", () =>
     transactionPopup.classList.add("hidden");
   });
   
-  // Handle Income Form Submission
-  document.getElementById("cr-income-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-  
-    const user = auth.currentUser;
-    if (!user) {
-      alert("Please log in first!");
-      return;
-    }
-  
-    const amount = parseFloat(document.getElementById("cr-popup-income-amount").value);
-    const source = document.getElementById("cr-popup-income-source").value;
-  
-    if (!amount || !source) {
-      alert("Please provide valid income details.");
-      return;
-    }
-  
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-    const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
-  
-    // Add the new income and update the balance
-    userData.incomes = [...(userData.incomes || []), { amount, source }];
-    userData.balance += amount;
-  
-    await setDoc(userDocRef, userData, { merge: true });
-  
-    // Update the balance display
-    balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
-  
-    // Reset the form and close the popup
-    document.getElementById("cr-income-form").reset();
-    transactionPopup.classList.add("hidden");
-  
-    // Success notification
-    
-  });
-  
-  
-  // Handle Expense Form Submission
-  document.getElementById("cr-expense-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  
-  const user = auth.currentUser;
-  if (!user) {
-    alert("Please log in first!");
-    return;
-  }
-  
-    const amount = parseFloat(document.getElementById("cr-popup-expense-amount").value);
-    const category = document.getElementById("cr-popup-expense-category").value;
-  
-    if (!amount || !category) {
-      alert("Please provide valid expense details.");
-      return;
-    }
-  
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-    const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
-  
-    userData.expenses = [...(userData.expenses || []), { amount, category }];
-    userData.balance -= amount;
-  
-    await setDoc(userDocRef, userData, { merge: true });
-    balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
-    document.getElementById("cr-expense-form").reset();
-    transactionPopup.classList.add("hidden");
-   
-  });
   
     incomeTab.addEventListener("click", () => {
       incomeTab.classList.add("active");
@@ -1786,6 +1826,23 @@ document.getElementById("view-all-transactions").addEventListener("click", () =>
   
   
   
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
   
   
   
