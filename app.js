@@ -82,6 +82,63 @@
       console.error("Failed to fetch API key. Firebase initialization aborted.");
     }
   };
+  function buildDailyNetBalanceSeries(incomes = [], expenses = []) {
+    // 1) Build a map: dayString -> totalChange
+    //    Example dayString: "2023-03-09"
+    const dayMap = {};
+  
+    // Helper to format a date to "YYYY-MM-DD"
+    function formatDay(dateObj) {
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const day = String(dateObj.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+  
+    // Go through incomes (positive amounts)
+    incomes.forEach(inc => {
+      const dateObj = new Date(inc.timestamp);
+      const dayStr = formatDay(dateObj);
+      const amount = parseFloat(inc.amount);
+      if (!dayMap[dayStr]) dayMap[dayStr] = 0;
+      dayMap[dayStr] += amount;
+    });
+  
+    // Go through expenses (negative amounts)
+    expenses.forEach(exp => {
+      const dateObj = new Date(exp.timestamp);
+      const dayStr = formatDay(dateObj);
+      const amount = -parseFloat(exp.amount);
+      if (!dayMap[dayStr]) dayMap[dayStr] = 0;
+      dayMap[dayStr] += amount;
+    });
+  
+    // 2) Convert the dayMap into an array of { date: Date, totalChange: number }
+    //    and sort by date ascending.
+    let dayEntries = Object.keys(dayMap).map(dayStr => {
+      // Rebuild a Date object from dayStr
+      // (the time will be midnight for that day)
+      const [yyyy, mm, dd] = dayStr.split("-");
+      const dateObj = new Date(yyyy, mm - 1, dd);
+      return {
+        date: dateObj,
+        totalChange: dayMap[dayStr]
+      };
+    });
+    dayEntries.sort((a, b) => a.date - b.date);
+  
+    // 3) Build a running total so the chart can show net balance over time
+    let runningTotal = 0;
+    const series = dayEntries.map(entry => {
+      runningTotal += entry.totalChange;
+      return {
+        x: entry.date, // ApexCharts will treat this as the date on the x-axis
+        y: runningTotal
+      };
+    });
+  
+    return series;
+  }
   
   ///////////////////////////////////////////////////
   // BEGIN: New Category Selection Code (with Firestore)
@@ -1083,24 +1140,17 @@
         userProfilePic.src = data.photoUrl;
       }
       updateSummaryBoxes(data);
-      // Prepare data for charts
-// Prepare data for charts
-// Improved Example Data – replace these with your real data arrays (dates must be ISO format)
-const labels = [
-  "2023-02-06T00:00:00",
-  "2023-02-11T00:00:00",
-  "2023-02-15T00:00:00",
-  "2023-02-20T00:00:00",
-  "2023-02-25T00:00:00",
-  "2023-03-01T00:00:00",
-  "2023-03-06T00:00:00"
-];
-const balanceData = [0, 300, 700, 1200, 1500, 1500, 1800];
+   // 1) Build your daily net balance series
+const netBalanceSeries = buildDailyNetBalanceSeries(
+  data.incomes || [],
+  data.expenses || []
+);
 
-const options = {
+// 2) Chart options (markers hidden until hover)
+const chartOptions = {
   series: [{
     name: "Net Balance",
-    data: balanceData
+    data: netBalanceSeries
   }],
   chart: {
     type: 'area',
@@ -1112,13 +1162,24 @@ const options = {
       top: 4,
       left: 0,
       blur: 6,
-      opacity: 0.2
+      opacity: 0.2,
+      color: '#000'
     }
   },
   dataLabels: { enabled: false },
   stroke: {
     curve: 'smooth',
-    width: 3
+    width: 4
+  },
+  markers: {
+    // Hide markers by default
+    size: 0,
+    // On hover, show the marker
+    hover: {
+      size: 6 // marker appears bigger when hovered
+    },
+    strokeWidth: 2,
+    strokeColors: '#fff'
   },
   fill: {
     type: 'gradient',
@@ -1126,9 +1187,11 @@ const options = {
       shadeIntensity: 1,
       opacityFrom: 0.4,
       opacityTo: 0,
-      stops: [0, 90, 100]
+      stops: [0, 80, 100],
+      inverseColors: false
     }
   },
+  colors: ['#4285F4'],
   title: {
     text: 'Account Balance Analysis',
     align: 'left',
@@ -1139,42 +1202,56 @@ const options = {
     align: 'left',
     style: { fontSize: '14px' }
   },
-  labels: labels,
   xaxis: {
     type: 'datetime',
     labels: {
       format: 'MMM d',
-      style: { fontSize: '14px' }
+      style: { fontSize: '14px', colors: ['#666'] }
     },
     axisBorder: { show: false },
     axisTicks: { show: false }
   },
   yaxis: {
-    opposite: true,
-    labels: { style: { fontSize: '14px' } },
+    opposite: false,
+    labels: {
+      style: { fontSize: '14px', colors: ['#666'] },
+      formatter: val => `$${val.toFixed(2)}`
+    },
     axisBorder: { show: false },
     axisTicks: { show: false }
   },
   tooltip: {
     theme: 'light',
-    x: {
-      format: 'MMM dd, yyyy'
+    x: { format: 'MMM dd, yyyy' },
+    y: {
+      formatter: val => `$${val.toFixed(2)}`,
+      title: {
+        formatter: () => 'Balance:'
+      }
+    },
+    style: {
+      fontSize: '14px'
     }
   },
-  legend: {
-    horizontalAlign: 'left'
-  },
+  legend: { show: false },
   grid: {
     borderColor: "#e0e0e0",
-    strokeDashArray: 4
+    strokeDashArray: 4,
+    padding: { left: 10, right: 10 }
   }
 };
 
-const balanceChart = new ApexCharts(
+// 3) Destroy old chart (if it exists), then render the new one
+if (window.balanceChart) {
+  window.balanceChart.destroy();
+}
+window.balanceChart = new ApexCharts(
   document.querySelector("#balance-chart"),
-  options
+  chartOptions
 );
-balanceChart.render();
+window.balanceChart.render();
+
+
 
 (function renderSpendingChart() {
   // Build category totals
@@ -1714,6 +1791,7 @@ document.getElementById("view-all-transactions").addEventListener("click", () =>
   
   
   
+
 
 
 
