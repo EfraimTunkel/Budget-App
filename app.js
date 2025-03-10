@@ -1291,13 +1291,13 @@ incomeTab.addEventListener("click", () => {
         userProfilePic.src = data.photoUrl;
       }
       updateSummaryBoxes(data);
-   // 1) Build your daily net balance series
+   // 1) Build your daily net balance series (already done in your code)
 const netBalanceSeries = buildDailyNetBalanceSeries(
   data.incomes || [],
   data.expenses || []
 );
 
-// 2) Chart options (markers hidden until hover)
+// 2) Define the chart options
 const chartOptions = {
   series: [{
     name: "Net Balance",
@@ -1306,66 +1306,64 @@ const chartOptions = {
   chart: {
     type: 'area',
     height: 350,
-    zoom: { enabled: false },
+    // If you want a light background color directly on the chart:
+    background: '#fff',
     toolbar: { show: false },
+    zoom: { enabled: false },
     dropShadow: {
       enabled: true,
       top: 4,
       left: 0,
       blur: 6,
-      opacity: 0.2,
+      opacity: 0.15,
       color: '#000'
-    }
+    },
   },
-  dataLabels: { enabled: false },
   stroke: {
     curve: 'smooth',
-    width: 4
-  },
-  markers: {
-    // Hide markers by default
-    size: 0,
-    // On hover, show the marker
-    hover: {
-      size: 6 // marker appears bigger when hovered
-    },
-    strokeWidth: 2,
-    strokeColors: '#fff'
+    width: 3,
+    colors: ['#4285F4'] // The line color
   },
   fill: {
     type: 'gradient',
     gradient: {
       shadeIntensity: 1,
-      opacityFrom: 0.4,
-      opacityTo: 0,
-      stops: [0, 80, 100],
+      // The fill below the line transitions from a semi-opaque color
+      // near the line to fully transparent near the bottom
+      gradientToColors: ['#4285F4'],
+      opacityFrom: 0.3,
+      opacityTo: 0.0,
+      stops: [0, 90, 100],
       inverseColors: false
     }
   },
-  colors: ['#4285F4'],
-  title: {
-    text: 'Account Balance Analysis',
-    align: 'left',
-    style: { fontSize: '18px', fontWeight: 'bold' }
-  },
-  subtitle: {
-    text: 'Balance Over Time',
-    align: 'left',
-    style: { fontSize: '14px' }
+  dataLabels: { enabled: false },
+  markers: {
+    size: 0, // Hide by default
+    hover: { size: 6 },
+    strokeWidth: 2,
+    strokeColors: '#fff'
   },
   xaxis: {
     type: 'datetime',
     labels: {
+      // e.g. "Feb 9", "Mar 1" 
+      // The actual ticks depend on your data’s date range
       format: 'MMM d',
-      style: { fontSize: '14px', colors: ['#666'] }
+      style: {
+        fontSize: '13px',
+        colors: ['#666']
+      }
     },
     axisBorder: { show: false },
     axisTicks: { show: false }
   },
   yaxis: {
-    opposite: false,
     labels: {
-      style: { fontSize: '14px', colors: ['#666'] },
+      style: {
+        fontSize: '13px',
+        colors: ['#666']
+      },
       formatter: val => `$${val.toFixed(2)}`
     },
     axisBorder: { show: false },
@@ -1376,23 +1374,33 @@ const chartOptions = {
     x: { format: 'MMM dd, yyyy' },
     y: {
       formatter: val => `$${val.toFixed(2)}`,
-      title: {
-        formatter: () => 'Balance:'
-      }
+      title: { formatter: () => 'Balance:' }
     },
-    style: {
-      fontSize: '14px'
-    }
+    style: { fontSize: '14px' }
+  },
+  grid: {
+    borderColor: '#ddd',
+    strokeDashArray: 4, // Dotted/dashed grid
+    padding: { left: 15, right: 15 }
   },
   legend: { show: false },
-  grid: {
-    borderColor: "#e0e0e0",
-    strokeDashArray: 4,
-    padding: { left: 10, right: 10 }
-  }
+  // Responsive rules for mobile
+  responsive: [{
+    breakpoint: 768,
+    options: {
+      chart: { height: 250 },
+      stroke: { width: 2 },
+      xaxis: {
+        labels: { style: { fontSize: '12px' } }
+      },
+      yaxis: {
+        labels: { style: { fontSize: '12px' } }
+      }
+    }
+  }]
 };
 
-// 3) Destroy old chart (if it exists), then render the new one
+// 3) Destroy old chart if it exists, then render the new one
 if (window.balanceChart) {
   window.balanceChart.destroy();
 }
