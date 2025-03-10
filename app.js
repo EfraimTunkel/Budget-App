@@ -840,18 +840,21 @@ discardConfirmBtn.addEventListener("click", () => {
   
   
      // Monitor Authentication State
-     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        authContainer.style.display = "none";
-        dashboardContainer.style.display = "block";
-        loadDashboard(user);
-        // Load categories so the user can pick them
-        loadCategoriesFromFirestore(user); 
-      } else {
-        authContainer.style.display = "block";
-        dashboardContainer.style.display = "none";
-      }
-    });
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      // First, load categories so that incomeCategories and expenseCategories aren’t empty
+      await loadCategoriesFromFirestore(user);
+      
+      // Now that categories are in memory, display the dashboard and load its content
+      authContainer.style.display = "none";
+      dashboardContainer.style.display = "block";
+      loadDashboard(user);
+    } else {
+      // If no user is signed in, show the auth container, hide the dashboard
+      authContainer.style.display = "block";
+      dashboardContainer.style.display = "none";
+    }
+  });
     
   // BEGGING OF THE TRANSACTION LISTING CODE
   /***************************************************
