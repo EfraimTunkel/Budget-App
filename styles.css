@@ -2286,10 +2286,10 @@ body {
 ************************************************/
 #cr-category-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
   gap: 16px;
-  padding-bottom: 15px; /* spacing */
-  margin-bottom: 10px;  /* spacing from bottom or add-cat form */
+  padding-bottom: 15px;
+  margin-bottom: 10px;
   justify-items: center;
 }
 
