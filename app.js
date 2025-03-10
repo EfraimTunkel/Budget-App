@@ -624,8 +624,48 @@ let storage; // Declare storage here as a global variable
     const logoutButton = document.getElementById("logout-button");
     const balanceDisplay = document.getElementById("balance");
     const addTransactionButton = document.getElementById("add-transaction-button");
-    const transactionPopup = document.getElementById("cr-transaction-popup");
-    const closePopupButton = document.getElementById("cr-close-transaction-popup");
+   // References
+const transactionPopup = document.getElementById("cr-transaction-popup");
+const closePopupButton = document.getElementById("cr-close-transaction-popup");
+
+const discardPopup = document.getElementById("discard-popup");
+const discardCancelBtn = document.getElementById("discard-cancel-btn");
+const discardConfirmBtn = document.getElementById("discard-confirm-btn");
+// Remove the duplicate event listener on the close button.
+// Use only this one which handles unsaved data:
+closePopupButton.addEventListener("click", () => {
+  const fields = transactionPopup.querySelectorAll("input, textarea");
+  let hasContent = false;
+  
+  fields.forEach(field => {
+    if (field.value.trim() !== "") {
+      hasContent = true;
+    }
+  });
+
+  if (hasContent) {
+    // Show the discard popup; leave transaction popup visible
+    discardPopup.classList.remove("hidden");
+  } else {
+    // No unsaved changes; close transaction popup
+    transactionPopup.classList.add("hidden");
+  }
+});
+
+// When Cancel is clicked on the discard popup, hide the discard popup
+discardCancelBtn.addEventListener("click", () => {
+  discardPopup.classList.add("hidden");
+});
+
+// When Discard is confirmed, clear the fields and hide both popups
+discardConfirmBtn.addEventListener("click", () => {
+  const fields = transactionPopup.querySelectorAll("input, textarea");
+  fields.forEach(field => field.value = "");
+  discardPopup.classList.add("hidden");
+  transactionPopup.classList.add("hidden");
+});
+
+
     
   const incomeTab = document.getElementById("cr-income-tab");
   const expenseTab = document.getElementById("cr-expense-tab");
@@ -1623,11 +1663,7 @@ document.getElementById("view-all-transactions").addEventListener("click", () =>
     setActiveTab(incomeTab, incomeFields); // Default to showing Income tab
   });
   
-  // Handle Close Popup Button Click (Hide Popup)
-  closePopupButton.addEventListener("click", () => {
-    transactionPopup.classList.add("hidden");
-  });
-  
+
   
     incomeTab.addEventListener("click", () => {
       incomeTab.classList.add("active");
@@ -1848,6 +1884,15 @@ document.getElementById("view-all-transactions").addEventListener("click", () =>
   
   
   
+
+
+
+
+
+
+
+
+
 
 
 
