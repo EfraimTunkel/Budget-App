@@ -1,4 +1,6 @@
 
+
+
   
   import { 
     initializeApp 
@@ -633,37 +635,71 @@ const discardCancelBtn = document.getElementById("discard-cancel-btn");
 const discardConfirmBtn = document.getElementById("discard-confirm-btn");
 // Remove the duplicate event listener on the close button.
 // Use only this one which handles unsaved data:
+// Helper to clear the transaction popup fields
+function clearTransactionPopup() {
+  document.getElementById("cr-income-form").reset();
+  document.getElementById("cr-expense-form").reset();
+  document.getElementById("cr-chosen-income-category-text").textContent = "";
+  document.getElementById("cr-chosen-expense-category-text").textContent = "";
+}
+
+// Function to close the transaction popup
+function closeTransactionPopup(restoreTransactionsPage) {
+  transactionPopup.classList.add("hidden");
+  clearTransactionPopup();
+  editingTransactionId = null;
+  editingTransactionType = null;
+  // If we need to restore the transactions page, do so:
+  if (restoreTransactionsPage) {
+    const transactionsPage = document.getElementById("transactions-page");
+    if (transactionsPage) {
+      transactionsPage.classList.remove("hidden");
+      transactionsPage.classList.add("show");
+    }
+  }
+}
+
+// X button handler for the transaction popup
 closePopupButton.addEventListener("click", () => {
+  // If editing an existing transaction, cancel the edit and close the popup
+  if (editingTransactionId !== null) {
+    closeTransactionPopup(true);
+    return;
+  }
+  
+  // For a new transaction, check if any fields have content
   const fields = transactionPopup.querySelectorAll("input, textarea");
   let hasContent = false;
-  
   fields.forEach(field => {
     if (field.value.trim() !== "") {
       hasContent = true;
     }
   });
-
+  
   if (hasContent) {
-    // Show the discard popup; leave transaction popup visible
+    // Show the discard confirmation overlay
     discardPopup.classList.remove("hidden");
   } else {
-    // No unsaved changes; close transaction popup
-    transactionPopup.classList.add("hidden");
+    closeTransactionPopup(false);
   }
 });
 
-// When Cancel is clicked on the discard popup, hide the discard popup
+// Discard popup handlers
 discardCancelBtn.addEventListener("click", () => {
+  // Hide the discard overlay but leave the transaction popup open
   discardPopup.classList.add("hidden");
 });
 
-// When Discard is confirmed, clear the fields and hide both popups
 discardConfirmBtn.addEventListener("click", () => {
-  const fields = transactionPopup.querySelectorAll("input, textarea");
-  fields.forEach(field => field.value = "");
+  // Clear the popup and close it
+  clearTransactionPopup();
   discardPopup.classList.add("hidden");
-  transactionPopup.classList.add("hidden");
+  closeTransactionPopup(false);
 });
+
+
+
+
 
 
     
@@ -831,56 +867,63 @@ discardConfirmBtn.addEventListener("click", () => {
     const found = categoryList.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
     return found ? `./icons/${found.icon}` : null;
   }
-  
-  // Helper: Render a single transaction as a card
-  function renderTransactionCard(tx) {
+  function renderTransactionCard(tx, index) {
     const card = document.createElement("div");
     card.classList.add("transaction-card");
   
-    // Icon area: if a category icon exists, use it; otherwise use a default icon.
+    // Icon area
     const icon = document.createElement("div");
     icon.classList.add("transaction-icon");
     const categoryIconUrl = getCategoryIcon(tx);
     if (categoryIconUrl) {
       icon.innerHTML = `<img src="${categoryIconUrl}" alt="${tx.type === "Income" ? tx.source : tx.category}" />`;
     } else {
-      // Default icon (Font Awesome money icon)
       icon.innerHTML = `<i class="fa fa-money-bill-wave"></i>`;
     }
   
-    // Details container
+    // Transaction details
     const details = document.createElement("div");
     details.classList.add("transaction-details");
-    
+  
+    // Category or Source
+    const catOrSource = tx.type === "Income" ? tx.source : tx.category;
     const nameEl = document.createElement("div");
     nameEl.classList.add("transaction-name");
-    nameEl.textContent = tx.type === "Income" ? tx.source : tx.category;
-    
+    nameEl.textContent = catOrSource;
+  
+    // Title in smaller text
+    const titleEl = document.createElement("div");
+    titleEl.classList.add("transaction-subtitle");
+    titleEl.textContent = tx.title || "";
+  
+    // Timestamp
     const timeEl = document.createElement("div");
     timeEl.classList.add("transaction-time");
     const date = tx.timestamp ? new Date(tx.timestamp) : new Date();
     timeEl.textContent = date.toLocaleString();
-    
+  
     details.appendChild(nameEl);
+    details.appendChild(titleEl);
     details.appendChild(timeEl);
-    
-    // Amount element
+  
+    // Amount
     const amountEl = document.createElement("div");
     amountEl.classList.add("transaction-amount");
     const amt = parseFloat(tx.amount).toFixed(2);
     amountEl.textContent = (tx.type === "Income" ? "+$" : "-$") + amt;
-    if (tx.type === "Income") {
-      amountEl.classList.add("positive");
-    } else {
-      amountEl.classList.add("negative");
-    }
-    
-    // Assemble card
+    amountEl.classList.add(tx.type === "Income" ? "positive" : "negative");
+  
+    // Put it all together
     card.appendChild(icon);
     card.appendChild(details);
     card.appendChild(amountEl);
+  
+    // Make the card clickable to edit
+    card.addEventListener("click", () => openEditTransactionPopup(tx, index));
+  
     return card;
   }
+  
   
   // Function to set active tab and load transactions accordingly
   async function setActiveTransactionTab(filter) {
@@ -944,10 +987,11 @@ discardConfirmBtn.addEventListener("click", () => {
       transactionsListContent.innerHTML = "<p>No transactions found.</p>";
       return;
     }
-    transactionsToShow.forEach(tx => {
-      const card = renderTransactionCard(tx);
+    transactionsToShow.forEach((tx, index) => {
+      const card = renderTransactionCard(tx, index);
       transactionsListContent.appendChild(card);
     });
+    
   }
   
   // Attach event listeners for the transaction tabs
@@ -1002,7 +1046,68 @@ discardConfirmBtn.addEventListener("click", () => {
   
   
   // END OF THE TRANSACTION LISTING CODE
+  let editingTransactionId = null;
+  let editingTransactionType = null; // "Income" or "Expense"
   
+function openEditTransactionPopup(tx, index) {
+  editingTransactionId = tx.id;
+  editingTransactionType = tx.type;
+  // Hide the transactions page so the popup is in focus
+  const transactionsPage = document.getElementById("transactions-page");
+  if (transactionsPage) {
+    transactionsPage.classList.add("hidden");
+    transactionsPage.classList.remove("show");
+  }
+  transactionPopup.classList.remove("hidden");
+
+  // If it's Income, show the income tab; else show expense tab
+  if (tx.type === "Income") {
+    // Switch to income tab
+    incomeTab.classList.add("active");
+    expenseTab.classList.remove("active");
+    document.getElementById("cr-income-form").classList.add("active");
+    document.getElementById("cr-income-form").classList.remove("hidden");
+    document.getElementById("cr-expense-form").classList.add("hidden");
+    document.getElementById("cr-expense-form").classList.remove("active");
+
+    // Fill fields
+    document.getElementById("cr-income-title").value = tx.title || "";
+    document.getElementById("cr-income-notes").value = tx.notes || "";
+    document.getElementById("cr-popup-income-amount").value = tx.amount;
+    document.getElementById("cr-chosen-income-category").value = tx.source || "";
+    document.getElementById("cr-chosen-income-category-text").textContent = tx.source || "";
+    headerAmountText.textContent = `$${tx.amount || 0}`;
+    headerAmountText.style.color = "#2e7d32";
+
+  } else {
+    // Switch to expense tab
+    expenseTab.classList.add("active");
+    incomeTab.classList.remove("active");
+    document.getElementById("cr-expense-form").classList.add("active");
+    document.getElementById("cr-expense-form").classList.remove("hidden");
+    document.getElementById("cr-income-form").classList.add("hidden");
+    document.getElementById("cr-income-form").classList.remove("active");
+
+    // Fill fields
+    document.getElementById("cr-expense-title").value = tx.title || "";
+    document.getElementById("cr-expense-notes").value = tx.notes || "";
+    document.getElementById("cr-popup-expense-amount").value = tx.amount;
+    document.getElementById("cr-chosen-expense-category").value = tx.category || "";
+    document.getElementById("cr-chosen-expense-category-text").textContent = tx.category || "";
+    headerAmountText.textContent = `$${tx.amount || 0}`;
+    headerAmountText.style.color = "#d32f2f";
+  }
+
+  // Optionally rename the submit button from "Save" to "Update"
+  const saveIncomeBtn = document.querySelector("#cr-income-form .btn-primary");
+  const saveExpenseBtn = document.querySelector("#cr-expense-form .btn-primary");
+  saveIncomeBtn.textContent = "Update Income";
+  saveExpenseBtn.textContent = "Update Expense";
+  
+  // Show a "Delete" button if you want:
+  // ... or handle delete differently
+}
+
   
   
   // Load Dashboard
@@ -1136,52 +1241,69 @@ expenseAmountInput.addEventListener("input", () => {
 document.getElementById("cr-income-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   transactionLoading.classList.remove("hidden");
-
   try {
     const user = auth.currentUser;
     if (!user) {
       alert("Please log in first!");
       return;
     }
-
-    // Grab form fields
     const amount = parseFloat(incomeAmountInput.value);
     const source = document.getElementById("cr-chosen-income-category").value;
     const title = document.getElementById("cr-income-title").value.trim();
     const notes = document.getElementById("cr-income-notes").value.trim();
 
-    if (!amount || !source) {
-      alert("Please provide valid income details.");
-      return;
-    }
-
-   
-
-    // Prepare and update user data in Firestore
     const userDocRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
-    const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
-    const now = new Date();
+    let userData = userDoc.exists()
+      ? userDoc.data()
+      : { balance: 0, incomes: [], expenses: [] };
 
-    userData.incomes.push({
-      amount,
-      source,
-      timestamp: now.toISOString(),
-      title: title || "",
-      notes: notes || ""
-     
-    });
-    userData.balance += amount;
+    if (editingTransactionType === "Income" && editingTransactionId) {
+      // Find the transaction by its unique id
+      const txIndex = userData.incomes.findIndex(tx => tx.id === editingTransactionId);
+      if (txIndex > -1) {
+        const oldTx = userData.incomes[txIndex];
+        // Remove the old transaction's amount from the balance
+        userData.balance -= parseFloat(oldTx.amount);
+        // Update the transaction while keeping its id and timestamp
+        userData.incomes[txIndex] = {
+          id: editingTransactionId,
+          amount,
+          source,
+          timestamp: oldTx.timestamp,
+          title,
+          notes
+        };
+        // Add the new amount to the balance
+        userData.balance += amount;
+      }
+    } else {
+      // Create a new transaction with a unique id
+      const now = new Date();
+      const newId = 'inc-' + now.getTime() + '-' + Math.floor(Math.random() * 1000);
+      userData.incomes.push({
+        id: newId,
+        amount,
+        source,
+        timestamp: now.toISOString(),
+        title,
+        notes
+      });
+      userData.balance += amount;
+    }
 
     await setDoc(userDocRef, userData, { merge: true });
     balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
 
-    // Reset form & UI
+    // Refresh the dashboard so changes are immediately visible
+    loadDashboard(user);
+
+    // Reset editing state and clear the popup
+    editingTransactionId = null;
+    editingTransactionType = null;
     document.getElementById("cr-income-form").reset();
     crChosenIncomeCategoryText.textContent = "";
-   
     transactionPopup.classList.add("hidden");
-
   } catch (error) {
     console.error("Error saving income:", error);
     alert("Failed to save income.");
@@ -1190,58 +1312,76 @@ document.getElementById("cr-income-form").addEventListener("submit", async (e) =
   }
 });
 
+
 // -------------------------
 // Expense Form Submission 
 // -------------------------
 document.getElementById("cr-expense-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   transactionLoading.classList.remove("hidden");
-
   try {
     const user = auth.currentUser;
     if (!user) {
       alert("Please log in first!");
       return;
     }
-
-    // Grab form fields
     const amount = parseFloat(expenseAmountInput.value);
     const category = document.getElementById("cr-chosen-expense-category").value;
     const title = document.getElementById("cr-expense-title").value.trim();
     const notes = document.getElementById("cr-expense-notes").value.trim();
 
-    if (!amount || !category) {
-      alert("Please provide valid expense details.");
-      return;
-    }
-
- 
-
-    // Prepare and update user data in Firestore
     const userDocRef = doc(db, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
-    const userData = userDoc.exists() ? userDoc.data() : { balance: 0, incomes: [], expenses: [] };
-    const now = new Date();
+    let userData = userDoc.exists()
+      ? userDoc.data()
+      : { balance: 0, incomes: [], expenses: [] };
 
-    userData.expenses.push({
-      amount,
-      category,
-      timestamp: now.toISOString(),
-      title: title || "",
-      notes: notes || ""
-    
-    });
-    userData.balance -= amount;
+    if (editingTransactionType === "Expense" && editingTransactionId) {
+      // Find the transaction by its unique id
+      const txIndex = userData.expenses.findIndex(tx => tx.id === editingTransactionId);
+      if (txIndex > -1) {
+        const oldTx = userData.expenses[txIndex];
+        // For expense, first add back the old amount (since it was subtracted)
+        userData.balance += parseFloat(oldTx.amount);
+        // Update the transaction while keeping its id and original timestamp
+        userData.expenses[txIndex] = {
+          id: editingTransactionId,
+          amount,
+          category,
+          timestamp: oldTx.timestamp,
+          title,
+          notes
+        };
+        // Subtract the new amount from the balance
+        userData.balance -= amount;
+      }
+    } else {
+      // Create a new expense transaction with a unique id
+      const now = new Date();
+      const newId = 'exp-' + now.getTime() + '-' + Math.floor(Math.random() * 1000);
+      userData.expenses.push({
+        id: newId,
+        amount,
+        category,
+        timestamp: now.toISOString(),
+        title,
+        notes
+      });
+      userData.balance -= amount;
+    }
 
     await setDoc(userDocRef, userData, { merge: true });
     balanceDisplay.textContent = `$${userData.balance.toFixed(2)}`;
 
-    // Reset form & UI
+    // Refresh the dashboard so that the update shows immediately
+    loadDashboard(user);
+
+    // Reset editing state and clear the popup
+    editingTransactionId = null;
+    editingTransactionType = null;
     document.getElementById("cr-expense-form").reset();
     crChosenExpenseCategoryText.textContent = "";
-    
     transactionPopup.classList.add("hidden");
-
   } catch (error) {
     console.error("Error saving expense:", error);
     alert("Failed to save expense.");
@@ -1249,6 +1389,8 @@ document.getElementById("cr-expense-form").addEventListener("submit", async (e) 
     transactionLoading.classList.add("hidden");
   }
 });
+
+
 
 // -------------------------
 // Tab Toggling: Income vs Expense
@@ -1291,7 +1433,7 @@ incomeTab.addEventListener("click", () => {
         userProfilePic.src = data.photoUrl;
       }
       updateSummaryBoxes(data);
-   // 1) Build your daily net balance series (already done in your code)
+  // 1) Build your daily net balance series (already done in your code)
 const netBalanceSeries = buildDailyNetBalanceSeries(
   data.incomes || [],
   data.expenses || []
@@ -1409,6 +1551,7 @@ window.balanceChart = new ApexCharts(
   chartOptions
 );
 window.balanceChart.render();
+
 
 
 
@@ -1554,7 +1697,7 @@ function renderRecentTransactions(filter) {
 
   const recent = filteredTransactions.slice(0, 6);
   const container = document.getElementById("recent-transactions-list");
-  container.innerHTML = ""; // Clear any previous content
+  container.innerHTML = "";
 
   if (!recent.length) {
     container.innerHTML = "<p>No recent transactions.</p>";
@@ -1565,15 +1708,18 @@ function renderRecentTransactions(filter) {
     const item = document.createElement("div");
     item.classList.add("recent-tx-item");
 
-    // Get the category icon (if any)
+    // Icon
     const categoryIconUrl = getCategoryIcon(tx);
-    // Fallback icon if no custom icon is found
     const iconHtml = categoryIconUrl
       ? `<img src="${categoryIconUrl}" alt="icon" class="recent-tx-icon" />`
       : `<i class="fa fa-money-bill-wave"></i>`;
 
-    const txLabel = tx.type === "Income" ? tx.source : tx.category;
-    const date = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : "N/A";
+    // Show category (tx.source or tx.category) in bold, and title in smaller text
+    const catOrSource = tx.type === "Income" ? tx.source : tx.category;
+    const title = tx.title || ""; // fallback if no title
+
+    // Format date and amount
+    const dateStr = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : "N/A";
     const sign = tx.type === "Income" ? "+" : "-";
     const amount = parseFloat(tx.amount).toFixed(2);
 
@@ -1582,8 +1728,11 @@ function renderRecentTransactions(filter) {
       <div class="recent-tx-icon-wrapper">
         ${iconHtml}
       </div>
-      <span class="tx-label">${txLabel}</span>
-      <span class="tx-date">${date}</span>
+      <div class="recent-tx-info">
+        <div class="tx-label">${catOrSource}</div>
+        <div class="tx-subtitle">${title}</div> 
+      </div>
+      <span class="tx-date">${dateStr}</span>
       <span class="tx-amount ${tx.type === "Income" ? "positive" : "negative"}">
         ${sign}$${amount}
       </span>
@@ -1592,6 +1741,7 @@ function renderRecentTransactions(filter) {
     container.appendChild(item);
   });
 }
+
 
 function updateSummaryBoxes(data) {
   // Get incomes and expenses arrays from your user data
@@ -1892,16 +2042,6 @@ document.getElementById("view-all-transactions").addEventListener("click", () =>
   
   
   
-
-
-
-
-
-
-
-
-
-
 
 
 
