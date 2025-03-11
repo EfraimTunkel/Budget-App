@@ -1448,8 +1448,117 @@ body {
 
 
 
+/************************************************
+  ADD-CAT-TOP (the top row with an icon, name, color circles)
+************************************************/
+.add-cat-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  /* Allow wrapping on small screens */
+  flex-wrap: wrap;
+}
 
+/************************************************
+  PREVIEW ICON (the square on the left)
+************************************************/
+.preview-icon {
+  width: 64px;
+  height: 64px;
+  background-color: #e0e0e0; /* default gray */
+  border-radius: 16px;       /* slightly rounded corners */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.preview-icon img {
+  width: 80%;
+  height: 80%;
+  object-fit: cover;
+}
 
+/************************************************
+  CAT-NAME-SECTION
+************************************************/
+.cat-name-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cat-name-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #777;
+  margin-bottom: 4px;
+}
+
+.cat-name-section input {
+  /* Underline style instead of a box */
+  border: none;
+  border-bottom: 2px solid #ccc;
+  padding: 6px 0;
+  width: 200px;  /* You can adjust this or make it 100% on smaller screens */
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.cat-name-section input:focus {
+  border-color: #4caf50;
+}
+
+/************************************************
+  COLOR PALETTE (the circles in a row)
+************************************************/
+.color-palette {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;  /* pushes color circles to the right on wide screens */
+  align-items: center;
+}
+
+.color-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.color-circle:hover {
+  transform: translateY(-2px);
+  border-color: #999;
+}
+/* When a color is selected in JS, highlight it */
+.color-circle.selected {
+  border-color: #4caf50;
+}
+
+/************************************************
+  RESPONSIVE BEHAVIOR
+************************************************/
+@media (max-width: 600px) {
+  /* Stack elements vertically on smaller screens */
+  .add-cat-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  /* Remove the auto-margin so the color circles don't jump to the far right */
+  .color-palette {
+    margin-left: 0;
+    margin-top: 8px;
+  }
+
+  /* Make the input expand to fill the space on small screens */
+  .cat-name-section input {
+    width: 100%;
+    max-width: 300px;  /* or any max width you prefer */
+  }
+}
 
 /* ------------------- Basic Nav Setup ------------------- */
 .bottom-nav {
@@ -2398,40 +2507,117 @@ body {
 #cr-show-add-cat-form:active {
   transform: translateY(1px);
 }
-
 /************************************************
-  ADD-NEW-CATEGORY FORM (scrollable panel)
+  “+” BUTTON (the first item in your 4-column grid)
+************************************************/
+#cr-show-add-cat-form {
+  background-color: #fafafa;
+  border: 1px dashed #ccc;
+  border-radius: 16px;
+  width: 72px;
+  height: 72px;
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: bold;
+  color: #999;
+  text-align: center;
+  line-height: 72px;
+  transition: border-color 0.2s, color 0.2s, transform 0.2s;
+  margin-bottom: 16px; /* space below on smaller screens */
+}
+#cr-show-add-cat-form:hover {
+  border-color: #aaa;
+  color: #666;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+#cr-show-add-cat-form:active {
+  transform: translateY(1px);
+}
+/************************************************
+  FULL-SCREEN ADD-NEW-CATEGORY FORM (ALL DEVICES)
 ************************************************/
 #cr-add-cat-form {
-  order: 3;
-  width: 100%;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-  max-height: 60vh;         /* still scrollable if there's lots of content */
-  overflow-y: auto;         /* user can scroll */
-  -ms-overflow-style: none; /* IE/Edge remove scrollbar */
-  scrollbar-width: none;    /* Firefox remove scrollbar */
+  position: fixed;
+  inset: 0; /* top:0; left:0; right:0; bottom:0 */
+  z-index: 15999;
+
+  background: #fff;
+  display: none; /* .hidden => display: none */
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+
+  /* Hide scrollbars in all browsers */
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+#cr-add-cat-form::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
 }
 
-#cr-add-cat-form::-webkit-scrollbar {
-  display: none; /* Chrome/Safari/Opera remove scrollbar */
+/* Show as a flex container if not hidden */
+#cr-add-cat-form:not(.hidden) {
+  display: flex;
+  gap: 16px;
+  align-items: center; /* center horizontally if you want */
+  justify-content: flex-start; /* or adjust as needed */
 }
-#cr-add-cat-form.hidden {
-  display: none;
+
+/* Close (X) button in top-right corner */
+#cr-close-add-cat-form {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
 }
+#cr-close-add-cat-form:hover {
+  background-color: rgba(0,0,0,0.07);
+  color: #666;
+}
+
+/************************************************
+  ICON CIRCLE (ROUND PART) – e.g. custom background
+************************************************/
+.icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #eee; /* default color */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.icon-circle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+.icon-circle img {
+  width: 36px;
+  height: 36px;
+}
+
+/************************************************
+  INPUT FIELDS + LABELS
+************************************************/
 #cr-add-cat-form label {
   font-size: 14px;
   font-weight: 600;
   color: #555;
+  margin-top: 60px; /* space from top if needed */
 }
-/* Tweak the input to be smaller and centered */
 #cr-add-cat-form input[type="text"] {
-  display: block;
-  width: 80%;       /* narrower field */
-  margin: 0 auto 12px; /* center it, some bottom margin */
+  width: 80%; 
+  margin: 8px auto;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -2449,13 +2635,16 @@ body {
 }
 
 /************************************************
-  ICONS GRID (inside the add-new form)
+  ICONS GRID INSIDE THE FULL-SCREEN FORM
 ************************************************/
 #cr-icons-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   justify-items: center;
+  width: 90%;
+  max-width: 600px;
+  margin: 0 auto; /* center the grid horizontally */
 }
 #cr-icons-grid button {
   background-color: #fff;
@@ -2484,17 +2673,38 @@ body {
 }
 
 /************************************************
+  COLOR PICKER ROW (OPTIONAL)
+************************************************/
+.choose-bg-color {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+.choose-bg-color label {
+  font-weight: 600;
+  color: #555;
+}
+.choose-bg-color input[type="color"] {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/************************************************
   SAVE NEW CATEGORY BUTTON
 ************************************************/
 #cr-save-new-cat-btn {
-  display: block;
-  margin: 16px auto 0;           /* center horizontally, add top margin */
+  margin-top: 20px;
   padding: 12px 24px;
   background: linear-gradient(135deg, #42a5f5, #1976d2);
   color: #fff;
   border: none;
   border-radius: 10px;
-  font-size: 16px;               /* bigger text */
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(0,0,0,0.15);
@@ -2512,44 +2722,24 @@ body {
 /************************************************
   RESPONSIVE MEDIA QUERIES
 ************************************************/
+/* On small screens, let the Save button stick to the bottom if desired */
 @media (max-width: 768px) {
-  #cr-category-overlay .thispopup {
-    border-radius: 20px 20px 0 0;
-    max-width: 100%;
-    padding: 14px 18px 18px;
-  }
-  .category-tab {
-    font-size: 14px;
-  }
-  .category-card {
-    width: 60px;
-    height: 60px;
-  }
-  .category-card img {
-    width: 28px;
-    height: 28px;
-    margin-bottom: 4px;
-  }
-  .category-card div {
-    font-size: 12px;
-  }
-  #cr-show-add-cat-form {
-    width: 60px;
-    height: 60px;
-    font-size: 20px;
-    line-height: 60px;
-  }
-  #cr-add-cat-form {
-    max-height: 50vh; /* shorter scroll area on small screens */
+  #cr-save-new-cat-btn {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
   }
 }
 
+/* Adjust your category overlay if desired on desktop, or leave as-is */
 @media (min-width: 769px) {
   #cr-category-overlay .thispopup {
-    border-radius: 24px; /* all corners on desktop */
-    align-self: center;  /* center the sheet vertically on larger screens */
+    border-radius: 24px;
+    align-self: center;
   }
 }
+
+
 
 
 /************************************************
