@@ -306,8 +306,6 @@
     </div>
   </div>
 </div>
-
-<!-- CATEGORY SELECTION POPUP -->
 <!-- CATEGORY SELECTION POPUP -->
 <div id="cr-category-overlay" class="overlay hidden">
   <div class="thispopup">
@@ -316,27 +314,28 @@
 
     <!-- Top tab headers for the category overlay -->
     <div class="category-tabs">
-    
       <div id="cr-cat-income-tab" class="category-tab income-tab">Income</div>
       <div id="cr-cat-expense-tab" class="category-tab active">Expense</div>
     </div>
+
+    <!-- The plus button (now first) to reveal the add-new category form -->
+    <button id="cr-show-add-cat-form" class="add-cat-button">+</button>
 
     <!-- Grid of categories from Firestore -->
     <div id="cr-category-list" class="category-list">
       <!-- Categories will be injected here by JS -->
     </div>
 
-    <!-- Plus button (only one, defined here) to reveal the add-new category form -->
-    <button id="cr-show-add-cat-form">+</button>
-
     <!-- Add New Category Form (initially hidden) -->
     <div id="cr-add-cat-form" class="add-cat-form hidden">
       <label for="cr-new-cat-name">Category Name:</label>
       <input type="text" id="cr-new-cat-name" placeholder="Enter name" />
+      
       <p>Pick an icon:</p>
       <div id="cr-icons-grid" class="icons-grid">
         <!-- Icon choices injected via JavaScript -->
       </div>
+      
       <button id="cr-save-new-cat-btn">Save Category</button>
     </div>
   </div>
