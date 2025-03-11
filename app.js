@@ -255,14 +255,18 @@ const DEFAULT_INCOME_CATEGORIES = [
   const crChosenIncomeCategoryText = document.getElementById("cr-chosen-income-category-text");
   const crChosenExpenseCategory = document.getElementById("cr-chosen-expense-category");
   const crChosenExpenseCategoryText = document.getElementById("cr-chosen-expense-category-text");
-  
+  // near your other DOM references:
+const crShowAddCatForm = document.getElementById("cr-show-add-cat-form");
+const crAddCatForm = document.getElementById("cr-add-cat-form");
+
   // Category overlay (popup) elements
   const crCategoryOverlay = document.getElementById("cr-category-overlay");
   const crCloseCategoryPopup = document.getElementById("cr-close-category-popup");
   const crCategoryList = document.getElementById("cr-category-list");
-  const crShowAddCatForm = document.getElementById("cr-show-add-cat-form"); // The HTML plus button
-  const crAddCatForm = document.getElementById("cr-add-cat-form");
+
   const crNewCatName = document.getElementById("cr-new-cat-name");
+  const crIconBgColor = document.getElementById("cr-icon-bgcolor");
+
   const crIconsGrid = document.getElementById("cr-icons-grid");
   const crSaveNewCatBtn = document.getElementById("cr-save-new-cat-btn");
   
@@ -272,8 +276,9 @@ const DEFAULT_INCOME_CATEGORIES = [
   const crCatIncomeTab = document.getElementById("cr-cat-income-tab");
   
   // Keep track of the icon chosen in the add-new form
-  let selectedIcon = "";
-  
+  let selectedBgColor = "#ffffff"; // or some default
+let selectedIcon = "";
+
   /**
    * Load categories from Firestore into our local arrays.
    */
@@ -316,6 +321,33 @@ const DEFAULT_INCOME_CATEGORIES = [
     }
     await loadCategoriesFromFirestore(user);
   }
+  document.addEventListener("DOMContentLoaded", () => {
+    const colorCircles = document.querySelectorAll('.color-circle');
+    colorCircles.forEach(circle => {
+      // each circle has a data-color attribute
+      const colorVal = circle.dataset.color || '#fff';
+      circle.style.backgroundColor = colorVal;
+  
+      circle.addEventListener("click", () => {
+        // Clear existing borders (so only one circle is selected)
+        colorCircles.forEach(c => c.style.borderColor = 'transparent');
+        // Highlight the clicked circle
+        circle.style.borderColor = '#4caf50';
+  
+        // Save the color in our global variable
+        selectedBgColor = colorVal;
+  
+        // If you have a “preview icon” up top:
+        const previewIconEl = document.querySelector('.preview-icon');
+        if (previewIconEl) {
+          previewIconEl.style.backgroundColor = colorVal;
+        }
+      });
+    });
+  });
+  
+  
+  
   
   /**
    * Render the category list in the overlay popup based on currentCategoryType.
@@ -323,23 +355,28 @@ const DEFAULT_INCOME_CATEGORIES = [
  /**
  * Render the category list in the overlay popup based on currentCategoryType.
  */
-function renderCategoryList() {
+ function renderCategoryList() {
   console.log("Rendering categories for type:", currentCategoryType);
   crCategoryList.innerHTML = "";
 
   // Decide which list (income or expense) to show
   const list = (currentCategoryType === "expense") ? expenseCategories : incomeCategories;
 
-  // For each category, create a card
   list.forEach(cat => {
     const card = document.createElement("div");
     card.className = "category-card";
-    card.innerHTML = `
-      <img src="./icons/${cat.icon}" alt="${cat.name}" />
-      <div>${cat.name}</div>
-    `;
 
-    // When the user clicks a category card:
+    // Build the icon circle + name
+    card.innerHTML = `
+    <div class="icon-circle"
+         style="background-color: ${cat.bgColor || '#eee'};">
+       <img src="./icons/${cat.icon}" alt="${cat.name}">
+    </div>
+    <div>${cat.name}</div>
+  `;
+  
+
+    // On click, highlight the chosen category
     card.addEventListener("click", () => {
       // Remove 'selected' class from all category cards
       crCategoryList.querySelectorAll(".category-card")
@@ -348,7 +385,7 @@ function renderCategoryList() {
       // Highlight this card
       card.classList.add("selected");
 
-      // Set hidden input and text, depending on income or expense
+      // Update hidden input / text (income or expense)
       if (currentCategoryType === "income") {
         crChosenIncomeCategory.value = cat.name;
         crChosenIncomeCategoryText.textContent = cat.name;
@@ -358,7 +395,7 @@ function renderCategoryList() {
       }
       console.log(`Selected ${currentCategoryType} category: "${cat.name}"`);
 
-      // Automatically close the overlay so the user doesn't need to click X
+      // Automatically close the overlay
       crCategoryOverlay.classList.add("hidden");
     });
 
@@ -368,29 +405,51 @@ function renderCategoryList() {
 }
 
     
-    // The plus card is added separately from HTML (if needed) but in your current setup it’s defined in HTML,
-    // so we do not add an extra plus card via JS here.
-  
+ // Show the full-screen form when user clicks "+"
+crShowAddCatForm.addEventListener("click", () => {
+  crAddCatForm.classList.remove("hidden");
+
+  crNewCatName.value = "";
+  selectedIcon = "";
+  if (crIconBgColor) crIconBgColor.value = "#ffffff";
+  crIconsGrid.innerHTML = "";
+  renderIconsGrid();
+});
+
+// Close the full-screen form when user clicks the "X"
+const crCloseAddCatForm = document.getElementById("cr-close-add-cat-form");
+crCloseAddCatForm.addEventListener("click", () => {
+  crAddCatForm.classList.add("hidden");
+});
+
+
   
   /**
    * Render the icons grid in the add-new category form.
    */
   function renderIconsGrid() {
-    console.log("Rendering icons grid...");
     crIconsGrid.innerHTML = "";
     ICON_FILES.forEach(iconFile => {
       const btn = document.createElement("button");
       btn.innerHTML = `<img src="./icons/${iconFile}" alt="${iconFile}" />`;
       btn.addEventListener("click", (e) => {
         e.preventDefault();
+        // remove highlight from others
         crIconsGrid.querySelectorAll("button").forEach(b => b.classList.remove("selected-icon"));
         btn.classList.add("selected-icon");
+  
         selectedIcon = iconFile;
-        console.log("Icon selected:", iconFile);
+  
+        // If you have a preview image element
+        const previewImg = document.getElementById("cat-preview-img");
+        if (previewImg) {
+          previewImg.src = `./icons/${iconFile}`;
+        }
       });
       crIconsGrid.appendChild(btn);
     });
   }
+  
   
   
   /***************************************************
@@ -437,55 +496,63 @@ function renderCategoryList() {
     crCategoryOverlay.classList.add("hidden");
   });
   
-  // Use the single HTML plus button to toggle the add-new form:
-  crShowAddCatForm.addEventListener("click", () => {
-    const isHidden = crAddCatForm.classList.toggle("hidden");
-    if (!isHidden) {
-      crNewCatName.value = "";
-      selectedIcon = "";
-      renderIconsGrid();
-    }
-  });
-  
-  // Save a new category from the add-new form:
-  crSaveNewCatBtn.addEventListener("click", async () => {
-    console.log("Save Category button clicked!");
-    const newName = crNewCatName.value.trim();
-    if (!newName) {
-      alert("Please enter a category name!");
-      return;
-    }
-    if (!selectedIcon) {
-      alert("Please choose an icon!");
-      return;
-    }
-    // Check for duplicates in the current type's list:
-    const list = currentCategoryType === "expense" ? expenseCategories : incomeCategories;
-    if (list.some(c => c.name.toLowerCase() === newName.toLowerCase())) {
-      alert("Category name already exists!");
-      return;
-    }
-    // Add the new category to the correct list:
-    if (currentCategoryType === "expense") {
-      expenseCategories.push({ name: newName, icon: selectedIcon });
-    } else {
-      incomeCategories.push({ name: newName, icon: selectedIcon });
-    }
-    // Save to Firestore and reload:
-    await saveCategoriesToFirestore();
-    crNewCatName.value = "";
-    selectedIcon = "";
-    crIconsGrid.innerHTML = "";
-    renderIconsGrid();
-    renderCategoryList();
-    crAddCatForm.classList.add("hidden");
-    alert("Category saved!");
-  });
+
+  /***************************************************
+  SAVE A NEW CATEGORY (with background color)
+****************************************************/
+crSaveNewCatBtn.addEventListener("click", async () => {
+  // Validate
+  const newName = crNewCatName.value.trim();
+  if (!newName) {
+    alert("Please enter a category name!");
+    return;
+  }
+  if (!selectedIcon) {
+    alert("Please choose an icon!");
+    return;
+  }
+
+  // Construct the category object
+  const newCategory = {
+    name: newName,
+    icon: selectedIcon,
+    bgColor: selectedBgColor  // <--- store the color
+  };
+
+  // Push it into expenseCategories or incomeCategories
+  if (currentCategoryType === "expense") {
+    expenseCategories.push(newCategory);
+  } else {
+    incomeCategories.push(newCategory);
+  }
+
+  // Save to Firestore
+  await saveCategoriesToFirestore();
+
+  // Reset form fields & re-render
+  crNewCatName.value = "";
+  selectedIcon = "";
+  selectedBgColor = "#ffffff";
+  crIconsGrid.innerHTML = "";
+  renderIconsGrid();
+  renderCategoryList();
+
+  // Hide the "Add New Category" popup and show the category overlay again if you like
+  crAddCatForm.classList.add("hidden");
+  crCategoryOverlay.classList.remove("hidden");
+
+  alert("Category saved!");
+});
+
+
   
   ///////////////////////////////////////////////////
   // END: New Category Selection Code (with Firestore)
   ///////////////////////////////////////////////////
-  
+  // Show the full-screen overlay
+
+
+
   const initializeFirebaseFeatures = (app) => {
     auth = getAuth(app);
     db = getFirestore(app);
@@ -2154,6 +2221,11 @@ document.getElementById("view-all-transactions").addEventListener("click", () =>
   
   
   
+
+
+
+
+
 
 
 
