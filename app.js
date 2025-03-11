@@ -156,25 +156,91 @@ let storage; // Declare storage here as a global variable
   let incomeCategories = [];
   
   // The list of all available icon filenames
-  const ICON_FILES = [
-    "barber-shop.png",
-    "bills.png",
-    "coffee-cup.png",
-    "computer.png",
-    "contactless.png",
-    "cryptocurrency.png",
-    "dining.png",
-    "entertainment.png",
-    "gifts.png",
-    "groceries.png",
-    "netflix.png",
-    "shopping.png",
-    "smartphone.png",
-    "television.png",
-    "transit.png",
-    "wifi.png"
-  ];
-  
+ // The list of all available icon filenames
+const ICON_FILES = [
+  "airplane.png",
+  "bank.png",
+  "barber-shop.png",
+  "bill (1).png",
+  "bills.png",
+  "books.png",
+  "car.png",
+  "child.png",
+  "coffee-cup.png",
+  "computer.png",
+  "computer1.png",
+  "contactless.png",
+  "cryptocurrency.png",
+  "dining.png",
+  "drinks.png",
+  "education.png",
+  "entertainment.png",
+  "freelance.png",
+  "gas-station.png",
+  "gifts.png",
+  "groceries.png",
+  "gym.png",
+  "insurance.png",
+  "investments.png",
+  "life-insurance.png",
+  "love.png",
+  "mortgage-loan.png",
+  "netflix.png",
+  "online-shopping.png",
+  "pet.png",
+  "prevention.png",
+  "rent-income.png",
+  "rewinding.png",
+  "salary.png",
+  "settings.png",
+  "shopping.png",
+  "smartphone.png",
+  "smartphone1.png",
+  "subscription.png",
+  "taxes.png",
+  "television.png",
+  "track.png",
+  "transit.png",
+  "uber.png",
+  "water.png",
+  "wifi.png"
+];
+
+// Default expense categories (reference whichever icons make sense)
+const DEFAULT_EXPENSE_CATEGORIES = [
+  { name: "Groceries",       icon: "groceries.png"       },
+  { name: "Rent",            icon: "bills.png"           },
+  { name: "Dining",          icon: "dining.png"          },
+  { name: "Shopping",        icon: "shopping.png"        },
+  { name: "Online Shopping", icon: "online-shopping.png" },
+  { name: "Transit",         icon: "transit.png"         },
+  { name: "Entertainment",   icon: "entertainment.png"   },
+  { name: "Coffee",          icon: "coffee-cup.png"      },
+  { name: "Gas Station",     icon: "gas-station.png"     },
+  { name: "Car",             icon: "car.png"             },
+  { name: "Uber",            icon: "uber.png"            },
+  { name: "Water",           icon: "water.png"           },
+  { name: "Insurance",       icon: "insurance.png"       },
+  { name: "Life Insurance",  icon: "life-insurance.png"  },
+  { name: "Mortgage",        icon: "mortgage-loan.png"   },
+  { name: "Taxes",           icon: "taxes.png"           },
+  { name: "Pet",             icon: "pet.png"             },
+  { name: "Child",           icon: "child.png"           },
+  { name: "Gym",             icon: "gym.png"             },
+  { name: "Drinks",          icon: "drinks.png"          }
+];
+
+// Default income categories
+const DEFAULT_INCOME_CATEGORIES = [
+  { name: "Salary",       icon: "salary.png"        },
+  { name: "Freelance",    icon: "freelance.png"     },
+  { name: "Investments",  icon: "investments.png"   },
+  { name: "Gifts",        icon: "gifts.png"         },
+  { name: "Rent Income",  icon: "rent-income.png"   },
+  { name: "Bank",         icon: "bank.png"          }
+];
+
+
   // Default category type is "expense"
   let currentCategoryType = "expense";
   
@@ -254,40 +320,57 @@ let storage; // Declare storage here as a global variable
   /**
    * Render the category list in the overlay popup based on currentCategoryType.
    */
-  function renderCategoryList() {
-    console.log("Rendering categories for type:", currentCategoryType);
-    crCategoryList.innerHTML = "";
-    const list = currentCategoryType === "expense" ? expenseCategories : incomeCategories;
-    list.forEach(cat => {
-      const card = document.createElement("div");
-      card.className = "category-card";
-      card.innerHTML = `
-        <img src="./icons/${cat.icon}" alt="${cat.name}" />
-        <div>${cat.name}</div>
-      `;
-      card.addEventListener("click", () => {
-        // Remove 'selected' class from all category cards (except the plus button, which we'll assume doesn't have this class)
-        crCategoryList.querySelectorAll(".category-card").forEach(c => c.classList.remove("selected"));
-        
-        // Mark this card as selected
-        card.classList.add("selected");
-        
-        // Set the hidden input values based on the category type
-        if (currentCategoryType === "income") {
-          crChosenIncomeCategory.value = cat.name;
-          crChosenIncomeCategoryText.textContent = cat.name;
-        } else {
-          crChosenExpenseCategory.value = cat.name;
-          crChosenExpenseCategoryText.textContent = cat.name;
-        }
-        console.log(`Selected ${currentCategoryType} category: "${cat.name}"`);
-      });
-      crCategoryList.appendChild(card);
+ /**
+ * Render the category list in the overlay popup based on currentCategoryType.
+ */
+function renderCategoryList() {
+  console.log("Rendering categories for type:", currentCategoryType);
+  crCategoryList.innerHTML = "";
+
+  // Decide which list (income or expense) to show
+  const list = (currentCategoryType === "expense") ? expenseCategories : incomeCategories;
+
+  // For each category, create a card
+  list.forEach(cat => {
+    const card = document.createElement("div");
+    card.className = "category-card";
+    card.innerHTML = `
+      <img src="./icons/${cat.icon}" alt="${cat.name}" />
+      <div>${cat.name}</div>
+    `;
+
+    // When the user clicks a category card:
+    card.addEventListener("click", () => {
+      // Remove 'selected' class from all category cards
+      crCategoryList.querySelectorAll(".category-card")
+        .forEach(c => c.classList.remove("selected"));
+
+      // Highlight this card
+      card.classList.add("selected");
+
+      // Set hidden input and text, depending on income or expense
+      if (currentCategoryType === "income") {
+        crChosenIncomeCategory.value = cat.name;
+        crChosenIncomeCategoryText.textContent = cat.name;
+      } else {
+        crChosenExpenseCategory.value = cat.name;
+        crChosenExpenseCategoryText.textContent = cat.name;
+      }
+      console.log(`Selected ${currentCategoryType} category: "${cat.name}"`);
+
+      // Automatically close the overlay so the user doesn't need to click X
+      crCategoryOverlay.classList.add("hidden");
     });
+
+    // Add the card to the category list container
+    crCategoryList.appendChild(card);
+  });
+}
+
     
     // The plus card is added separately from HTML (if needed) but in your current setup it’s defined in HTML,
     // so we do not add an extra plus card via JS here.
-  }
+  
   
   /**
    * Render the icons grid in the add-new category form.
@@ -840,21 +923,47 @@ discardConfirmBtn.addEventListener("click", () => {
   
   
      // Monitor Authentication State
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      // First, load categories so that incomeCategories and expenseCategories aren’t empty
-      await loadCategoriesFromFirestore(user);
-      
-      // Now that categories are in memory, display the dashboard and load its content
-      authContainer.style.display = "none";
-      dashboardContainer.style.display = "block";
-      loadDashboard(user);
-    } else {
-      // If no user is signed in, show the auth container, hide the dashboard
-      authContainer.style.display = "block";
-      dashboardContainer.style.display = "none";
-    }
-  });
+     onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userDocRef);
+    
+        if (!userSnap.exists()) {
+          // This user doc doesn't exist yet -> create it with default categories
+          await setDoc(userDocRef, {
+            expenseCategories: DEFAULT_EXPENSE_CATEGORIES,
+            incomeCategories: DEFAULT_INCOME_CATEGORIES,
+            // add any other defaults you want, e.g. balance: 0
+            balance: 0,
+            incomes: [],
+            expenses: [],
+          }, { merge: true });
+        } else {
+          // The user doc exists, but let's confirm categories are there.
+          // If they're missing or empty, we can set them:
+          const data = userSnap.data();
+          if (!Array.isArray(data.expenseCategories) || data.expenseCategories.length === 0) {
+            await setDoc(userDocRef, { expenseCategories: DEFAULT_EXPENSE_CATEGORIES }, { merge: true });
+          }
+          if (!Array.isArray(data.incomeCategories) || data.incomeCategories.length === 0) {
+            await setDoc(userDocRef, { incomeCategories: DEFAULT_INCOME_CATEGORIES }, { merge: true });
+          }
+        }
+    
+        // Now we definitely have categories in the doc
+        await loadCategoriesFromFirestore(user);
+    
+        // Then show the dashboard
+        authContainer.style.display = "none";
+        dashboardContainer.style.display = "block";
+        loadDashboard(user);
+    
+      } else {
+        authContainer.style.display = "block";
+        dashboardContainer.style.display = "none";
+      }
+    });
+    
     
   // BEGGING OF THE TRANSACTION LISTING CODE
   /***************************************************
@@ -2045,6 +2154,12 @@ document.getElementById("view-all-transactions").addEventListener("click", () =>
   
   
   
+
+
+
+
+
+
 
 
 
