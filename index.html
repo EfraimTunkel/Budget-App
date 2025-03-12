@@ -332,45 +332,48 @@
 <div id="cr-add-cat-form" class="add-cat-form hidden">
   <!-- Close button (X) in top-right corner -->
   <button id="cr-close-add-cat-form" class="thisclose-btn">&times;</button>
-
-  <!-- Top section: image, name input, color circles -->
   <div class="add-cat-top">
+    <!-- Icon on the left -->
     <div class="preview-icon">
       <img src="default-preview.png" alt="Category Preview" id="cat-preview-img" />
     </div>
-
+  
+    <!-- Name + color palette stacked -->
     <div class="cat-name-section">
-      <label for="cr-new-cat-name" class="cat-name-label">Name</label>
       <input 
         type="text"
         id="cr-new-cat-name"
-        placeholder="Category name..."
+        placeholder="Name"
       />
-    </div>
-
-    <!-- Color palette row (like your screenshot) -->
-    <div class="color-palette" id="color-palette">
-      <!-- Example color circles -->
-      <div class="color-circle" data-color="#4CAF50"></div>
-      <div class="color-circle" data-color="#26a69a"></div>
-      <div class="color-circle" data-color="#03a9f4"></div>
-      <div class="color-circle" data-color="#2196f3"></div>
-      <div class="color-circle" data-color="#3f51b5"></div>
-      <div class="color-circle" data-color="#673ab7"></div>
-      <div class="color-circle" data-color="#9c27b0"></div>
-      <!-- etc. -->
+  
+      <!-- Horizontally scrollable color circles -->
+      <div class="color-palette" id="color-palette">
+        <div class="color-circle" data-color="#4CAF50"></div>
+        <div class="color-circle" data-color="#26a69a"></div>
+        <div class="color-circle" data-color="#03a9f4"></div>
+        <div class="color-circle" data-color="#2196f3"></div>
+        <div class="color-circle" data-color="#3f51b5"></div>
+        <div class="color-circle" data-color="#673ab7"></div>
+        <div class="color-circle" data-color="#9c27b0"></div>
+        <div class="color-circle" data-color="#ff9800"></div>
+        <div class="color-circle" data-color="#ff5722"></div>
+        <div class="color-circle" data-color="#795548"></div>
+        <div class="color-circle" data-color="#607d8b"></div>
+        <!-- etc. -->
+      </div>
     </div>
   </div>
-
+  
   <!-- Icon grid (if needed) -->
   <div id="cr-icons-grid" class="icons-grid">
     <!-- Icons injected via JavaScript -->
   </div>
-
+  
   <!-- The Save button at the bottom (sticky) -->
   <button id="cr-save-new-cat-btn" class="save-cat-btn">
     Save
   </button>
+  
 </div>
 
 
