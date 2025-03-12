@@ -1427,138 +1427,178 @@ body {
   background-color: #ffebee;
 }
 
-/* Style for the add category button */
-.add-cat-btn {
-  display: inline-block;
-  background: #e0e0e0;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 15px;
-  font-size: 14px;
-  cursor: pointer;
-  color: #333;
-  transition: background 0.3s, transform 0.2s;
-  margin-top: 5px;
-}
-.add-cat-btn:hover {
-  background: #ccc;
-  transform: translateY(-2px);
-}
-
-
-
-
-/************************************************
-  ADD-CAT-TOP (the top row with an icon, name, color circles)
-************************************************/
+/**********************************************
+  Container for everything
+**********************************************/
 .add-cat-top {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-  /* Allow wrapping on small screens */
-  flex-wrap: wrap;
+  display: flex;             /* Icon on the left, text+colors on the right */
+  align-items: center;       /* Vertically center the icon with the text */
+  gap: 16px;                 /* Space between icon and name section */
+  margin-bottom: 30px;
 }
 
-/************************************************
-  PREVIEW ICON (the square on the left)
-************************************************/
+/**********************************************
+  Left Icon (Preview)
+**********************************************/
 .preview-icon {
-  width: 64px;
-  height: 64px;
-  background-color: #e0e0e0; /* default gray */
-  border-radius: 16px;       /* slightly rounded corners */
+  width: 90px;
+  height: 90px;
+  background-color: #e0f0ff;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
-.preview-icon img {
-  width: 80%;
-  height: 80%;
+
+#cat-preview-img {
+  width: 90%;
+  height: 90%;
   object-fit: cover;
 }
 
-/************************************************
-  CAT-NAME-SECTION
-************************************************/
-.cat-name-section {
+/**********************************************
+  "Name" text + line + color palette
+**********************************************/
+.name-and-colors {
   display: flex;
-  flex-direction: column;
+  flex-direction: column;  /* "Name" line on top, color circles below */
+  flex: 1;                 /* Fill remaining horizontal space */
+}
+
+/* Row with "Name" text and a line that extends */
+.name-line-wrapper {
+  display: flex;
+  align-items: baseline; /* keeps text and line neatly aligned */
+  gap: 8px;
+}
+
+/* The text "Name" (or an input) */
+.cat-name-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #555;
+}
+
+/* The line that extends to the right of "Name" */
+.name-underline {
+  flex: 1;                  /* Fill remaining width */
+  border-bottom: 2px solid #999; /* The horizontal line */
+  margin-top: 3px;          /* Slight offset so it aligns nicely */
+}
+
+/**********************************************
+  Horizontally scrollable color palette
+**********************************************/
+.color-palette {
+  margin-top: 12px;         /* Space below the line */
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;         /* Scroll horizontally if there are many circles */
+  scrollbar-width: none;    /* Hide scrollbar in Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar in IE/Edge */
+  position: relative;       /* So we can place a fade on the right */
+  padding-bottom: 4px;      /* Some bottom space so circles don't get cut off */
+}
+
+/* Hide the scrollbar in Chrome/Safari */
+.color-palette::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fade effect on the right edge (so last circle is partially obscured) */
+.color-palette::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 100%;
+  pointer-events: none;
+  /* White fade that goes to transparent, tweak as needed */
+  background: linear-gradient(to left, #fff 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+/**********************************************
+  Individual color circles
+**********************************************/
+.color-circle {
+  flex: 0 0 auto;       /* Don’t shrink; keep each circle’s width */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  background-color: #ccc; /* fallback, or set via data-color in JS */
+  position: relative;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-.cat-name-label {
-  font-size: 16px;
-  font-weight: 600;
-  color: #777;
-  margin-bottom: 4px;
+/* The first circle with the palette icon */
+.palette-icon img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
 }
 
-.cat-name-section input {
-  /* Underline style instead of a box */
-  border: none;
-  border-bottom: 2px solid #ccc;
-  padding: 6px 0;
-  width: 200px;  /* You can adjust this or make it 100% on smaller screens */
-  font-size: 16px;
-  outline: none;
-  transition: border-color 0.3s;
-}
-.cat-name-section input:focus {
-  border-color: #4caf50;
-}
+/**********************************************
+  Example: If you want the data-color attribute
+  to set background color via JS, you'd do:
+**********************************************/
+/*
+document.querySelectorAll('.color-circle').forEach(circle => {
+  const color = circle.getAttribute('data-color');
+  if (color) {
+    circle.style.backgroundColor = color;
+  }
+});
+*/
 
-/************************************************
-  COLOR PALETTE (the circles in a row)
-************************************************/
-.color-palette {
-  display: flex;
-  gap: 12px;
-  margin-left: auto;  /* pushes color circles to the right on wide screens */
-  align-items: center;
-}
-
-.color-circle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: transform 0.2s, border-color 0.2s;
-}
-.color-circle:hover {
-  transform: translateY(-2px);
-  border-color: #999;
-}
-/* When a color is selected in JS, highlight it */
-.color-circle.selected {
-  border-color: #4caf50;
-}
-
-/************************************************
-  RESPONSIVE BEHAVIOR
-************************************************/
+/**********************************************
+  Responsive tweaks for smaller screens
+**********************************************/
 @media (max-width: 600px) {
-  /* Stack elements vertically on smaller screens */
+  /* Stack the content vertically on mobile */
   .add-cat-top {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
+    margin-bottom: 20px;
   }
-
-  /* Remove the auto-margin so the color circles don't jump to the far right */
+  
+  /* Shrink the icon for smaller screens */
+  .preview-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  /* Adjust the input field */
+  #cr-new-cat-name {
+    font-size: 14px;
+    width: 90%;                /* leave some horizontal padding */
+    padding: 4px 0;
+    text-align: center;
+    border-bottom-width: 2px;  /* or adjust if needed */
+  }
+  
+  /* Ensure the color palette spans full width and is scrollable */
   .color-palette {
-    margin-left: 0;
+    width: 100%;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;  /* smooth scrolling on iOS */
     margin-top: 8px;
   }
-
-  /* Make the input expand to fill the space on small screens */
-  .cat-name-section input {
-    width: 100%;
-    max-width: 300px;  /* or any max width you prefer */
+  
+  /* Smaller color circles for better fit */
+  .color-circle {
+    width: 35px;
+    height: 35px;
   }
 }
+
+
 
 /* ------------------- Basic Nav Setup ------------------- */
 .bottom-nav {
@@ -3206,4 +3246,3 @@ body {
 #cr-transaction-popup.popup {
   z-index: 13000; /* ensure it's above the transactions page */
 }
-
