@@ -108,76 +108,167 @@
         
       </nav>
       
-      <!-- Mobile Profile Page Modal (hidden on desktop, shown on mobile) -->
-      <div id="profile-page" class="profile-page modal hide-on-desktop">
-        <div class="profile-page-content">
-          <img src="default-avatar.png" alt="Profile Photo" id="profile-page-photo">
-          <h2>Your Profile</h2>
-          <button id="profile-page-settings">Settings</button>
-          <button id="profile-page-logout">Log Out</button>
-          <button id="profile-page-close">Close</button>
-        </div>
-      </div>
+   
       
       
       <main id="main-content">
-        <!-- Header / Greeting -->
-        <header class="dashboard-header">
-          <div class="user-info">
-            <img id="user-profile-pic" src="default-avatar.png" alt="Profile Pic" />
-            <div class="greeting-text">
-              <h1 id="greeting"><span id="username-display">User</span></h1>
-              <p>Your current balance: <span id="balance">$0.00</span></p>
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="dashboard-section">
+          <!-- Header / Greeting -->
+          <header class="dashboard-header">
+            <div class="user-info">
+              <img id="user-profile-pic" src="default-avatar.png" alt="Profile Pic" />
+              <div class="greeting-text">
+                <h1 id="greeting"><span id="username-display">User</span></h1>
+                <p>Your current balance: <span id="balance">$0.00</span></p>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
       
-        <!-- Summary Boxes (Expense & Income) -->
-        <section class="summary-boxes-section">
-          <div class="summary-box expense-box">
-            <h3>Expense</h3>
-            <div class="amount negative">$0.00</div>
-            <div class="transactions-count">0 transactions</div>
-          </div>
-          <div class="summary-box income-box">
-            <h3>Income</h3>
-            <div class="amount positive">$0.00</div>
-            <div class="transactions-count">0 transactions</div>
-          </div>
-        </section>
-      
-        <!-- Main 2-column layout for line chart + recent transactions -->
-        <div class="dashboard-grid">
-          <!-- Left column: net balance line chart -->
-          <section class="line-chart-section">
-            
-            <div id="balance-chart" class="chart-canvas"></div>
+          <!-- Summary Boxes (Expense & Income) -->
+          <section class="summary-boxes-section">
+            <div class="summary-box expense-box">
+              <h3>Expense</h3>
+              <div class="amount negative">$0.00</div>
+              <div class="transactions-count">0 transactions</div>
+            </div>
+            <div class="summary-box income-box">
+              <h3>Income</h3>
+              <div class="amount positive">$0.00</div>
+              <div class="transactions-count">0 transactions</div>
+            </div>
           </section>
       
-          <!-- Right column: recent transactions list -->
-          <section class="transactions-section">
-            <h2>Recent Transactions</h2>
-            <div class="recent-transactions-tabs">
-              <button id="recent-all-tab" class="recent-tab active">All</button>
-              <button id="recent-income-tab" class="recent-tab">Income</button>
-              <button id="recent-expense-tab" class="recent-tab">Expense</button>
-            </div>
-            <div id="recent-transactions-list">
-              <!-- Last 6 transactions injected here -->
-            </div>
-            <button id="view-all-transactions" class="view-all-btn">
-              View All Transactions
-            </button>
-          </section>
+          <!-- Main 2-column layout for line chart + recent transactions -->
+          <div class="dashboard-grid">
+            <!-- Left column: net balance line chart -->
+            <section class="line-chart-section">
+              <div id="balance-chart" class="chart-canvas"></div>
+            </section>
+      
+            <!-- Right column: recent transactions list -->
+            <section id="transactions-section" class="transactions-section">
+              <h2>Recent Transactions</h2>
+              <div class="recent-transactions-tabs">
+                <button id="recent-all-tab" class="recent-tab active">All</button>
+                <button id="recent-income-tab" class="recent-tab">Income</button>
+                <button id="recent-expense-tab" class="recent-tab">Expense</button>
+              </div>
+              <div id="recent-transactions-list">
+                <!-- Last 6 transactions injected here -->
+              </div>
+              <button id="view-all-transactions" class="view-all-btn">
+                View All Transactions
+              </button>
+            </section>
           </div> <!-- end .dashboard-grid -->
-          
+      
           <!-- Donut Chart: Spending Overview -->
           <section class="donut-chart-section">
             <h2>Spending Overview</h2>
             <div id="spending-chart" class="chart-canvas"></div>
           </section>
-          </main>
-          
+        </section>
+
+        <section id="transactions-section" class="transactions-section hidden">
+          <!-- Header: Title on left, icons on right -->
+          <div class="transactions-header">
+            <div class="transactions-title">
+              <h2>Transactions</h2>
+            </div>
+            <div class="transactions-actions">
+              <button id="download-transactions" class="btn-download">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+              </button>
+              <button id="search-icon" class="icon-button">
+                <i class="fa fa-search"></i>
+              </button>
+              <button id="filter-icon" class="icon-button">
+                <i class="fa fa-filter"></i>
+              </button>
+            </div>
+          </div>
+        
+          <!-- Search Bar Container (hidden by default) -->
+          <div id="search-bar-container" class="search-bar-container hidden">
+            <input type="text" id="search-bar" placeholder="Search transactions..." />
+            <button id="clear-search" class="clear-button">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+        
+          <!-- Filter Popup Card (hidden by default) -->
+          <div id="filter-popup" class="filter-popup hidden">
+            <div class="filter-popup-header">
+              <h3>Filter Transactions</h3>
+              <button id="close-filter-popup" class="close-filter-popup">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            <label for="filter-date">Date:</label>
+            <input type="date" id="filter-date" />
+        
+            <label for="filter-amount">Amount:</label>
+            <input type="number" id="filter-amount" placeholder="Enter amount" />
+        
+            <label for="filter-title">Title:</label>
+            <input type="text" id="filter-title" placeholder="Enter title" />
+        
+            <label for="filter-category">Category:</label>
+            <input type="text" id="filter-category" placeholder="Enter category" />
+        
+            <button id="apply-filter" class="apply-button">Apply</button>
+          </div>
+        
+          <!-- Tabs for Transactions -->
+          <div class="transactions-tabs">
+            <button id="all-tab" class="transactions-tab active">All</button>
+            <button id="income-tab-list" class="transactions-tab">Income</button>
+            <button id="expense-tab-list" class="transactions-tab">Expense</button>
+          </div>
+        
+          <!-- Container for Transaction Cards -->
+          <section id="transactions-list-content" class="transactions-list">
+            <!-- Transaction cards will be injected here by JS -->
+          </section>
+        </section>
+        
+
+<!-- Profile Section (Full Page View) -->
+<section id="profile-section" class="profile-section hidden">
+  <div class="profile-page-content">
+    <div class="profile-header">
+      <img src="default-avatar.png" alt="Profile Photo" id="profile-page-photo">
+      <h2>Your Profile</h2>
+    </div>
+    <div class="profile-cards">
+      <div class="profile-card" id="profile-card-settings">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </div>
+      <div class="profile-card" id="profile-card-add-account">
+        <i class="fas fa-user-plus"></i>
+        <span>Add Account</span>
+      </div>
+      <div class="profile-card" id="profile-card-learn-more">
+        <i class="fas fa-info-circle"></i>
+        <span>Learn More</span>
+      </div>
+      <div class="profile-card" id="profile-card-logs">
+        <i class="fas fa-clipboard-list"></i>
+        <span>Logs</span>
+      </div>
+      <div class="profile-card" id="profile-card-logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Log Out</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+        </main>
       
 
     </div>
@@ -194,6 +285,13 @@
 
     <!-- Close Button -->
     <button id="cr-close-transaction-popup" class="close-button">&times;</button>
+<!-- Delete Icon: Only visible when editing an existing transaction -->
+<button
+  id="delete-transaction-btn"
+  class="delete-transaction-btn hidden"
+>
+  <i class="fa fa-trash"></i>
+</button>
 
     <!-- Header area: gradient background, toggle, amount, clock -->
     <div class="transaction-header">
@@ -377,16 +475,45 @@
 </div>
 
 
+<!-- Delete Confirmation Overlay (placed outside the transaction popup) -->
+<div id="delete-confirmation-overlay" class="delete-confirmation-overlay hidden">
+  <div class="delete-popup-content">
+    <!-- Big trash icon at top -->
+    <div class="delete-popup-icon">
+      <i class="fa fa-trash"></i>
+    </div>
+    <!-- Heading -->
+    <h2>Delete Transaction?</h2>
+    <!-- Subtext: fill with the transaction title or anything else you want -->
+    <p id="delete-transaction-title"></p>
+    <!-- Buttons row -->
+    <div class="delete-popup-buttons">
+      <button id="cancel-delete-btn" class="cancel-btn">Cancel</button>
+      <button id="confirm-delete-btn" class="delete-btn">Delete</button>
+    </div>
+  </div>
+</div>
 
 
 
-  
+<!-- LOGS POPUP -->
+<div id="logs-popup" class="popup hidden">
+  <div class="popup-content logs-popup-content">
+    <button id="close-logs-popup" class="close-button">&times;</button>
+    <h2>Activity Logs</h2>
+    <div id="logs-container">
+      <!-- Logs will be injected here -->
+    </div>
+  </div>
+</div>
+
+
 <!-- SETTINGS MODAL -->
-<div id="settings-modal" class="modal hide">
+<div id="settings-modal" class="modal hidden">
   <div class="modal-content">
-      <!-- Add a close icon button -->
-      <button id="close-settings-icon" class="close-button">×</button>
-      <h2>Settings</h2>
+    <!-- Close button -->
+    <button id="close-settings-icon" class="close-button">&times;</button>
+    <h2>Settings</h2>
 
     <!-- Profile Section -->
     <div class="settings-section">
@@ -464,36 +591,6 @@
 
 
 
-
-
-<!-- Full-Screen Transactions Panel -->
-<div id="transactions-page" class="transactions-page hidden">
-  <div class="transactions-header">
-    <!-- Back/Close Button -->
-    <button id="close-transactions-page" class="thisbtn-back">
-      <i class="fa-solid fa-circle-left"></i>
-    </button>
-    <!-- Title -->
-    <h2>Transactions</h2>
-    <!-- Download Button -->
-    <button id="download-transactions" class="btn-download">
-      <i class="fa-solid fa-cloud-arrow-down"></i>
-    </button>
-  </div>
-  
-  
-  <!-- Tabs for filtering transactions -->
-  <div class="transactions-tabs">
-    <button id="all-tab" class="transactions-tab active">All</button>
-    <button id="income-tab-list" class="transactions-tab">Income</button>
-    <button id="expense-tab-list" class="transactions-tab">Expense</button>
-  </div>
-  
-  <!-- Main scrollable area for transactions -->
-  <section id="transactions-list-content" class="transactions-list">
-    <!-- Transaction cards will be injected here by JS -->
-  </section>
-</div>
 
 
 
