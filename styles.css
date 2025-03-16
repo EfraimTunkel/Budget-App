@@ -385,7 +385,14 @@ body {
   border-radius: 20px;
  
 }
-
+#dashboard-section,
+#transactions-section,
+#profile-section {
+  padding: 20px;
+  background: #fff; /* Optional: match other section backgrounds */
+  border-radius: 8px; /* Optional: for consistency */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Optional: subtle shadow */
+}
 /* Dashboard Header */
 .dashboard-header {
   display: flex;              /* so content can sit side by side */
@@ -434,7 +441,7 @@ body {
 #settings-modal {
   display: none;
   position: fixed;
-  z-index: 10000;
+  z-index: 1000;
   top: 0;
   left: 0;
   width: 100%;
@@ -1725,57 +1732,122 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   object-fit: cover;
   border: 2px solid #4caf50;
 }
-
-/* Profile Page Modal (shown on mobile only) */
-.profile-page.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #fff;
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.profile-page-content {
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
+#profile-section {
   padding: 20px;
 }
-.profile-page-content img {
+.profile-page-content {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.profile-header {
+  margin-bottom: 2rem;
+}
+
+.profile-header img {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  margin-bottom: 20px;
+  border: 2px solid #4caf50;
+  margin-bottom: 1rem;
 }
-.profile-page-content h2 {
-  margin-bottom: 20px;
-  font-size: 24px;
+
+.profile-header h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.profile-header p {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+/* Container for card-style buttons */
+.profile-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Individual card styling */
+.profile-card {
+  background-color: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  width: 150px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-card i {
+  font-size: 1.5rem;
+  color: #4caf50;
+  margin-bottom: 0.5rem;
+}
+
+.profile-card span {
+  display: block;
+  font-size: 1rem;
   color: #333;
 }
-.profile-page-content button {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  font-size: 16px;
+
+/* Hover effect for cards */
+.profile-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+
+.btn-profile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: #4caf50;
+  color: #fff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
-#profile-page-settings {
-  background-color: #4caf50;
-  color: #fff;
+
+.btn-profile:hover {
+  background-color: #43a047;
 }
-#profile-page-logout {
-  background-color: #f44336;
-  color: #fff;
+
+.logs-popup-content {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
-#profile-page-close {
-  background-color: #ccc;
-  color: #000;
+
+#logs-container {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.log-item {
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.log-item:last-child {
+  border-bottom: none;
 }
 
 /* ---------- MEDIA QUERY FOR MOBILE ---------- */
@@ -1816,91 +1888,158 @@ document.querySelectorAll('.color-circle').forEach(circle => {
 }
 
 
-/* New transition rules for the profile modal */
-#profile-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #fff;
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  /* Start hidden */
-  opacity: 0;
-  transform: translateY(20px);
-  pointer-events: none;
-  
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-/* When the modal should be visible */
-#profile-page.show {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
 
 
-
-/************************************************
-  Full-Screen Transactions Panel
-************************************************/
-.transactions-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: #f9f9f9;
-  z-index: 1200;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(100%); /* Off-screen by default */
-  transition: transform 0.3s ease;
-}
-.transactions-page.hidden {
-  pointer-events: none;
-}
-.transactions-page.show {
-  transform: translateX(0);
-}
 
 /************************************************
   Header (Top Bar)
 ************************************************/
+
+/* Hide elements with the 'hidden' class */
+.hidden {
+  display: none !important;
+}
+
+/* Transactions Header */
 .transactions-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #fff;
-  padding: 1rem 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1rem;
 }
-.transactions-header h2 {
+.transactions-title h2 {
   margin: 0;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #333;
+  font-size: 1.8rem;
 }
-.thisbtn-back {
-  background: transparent;
-  border: none;
-  font-size: 2.2rem;
-  color: #4caf50; /* or #333, etc. Something not white */
-  cursor: pointer;
-  transition: background-color 0.2s;
-  padding: 1rem;
-  transition: transform 0.2s ease;
+/* Actions: Icons on the right */
+.transactions-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.thisbtn-back:hover {
-  transform: scale(1.1);
-  border-radius: 50%;
+/* Icon Buttons */
+.icon-button {
+  background: transparent;
+  border: none;
   cursor: pointer;
+  font-size: 20px;
+  color: var(--secondary-color);
+  transition: transform 0.2s;
+}
+
+.icon-button:hover {
+  transform: scale(1.1);
+}
+
+/* Search Bar Container */
+.search-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 25px;
+  box-shadow: 0 2px 6px var(--shadow-color);
+  background-color: #fff;
+  margin: 10px 0;
+}
+
+.search-bar-container input[type="text"] {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+/* Clear Button for Search */
+.clear-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--text-color);
+  transition: color 0.2s;
+}
+
+.clear-button:hover {
+  color: var(--secondary-color);
+}
+
+/* Filter Popup Card */
+.filter-popup {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 280px;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.filter-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.filter-popup-header h3 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--secondary-color);
+}
+
+.close-filter-popup {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+}
+
+/* Filter Popup Form Elements */
+.filter-popup label {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.filter-popup input[type="date"],
+.filter-popup input[type="number"],
+.filter-popup input[type="text"] {
+  width: 100%;
+  padding: 6px 8px;
+  margin-top: 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.apply-button {
+  margin-top: 15px;
+  padding: 8px 12px;
+  border: none;
+  background-color: var(--primary-color);
+  color: #312525;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.apply-button:hover {
+  background-color: var(--secondary-color);
 }
 .btn-download {
   background: #4caf50;
@@ -2032,11 +2171,7 @@ document.querySelectorAll('.color-circle').forEach(circle => {
 }
 
 /* Mobile adjustments */
-@media (max-width: 768px) {
-  .transactions-page {
-    border-radius: 0;
-  }
-}
+
 
 
 /* Popup Overlay */
@@ -3245,4 +3380,106 @@ document.querySelectorAll('.color-circle').forEach(circle => {
 }
 #cr-transaction-popup.popup {
   z-index: 13000; /* ensure it's above the transactions page */
+}
+/* Hide elements with the 'hidden' class */
+.hidden {
+  display: none !important;
+}
+
+/* Default (Desktop) styles */
+.delete-transaction-btn {
+  position: absolute;
+  top: 13px;
+  left: 4px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #f44336;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* Override for Mobile (up to 768px) */
+@media (max-width: 768px) {
+  .delete-transaction-btn {
+    top: 40px;
+    left: 10px;
+  }
+}
+
+
+/* Fullscreen overlay for the delete confirmation popup */
+.delete-confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* Semi-transparent dark backdrop */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 19999; /* Make sure it's on top of everything */
+}
+
+/* The white box that appears in the center */
+.delete-popup-content {
+  background: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  width: 300px;
+  max-width: 80%;
+  text-align: center;
+  position: relative;
+}
+
+/* Large trash icon at the top */
+.delete-popup-icon i {
+  font-size: 48px;
+  color: #3F51B5; /* Blue or adjust to your preference */
+  margin-bottom: 10px;
+}
+
+/* Heading style */
+.delete-popup-content h2 {
+  margin-top: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+/* Subtext style (the transaction title or "Test") */
+.delete-popup-content p {
+  font-size: 16px;
+  margin: 10px 0 20px;
+  color: #4a2c4f; /* Example purple shade */
+}
+
+/* The row of buttons */
+.delete-popup-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
+}
+
+/* Cancel & Delete buttons: circular, custom colors */
+.cancel-btn,
+.delete-btn {
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Purple-ish Cancel button */
+.cancel-btn {
+  background-color: #9E7E99; /* Adjust to match your screenshot's purple */
+  color: #fff;
+}
+
+/* Blue-ish Delete button */
+.delete-btn {
+  background-color: #5B91BF; /* Adjust to match your screenshot's blue */
+  color: #fff;
 }
