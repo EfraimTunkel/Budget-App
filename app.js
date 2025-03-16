@@ -6,7 +6,8 @@
     initializeApp 
   } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
   import { OAuthProvider } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
- 
+  import { updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+
   import { 
     getAuth, 
     signInWithEmailAndPassword, 
@@ -550,8 +551,235 @@ crSaveNewCatBtn.addEventListener("click", async () => {
   // END: New Category Selection Code (with Firestore)
   ///////////////////////////////////////////////////
   // Show the full-screen overlay
+// Function to show and hide sections properly
+  // Function to switch between sections (assumes each section is a child of #main-content)
+  
+  function showSection(sectionId) {
+    const sections = document.querySelectorAll('#main-content > section');
+    sections.forEach(section => {
+      if (section.id === sectionId) {
+        section.classList.remove('hidden');
+      } else {
+        section.classList.add('hidden');
+      }
+    });
+    window.scrollTo(0, 0);
+  }
+  document.getElementById('home-button').addEventListener('click', (e) => {
+    e.preventDefault();
+    showSection('dashboard-section');
+  });
+  
+  document.getElementById('transactions-button').addEventListener('click', (e) => {
+    e.preventDefault();
+    showSection('transactions-full');
+    // Call your function to load full transactions:
+    setActiveTransactionTab('all'); // This function should update the transaction list as needed
+  });
+  
+  // When the mobile profile icon is clicked, show the profile section
+  document.getElementById('mobile-profile-icon').addEventListener('click', function(e) {
+    e.preventDefault();
+    showSection('profile-section');
+  });
+
+// --- Profile Page Card Event Listeners ---
+document.getElementById('profile-card-settings').addEventListener('click', function(e) {
+  e.preventDefault();
+  const settingsModal = document.getElementById('settings-modal');
+  settingsModal.classList.remove('hidden');
+  settingsModal.classList.add('show');
+});
+// Remove duplicate listeners that only toggle classes.
+// Instead, always call openSettingsModal() when opening settings.
+
+async function openSettingsModal() {
+  const settingsModal = document.getElementById("settings-modal");
+  const profilePicPreview = document.getElementById("profile-pic-preview");
+  const displayNameInput = document.getElementById("display-name-input");
+  const themeToggle = document.getElementById("theme-toggle");
+  const emailNotificationsCheckbox = document.getElementById("email-notifications");
+  const pushNotificationsCheckbox = document.getElementById("push-notifications");
+  const currencySelect = document.getElementById("currency-select");
+
+  const user = auth.currentUser;
+  if (user) {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      profilePicPreview.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
+      displayNameInput.value = data.displayName ? data.displayName : "";
+      if (data.preferences) {
+        themeToggle.checked = data.preferences.theme === "dark";
+        emailNotificationsCheckbox.checked = data.preferences.emailNotifications || false;
+        pushNotificationsCheckbox.checked = data.preferences.pushNotifications || false;
+        if (data.preferences.currency) {
+          currencySelect.value = data.preferences.currency;
+        }
+      }
+    }
+  }
+  // Show the modal
+  settingsModal.classList.remove("hidden", "hide");
+  settingsModal.classList.add("show");
+}
+
+// For desktop, attach the listener to the settings button:
+document.getElementById("settings-button").addEventListener("click", (e) => {
+  e.preventDefault();
+  openSettingsModal();
+});
+
+// For mobile, attach the listener to the profile card settings:
+document.getElementById("profile-card-settings").addEventListener("click", (e) => {
+  e.preventDefault();
+  openSettingsModal();
+});
 
 
+
+// Add Account card (placeholder)
+document.getElementById('profile-card-add-account').addEventListener('click', function(e) {
+  e.preventDefault();
+  alert("Add Account functionality coming soon!");
+});
+
+// Learn More card (placeholder)
+document.getElementById('profile-card-learn-more').addEventListener('click', function(e) {
+  e.preventDefault();
+  alert("Learn More functionality coming soon!");
+});
+
+// Helper function to log events to Firestore.
+// Make sure that updateDoc and arrayUnion are imported.
+async function logEvent(message) {
+  const user = auth.currentUser;
+  if (user) {
+    const userDocRef = doc(db, "users", user.uid);
+    const logEntry = {
+      message: message,
+      timestamp: new Date().toISOString()
+    };
+    try {
+      await updateDoc(userDocRef, {
+        logs: arrayUnion(logEntry)
+      });
+    } catch (error) {
+      console.error("Error logging event:", error);
+    }
+  }
+}
+
+// Function to open the Logs Popup and display logs
+async function openLogsPopup() {
+  const logsPopup = document.getElementById("logs-popup");
+  const logsContainer = document.getElementById("logs-container");
+  logsContainer.innerHTML = "<p>Loading logs...</p>";
+  
+  const user = auth.currentUser;
+  if (user) {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      const logs = data.logs || [];
+      if (logs.length === 0) {
+        logsContainer.innerHTML = "<p>No logs available.</p>";
+      } else {
+        // Sort logs by timestamp descending
+        logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        logsContainer.innerHTML = "";
+        logs.forEach(log => {
+          const logDiv = document.createElement("div");
+          logDiv.classList.add("log-item");
+          // Format the timestamp
+          const time = new Date(log.timestamp).toLocaleString();
+          logDiv.textContent = `${time} – ${log.message}`;
+          logsContainer.appendChild(logDiv);
+        });
+      }
+    } else {
+      logsContainer.innerHTML = "<p>No logs available.</p>";
+    }
+  } else {
+    logsContainer.innerHTML = "<p>Please log in to view logs.</p>";
+  }
+  logsPopup.classList.remove("hidden");
+  logsPopup.classList.add("show");
+}
+
+// Close the logs popup when the close button is clicked
+document.getElementById("close-logs-popup").addEventListener("click", () => {
+  const logsPopup = document.getElementById("logs-popup");
+  logsPopup.classList.remove("show");
+  logsPopup.classList.add("hidden");
+});
+
+// Attach the logs popup to the Logs card click event
+document.getElementById("profile-card-logs").addEventListener("click", (e) => {
+  e.preventDefault();
+  openLogsPopup();
+});
+
+// Example: Log events when certain actions occur
+// For instance, after a successful sign-in, you could call:
+async function onSuccessfulLogin() {
+  await logEvent("User logged in via email/password.");
+  // ... rest of your login logic
+}
+
+// Similarly, after saving settings, you could log:
+async function onSettingsSaved() {
+  await logEvent("User updated profile settings.");
+  // ... any additional logic
+}
+
+
+// Logout card (placeholder for logout functionality)
+document.getElementById("profile-card-logout").addEventListener("click", async function (e) {
+  e.preventDefault();
+  try {
+    await signOut(auth);
+    alert("Logged out successfully!");
+    // Optionally, reload the page or redirect to the login screen:
+    window.location.reload();
+  } catch (error) {
+    console.error("Error signing out:", error);
+    alert("Error logging out. Please try again.");
+  }
+});
+
+document.getElementById("logout-button").addEventListener("click", async function (e) {
+  e.preventDefault();
+  try {
+    await signOut(auth);
+    alert("Logged out successfully!");
+    window.location.reload();
+  } catch (error) {
+    console.error("Error signing out:", error);
+    alert("Error logging out. Please try again.");
+  }
+});
+
+// --- Settings Modal Close Logic ---
+// Ensure that closing the settings modal simply hides it so the underlying profile page remains visible.
+document.getElementById('close-settings').addEventListener('click', function(e) {
+  e.preventDefault();
+  const settingsModal = document.getElementById('settings-modal');
+  // Instead of adding "hide", add "hidden" so it matches the openSettingsModal logic
+  settingsModal.classList.remove('show');
+  settingsModal.classList.add('hidden');
+});
+
+// Listen for window resize events
+window.addEventListener("resize", function () {
+  if (window.innerWidth >= 769) {
+    if (!document.getElementById("profile-section").classList.contains("hidden")) {
+      showSection("dashboard-section"); // Return to home page on desktop resize
+    }
+  }
+});
 
   const initializeFirebaseFeatures = (app) => {
     auth = getAuth(app);
@@ -650,8 +878,6 @@ crSaveNewCatBtn.addEventListener("click", async () => {
   saveSettingsButton.addEventListener("click", async () => {
     const displayName = displayNameInput.value;
     const newPhotoUrl = profilePicPreview.src;
-    
-    // Gather additional preferences
     const theme = themeToggle.checked ? "dark" : "light";
     const emailNotifications = emailNotificationsCheckbox.checked;
     const pushNotifications = pushNotificationsCheckbox.checked;
@@ -664,7 +890,6 @@ crSaveNewCatBtn.addEventListener("click", async () => {
         return;
       }
       const userDocRef = doc(db, "users", user.uid);
-      // Save profile and preference data
       await setDoc(userDocRef, {
         displayName,
         photoUrl: newPhotoUrl,
@@ -683,8 +908,9 @@ crSaveNewCatBtn.addEventListener("click", async () => {
     }
     
     settingsModal.classList.remove("show");
-    settingsModal.classList.add("hide");
+    settingsModal.classList.add("hidden");
   });
+  
   
   // Update profile picture preview immediately when a new file is selected
   profilePicInput.addEventListener("change", (event) => {
@@ -761,8 +987,95 @@ crSaveNewCatBtn.addEventListener("click", async () => {
     document.body.classList.toggle("dark-mode", themeToggle.checked);
   });
   
+// Toggle the search bar when the search icon is clicked
+document.getElementById('search-icon').addEventListener('click', () => {
+  const searchBarContainer = document.getElementById('search-bar-container');
+  searchBarContainer.classList.toggle('hidden');
+});
+
+// Clear the search bar input and hide the search bar container when clear button is clicked
+document.getElementById('clear-search').addEventListener('click', () => {
+  const searchBar = document.getElementById('search-bar');
+  searchBar.value = "";
+  renderFilteredTransactions(window.transactionsData); // Reset to all transactions
+  document.getElementById('search-bar-container').classList.add('hidden');
+});
+
+// Toggle the filter popup when the filter icon is clicked
+document.getElementById('filter-icon').addEventListener('click', () => {
+  const filterPopup = document.getElementById('filter-popup');
+  filterPopup.classList.toggle('hidden');
+});
+
+// Close the filter popup and clear all filter fields when the "X" button is clicked
+document.getElementById('close-filter-popup').addEventListener('click', () => {
+  // Clear filter input values
+  document.getElementById('filter-date').value = "";
+  document.getElementById('filter-amount').value = "";
+  document.getElementById('filter-title').value = "";
+  document.getElementById('filter-category').value = "";
   
+  // Hide the filter popup
+  document.getElementById('filter-popup').classList.add('hidden');
+});
+
+// Search functionality: filter transactions as the user types
+document.getElementById('search-bar').addEventListener('keyup', (e) => {
+  const query = e.target.value.toLowerCase();
+  const filteredTransactions = window.transactionsData.filter(tx => {
+    return (tx.title && tx.title.toLowerCase().includes(query)) ||
+           (tx.notes && tx.notes.toLowerCase().includes(query)) ||
+           (tx.type === "Income" ? (tx.source && tx.source.toLowerCase().includes(query))
+                                 : (tx.category && tx.category.toLowerCase().includes(query)));
+  });
+  renderFilteredTransactions(filteredTransactions);
+});
+
+// Apply filter functionality when the "Apply" button is clicked
+document.getElementById('apply-filter').addEventListener('click', () => {
+  const dateFilter = document.getElementById('filter-date').value;
+  const amountFilter = document.getElementById('filter-amount').value;
+  const titleFilter = document.getElementById('filter-title').value.toLowerCase();
+  const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
+
+  const filteredTransactions = window.transactionsData.filter(tx => {
+    let match = true;
+    if (dateFilter) {
+      const txDate = new Date(tx.timestamp).toISOString().split('T')[0];
+      if (txDate !== dateFilter) match = false;
+    }
+    if (amountFilter) {
+      if (parseFloat(tx.amount) !== parseFloat(amountFilter)) match = false;
+    }
+    if (titleFilter) {
+      if (!(tx.title && tx.title.toLowerCase().includes(titleFilter))) match = false;
+    }
+    if (categoryFilter) {
+      let cat = tx.type === "Income" ? tx.source : tx.category;
+      if (!(cat && cat.toLowerCase().includes(categoryFilter))) match = false;
+    }
+    return match;
+  });
   
+  renderFilteredTransactions(filteredTransactions);
+  // Hide filter popup after applying
+  document.getElementById('filter-popup').classList.add('hidden');
+});
+
+// Function to render filtered transactions; similar to your loadTransactions logic
+function renderFilteredTransactions(transactions) {
+  const transactionsListContent = document.getElementById("transactions-list-content");
+  transactionsListContent.innerHTML = "";
+  if (transactions.length === 0) {
+    transactionsListContent.innerHTML = "<p>No transactions found.</p>";
+    return;
+  }
+  transactions.forEach((tx, index) => {
+    const card = renderTransactionCard(tx, index);
+    transactionsListContent.appendChild(card);
+  });
+}
+
   
     // DOM Elements
     const addBudgetForm = document.getElementById("add-budget-form");
@@ -801,7 +1114,7 @@ function closeTransactionPopup(restoreTransactionsPage) {
   editingTransactionType = null;
   // If we need to restore the transactions page, do so:
   if (restoreTransactionsPage) {
-    const transactionsPage = document.getElementById("transactions-page");
+    const transactionsPage = document.getElementById("transactions-section");
     if (transactionsPage) {
       transactionsPage.classList.remove("hidden");
       transactionsPage.classList.add("show");
@@ -1179,25 +1492,22 @@ discardConfirmBtn.addEventListener("click", () => {
   expenseTabList.addEventListener("click", () => setActiveTransactionTab("expense"));
   
   // Event listener for opening the full-screen transactions panel
-  transactionsButton.addEventListener("click", () => {
-    setActiveTransactionTab("all"); // Default to All
-    transactionsPage.classList.remove("hidden");
-    transactionsPage.classList.add("show");
-  });
-  
+// Confirm this ID exists
+  if (!transactionsButton) {
+      console.error("Transactions button not found in DOM");
+  } else {
+      transactionsButton.addEventListener('click', (e) => {
+          e.preventDefault();
+          showSection('transactions-section');
+          setActiveTransactionTab('all');
+      });
+  }
   // Get references for the full-screen transactions panel and its back button
-  const transactionsPage = document.getElementById("transactions-page");
-  const closeTransactionsPage = document.getElementById("close-transactions-page");
+  const transactionsPage = document.getElementById("transactions-section");
   
   // When the back button is clicked, remove the 'show' class (which brings it on-screen),
   // then after the transition delay, add the 'hidden' class so it’s completely off-screen.
-  closeTransactionsPage.addEventListener("click", () => {
-    transactionsPage.classList.remove("show");
-    setTimeout(() => {
-      transactionsPage.classList.add("hidden");
-    }, 300); // 300ms should match your CSS transition duration
-  });
-  
+
   
   // CSV download remains unchanged
   document.getElementById("download-transactions").addEventListener("click", () => {
@@ -1222,24 +1532,67 @@ discardConfirmBtn.addEventListener("click", () => {
     a.click();
     URL.revokeObjectURL(url);
   });
-  
-  
   // END OF THE TRANSACTION LISTING CODE
-  let editingTransactionId = null;
-  let editingTransactionType = null; // "Income" or "Expense"
-  
+let editingTransactionId = null;
+let editingTransactionType = null; // "Income" or "Expense"
+
+// Helper function for live updating the header amount
+function updateHeaderAmount(e) {
+  const value = parseFloat(e.target.value) || 0;
+  document.getElementById("header-amount-text").textContent = `$${value.toFixed(2)}`;
+}
+
+// Open the Edit Transaction Popup (with Delete icon logic)
 function openEditTransactionPopup(tx, index) {
+  // --- CLEAR PREVIOUS VALUES ---
+  document.getElementById("header-amount-text").textContent = '$0';
+  document.getElementById("cr-popup-income-amount").value = '';
+  document.getElementById("cr-popup-expense-amount").value = '';
+  document.getElementById("cr-income-title").value = '';
+  document.getElementById("cr-expense-title").value = '';
+  
+  // Clear notes, categories, etc.
+  if (document.getElementById("cr-income-notes")) {
+    document.getElementById("cr-income-notes").value = '';
+  }
+  if (document.getElementById("cr-expense-notes")) {
+    document.getElementById("cr-expense-notes").value = '';
+  }
+  document.getElementById("cr-chosen-income-category").value = '';
+  document.getElementById("cr-chosen-income-category-text").textContent = '';
+  document.getElementById("cr-chosen-expense-category").value = '';
+  document.getElementById("cr-chosen-expense-category-text").textContent = '';
+  
+  // --- SET UP THE POPUP ---
   editingTransactionId = tx.id;
   editingTransactionType = tx.type;
-  // Hide the transactions page so the popup is in focus
-  const transactionsPage = document.getElementById("transactions-page");
+  const transactionsPage = document.getElementById("transactions-section");
   if (transactionsPage) {
     transactionsPage.classList.add("hidden");
     transactionsPage.classList.remove("show");
   }
   transactionPopup.classList.remove("hidden");
-
-  // If it's Income, show the income tab; else show expense tab
+  
+  // Show delete icon ONLY if this is an existing transaction
+  if (tx && tx.id) {
+    document.getElementById("delete-transaction-btn").classList.remove("hidden");
+  } else {
+    document.getElementById("delete-transaction-btn").classList.add("hidden");
+  }
+  
+  // Immediately update the header with the stored transaction amount
+  const storedAmount = parseFloat(tx.amount) || 0;
+  document.getElementById("header-amount-text").textContent = `$${storedAmount.toFixed(2)}`;
+  
+  // Get references to the amount input fields
+  const incomeInput = document.getElementById("cr-popup-income-amount");
+  const expenseInput = document.getElementById("cr-popup-expense-amount");
+  
+  // Remove any previous input event listeners
+  incomeInput.removeEventListener("input", updateHeaderAmount);
+  expenseInput.removeEventListener("input", updateHeaderAmount);
+  
+  // --- POPULATE THE FIELDS BASED ON TRANSACTION TYPE ---
   if (tx.type === "Income") {
     // Switch to income tab
     incomeTab.classList.add("active");
@@ -1248,16 +1601,18 @@ function openEditTransactionPopup(tx, index) {
     document.getElementById("cr-income-form").classList.remove("hidden");
     document.getElementById("cr-expense-form").classList.add("hidden");
     document.getElementById("cr-expense-form").classList.remove("active");
-
-    // Fill fields
+    
+    // Fill income fields
     document.getElementById("cr-income-title").value = tx.title || "";
     document.getElementById("cr-income-notes").value = tx.notes || "";
-    document.getElementById("cr-popup-income-amount").value = tx.amount;
+    incomeInput.value = tx.amount;
     document.getElementById("cr-chosen-income-category").value = tx.source || "";
     document.getElementById("cr-chosen-income-category-text").textContent = tx.source || "";
-    headerAmountText.textContent = `$${tx.amount || 0}`;
-    headerAmountText.style.color = "#2e7d32";
-
+    // Set header color for income
+    document.getElementById("header-amount-text").style.color = "#2e7d32";
+    
+    // Add live update listener for income input
+    incomeInput.addEventListener("input", updateHeaderAmount);
   } else {
     // Switch to expense tab
     expenseTab.classList.add("active");
@@ -1266,27 +1621,68 @@ function openEditTransactionPopup(tx, index) {
     document.getElementById("cr-expense-form").classList.remove("hidden");
     document.getElementById("cr-income-form").classList.add("hidden");
     document.getElementById("cr-income-form").classList.remove("active");
-
-    // Fill fields
+    
+    // Fill expense fields
     document.getElementById("cr-expense-title").value = tx.title || "";
     document.getElementById("cr-expense-notes").value = tx.notes || "";
-    document.getElementById("cr-popup-expense-amount").value = tx.amount;
+    expenseInput.value = tx.amount;
     document.getElementById("cr-chosen-expense-category").value = tx.category || "";
     document.getElementById("cr-chosen-expense-category-text").textContent = tx.category || "";
-    headerAmountText.textContent = `$${tx.amount || 0}`;
-    headerAmountText.style.color = "#d32f2f";
+    // Set header color for expense
+    document.getElementById("header-amount-text").style.color = "#d32f2f";
+    
+    // Add live update listener for expense input
+    expenseInput.addEventListener("input", updateHeaderAmount);
   }
-
-  // Optionally rename the submit button from "Save" to "Update"
+  
+  // Update the submit buttons to indicate "Update" instead of "Save"
   const saveIncomeBtn = document.querySelector("#cr-income-form .btn-primary");
   const saveExpenseBtn = document.querySelector("#cr-expense-form .btn-primary");
   saveIncomeBtn.textContent = "Update Income";
   saveExpenseBtn.textContent = "Update Expense";
-  
-  // Show a "Delete" button if you want:
-  // ... or handle delete differently
 }
 
+// ---------- DELETE TRANSACTION FUNCTIONALITY ----------
+
+// When the delete icon is clicked, show the custom overlay popup
+document.getElementById("delete-transaction-btn").addEventListener("click", () => {
+  // If you want to show the transaction title in the popup, you can do:
+  const titleField = document.getElementById("cr-income-title").value
+    || document.getElementById("cr-expense-title").value;
+  document.getElementById("delete-transaction-title").textContent = titleField || "";
+  
+  // Show the overlay
+  document.getElementById("delete-confirmation-overlay").classList.remove("hidden");
+});
+
+// Confirm deletion
+document.getElementById("confirm-delete-btn").addEventListener("click", async () => {
+  try {
+    await deleteTransaction(editingTransactionId);
+    alert("Transaction deleted successfully!");
+    // Hide the overlay and the transaction popup
+    document.getElementById("delete-confirmation-overlay").classList.add("hidden");
+    transactionPopup.classList.add("hidden");
+    // Optionally, refresh your transaction list here
+  } catch (error) {
+    console.error("Error deleting transaction:", error);
+    alert("Failed to delete transaction.");
+  }
+});
+
+// Cancel deletion
+document.getElementById("cancel-delete-btn").addEventListener("click", () => {
+  document.getElementById("delete-confirmation-overlay").classList.add("hidden");
+});
+
+// Dummy function – replace with your actual deletion logic
+async function deleteTransaction(transactionId) {
+  console.log("Deleting transaction with ID:", transactionId);
+  // e.g., await deleteDoc(doc(db, "transactions", transactionId));
+}
+
+
+  
   
   
   // Load Dashboard
@@ -1317,64 +1713,21 @@ function openEditTransactionPopup(tx, index) {
       // Inside loadDashboard(user):
   const data = userDoc.data();
      
-      // Update mobile profile images
-      const mobileProfileIcon = document.getElementById("mobile-profile-icon");
-      const mobileProfilePagePhoto = document.getElementById("profile-page-photo");
-      mobileProfileIcon.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
-      mobileProfilePagePhoto.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
-    
-      // Get the mobile modal elements
-      const profilePageModal = document.getElementById("profile-page");
-      const profilePageClose = document.getElementById("profile-page-close");
-      const profilePageSettings = document.getElementById("profile-page-settings");
-      const profilePageLogout = document.getElementById("profile-page-logout");
-    
+  // In loadDashboard(), update mobile profile images
+const mobileProfileIcon = document.getElementById("mobile-profile-icon");
+const mobileProfilePagePhoto = document.getElementById("profile-page-photo");
+mobileProfileIcon.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
+mobileProfilePagePhoto.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
+
+   
      // When the mobile profile icon is clicked, show the profile modal smoothly
-     mobileProfileIcon.addEventListener("click", () => {
-      profilePageModal.classList.add("show");
+     mobileProfileIcon.addEventListener('click', () => {
+      showSection('profile-section');
     });
     
-    profilePageClose.addEventListener("click", () => {
-      profilePageModal.classList.remove("show");
-    });
+  
     
     
-      // When the mobile Settings button is clicked,
-      // load the user’s profile name and icon into the settings modal
-      // then open the settings modal.
-      profilePageSettings.addEventListener("click", async () => {
-        const user = auth.currentUser;
-        if (user) {
-          const userDocRef = doc(db, "users", user.uid);
-          const userDoc = await getDoc(userDocRef);
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            // Update settings modal elements with user data
-            const profilePicPreview = document.getElementById("profile-pic-preview");
-            const displayNameInput = document.getElementById("display-name-input");
-            profilePicPreview.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
-            displayNameInput.value = data.displayName ? data.displayName : "";
-          }
-        }
-        // Open settings modal and close mobile profile modal
-        settingsModal.classList.remove("hide");
-        settingsModal.classList.add("show");
-        profilePageModal.classList.remove("show");
-        profilePageModal.classList.add("hide");
-      });
-    
-      // When the mobile Log Out button is clicked,
-      // sign out the user and reload the page.
-      profilePageLogout.addEventListener("click", async () => {
-        try {
-          await signOut(auth);
-          
-          location.reload();
-        } catch (error) {
-          console.error("Mobile logout error:", error);
-          alert("An error occurred during logout.");
-        }
-      });
       // -------------------------
 // Real-time Clock Setup
 // -------------------------
@@ -1968,12 +2321,12 @@ document.getElementById("recent-expense-tab").addEventListener("click", () => {
 renderRecentTransactions("all");
 
 // Event listener for the "View All Transactions" button
-document.getElementById("view-all-transactions").addEventListener("click", () => {
-  // Assuming 'transactionsPage' is the full-screen panel
-  setActiveTransactionTab("all"); // Use your existing full-panel tab function
-  transactionsPage.classList.remove("hidden");
-  transactionsPage.classList.add("show");
+document.getElementById('view-all-transactions').addEventListener('click', (e) => {
+  e.preventDefault();
+  showSection('transactions-section'); // This matches the ID in your HTML
+  setActiveTransactionTab("all");      // Automatically load the "All" tab content
 });
+
 
       
   
