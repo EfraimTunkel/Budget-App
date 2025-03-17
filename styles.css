@@ -3519,7 +3519,7 @@ document.querySelectorAll('.color-circle').forEach(circle => {
     gap: 10px; /* Optional gap between cards */
   }
   .profile-card {
-    flex: 0 0 calc(40% - 5px); /* Two per row; adjust gap if needed */
+    flex: 0 0 calc(30% - 5px); /* Two per row; adjust gap if needed */
     margin-bottom: 10px;
   }
   
