@@ -3858,24 +3858,57 @@ document.querySelectorAll('.color-circle').forEach(circle => {
     padding: 10px;
   }
 
-  /* Search Bar Container: full-width and comfortable */
+
   .search-bar-container {
-    width: 94%;
-    margin: 10px ;
-    padding: 4px 2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;       /* Reduced padding for a slimmer look */
     border: 1px solid #ddd;
-    border-radius: 30px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 25px;
     background-color: #fff;
-   
+    margin: 8px 0;         /* Reduced margin */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    margin-left: 6px;
   }
+  
   .search-bar-container input[type="text"] {
-    font-size: 14px;
     flex: 1;
+    padding: 8px;          /* Reduced padding */
+    font-size: 16px;       /* Keep at 16px to avoid mobile zoom */
+    border: none;
+    outline: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
+  
+  .search-bar-container input[type="text"]::placeholder {
+    color: #aaa;
+    opacity: 1;
+    transition: color 0.3s ease;
+  }
+  
+  .search-bar-container input[type="text"]:focus {
+    background-color: #f9f9f9;
+    color: #333;
+  }
+  
+  .search-bar-container:focus-within {
+    border-color: #4caf50;
+    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+  }
+  
   .clear-button {
-    font-size: 16px;
-    padding: 0 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;       /* Slightly smaller font size for mobile */
+    padding: 0 4px;        /* Reduced padding */
+    color: #666;
+    transition: color 0.2s;
+  }
+  
+  .clear-button:hover {
+    color: #4caf50;
   }
 
   /* Filter Popup: bottom sheet style */
