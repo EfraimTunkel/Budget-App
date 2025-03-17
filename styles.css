@@ -3607,7 +3607,7 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   .search-bar-container {
     width: 95%;
     margin: 10px ;
-    padding: 4px 4px;
+    padding: 4px 2px;
     border: 1px solid #ddd;
     border-radius: 30px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
