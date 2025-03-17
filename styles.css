@@ -3483,3 +3483,45 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   background-color: #5B91BF; /* Adjust to match your screenshot's blue */
   color: #fff;
 }
+
+@media (max-width: 768px) {
+  /* Remove extra padding/margin from main containers for a full-width layout */
+  #main-content,
+  #dashboard-container,
+  #transactions-section,
+  #profile-section {
+    margin: 0;
+    padding: 0px;
+    width: 100%;
+  }
+  #transactions-section {
+    padding-top: 10px;
+  }
+  /* Summary Boxes: display two per row */
+  .summary-boxes-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 15px;
+    margin: 15px 0;
+  }
+  .summary-box {
+    width: 48%;  /* roughly two per row */
+    padding: 1.2rem;
+    font-size: 16px;
+  }
+  
+  /* Profile Cards: show two per row */
+  .profile-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px; /* Optional gap between cards */
+  }
+  .profile-card {
+    flex: 0 0 calc(40% - 5px); /* Two per row; adjust gap if needed */
+    margin-bottom: 10px;
+  }
+  
+
+}
