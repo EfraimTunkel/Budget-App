@@ -3870,6 +3870,7 @@ document.querySelectorAll('.color-circle').forEach(circle => {
     margin: 8px 0;         /* Reduced margin */
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     margin-left: 6px;
+    margin-right: 6px;
   }
   
   .search-bar-container input[type="text"] {
@@ -3888,7 +3889,7 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   }
   
   .search-bar-container input[type="text"]:focus {
-    background-color: #f9f9f9;
+    
     color: #333;
   }
   
@@ -3910,6 +3911,9 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   .clear-button:hover {
     color: #4caf50;
   }
+  
+
+
 
   /* Filter Popup: bottom sheet style */
   .filter-popup {
