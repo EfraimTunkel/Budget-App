@@ -379,19 +379,17 @@ body {
 /* Dashboard Container */
 #dashboard-container {
   width: 100%;
-  max-width: 1200px;
-  margin: 20px auto;
-
+ 
   border-radius: 20px;
  
 }
 #dashboard-section,
 #transactions-section,
 #profile-section {
-  padding: 20px;
+ 
   background: #fff; /* Optional: match other section backgrounds */
   border-radius: 8px; /* Optional: for consistency */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Optional: subtle shadow */
+  
 }
 /* Dashboard Header */
 .dashboard-header {
@@ -400,7 +398,7 @@ body {
   justify-content: space-between;
   background: linear-gradient(45deg, #4caf50, #81c784);
   color: white;
-  padding: 20px;
+
   border-radius: 16px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   margin-bottom: 20px; /* a little spacing below */
@@ -786,9 +784,7 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  #main-content {
-    padding: 15px;
-  }
+ 
 
   header h1 {
     font-size: 28px;
@@ -820,7 +816,7 @@ body {
 ************************************************/
 #main-content {
   margin: 0 auto;
-  padding: 2rem;
+ 
   max-width: 1400px;
   display: flex;
   flex-direction: column;
@@ -1144,6 +1140,7 @@ body {
   Donut Chart Section (Below the 2-column layout)
 ************************************************/
 .donut-chart-section {
+  margin-top: 30px;
   background-color: #fff;
   border-radius: 0.5rem;
   padding: 1.5rem;
@@ -1654,15 +1651,7 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   color: #4caf50;
   transition: transform 0.3s, color 0.3s;
 }
-.nav-item:hover {
-  color: #388e3c;
-  background-color: rgba(76,175,80,0.1);
-  transform: translateY(-4px);
-}
-.nav-item:hover i {
-  transform: scale(1.2);
-  color: #2e7d32;
-}
+
 .nav-item span {
   font-size: 14px;
   color: inherit;
@@ -1860,16 +1849,7 @@ document.querySelectorAll('.color-circle').forEach(circle => {
     display: flex !important;
   }
 
-  /* Round corners for mobile nav, a bit more styling */
-  .bottom-nav {
-  
-    padding: 10px 15px;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
-  }
 
-  .nav-item i {
-    font-size: 24px;
-  }
   .floating-button {
     width: 50px;
     height: 50px;
@@ -2058,6 +2038,7 @@ document.querySelectorAll('.color-circle').forEach(circle => {
 /************************************************
   Tabs (All / Income / Expense)
 ************************************************/
+
 .transactions-tabs {
   display: flex;
   gap: 0.5rem;
@@ -3284,7 +3265,7 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   background-color: #f0f0f0;
   font-weight: 600;
   color: #555;
-  border-radius: 0.5rem;
+  border-radius: 25px;
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -3483,7 +3464,6 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   background-color: #5B91BF; /* Adjust to match your screenshot's blue */
   color: #fff;
 }
-
 
 @media (max-width: 768px) {
   /* Remove extra padding/margin from main containers for a full-width layout */
@@ -3792,3 +3772,4 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   }
   
 }
+
