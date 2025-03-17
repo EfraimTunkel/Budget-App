@@ -553,125 +553,103 @@ crSaveNewCatBtn.addEventListener("click", async () => {
   // Show the full-screen overlay
 // Function to show and hide sections properly
   // Function to switch between sections (assumes each section is a child of #main-content)
-  
-  function showSection(sectionId) {
-    const sections = document.querySelectorAll('#main-content > section');
-    sections.forEach(section => {
-      if (section.id === sectionId) {
-        section.classList.remove('hidden');
-      } else {
-        section.classList.add('hidden');
-      }
-    });
-    window.scrollTo(0, 0);
-  }
-  document.getElementById('home-button').addEventListener('click', (e) => {
-    e.preventDefault();
-    showSection('dashboard-section');
-  });
-  
-  document.getElementById('transactions-button').addEventListener('click', (e) => {
-    e.preventDefault();
-    showSection('transactions-full');
-    // Call your function to load full transactions:
-    setActiveTransactionTab('all'); // This function should update the transaction list as needed
-  });
-  
-  // When the mobile profile icon is clicked, show the profile section
-  document.getElementById('mobile-profile-icon').addEventListener('click', function(e) {
-    e.preventDefault();
-    showSection('profile-section');
-  });
+  /************************************************
+  Show / Hide Sections
+************************************************/
 
-// --- Profile Page Card Event Listeners ---
-document.getElementById('profile-card-settings').addEventListener('click', function(e) {
-  e.preventDefault();
-  const settingsModal = document.getElementById('settings-modal');
-  settingsModal.classList.remove('hidden');
-  settingsModal.classList.add('show');
-});
-// Remove duplicate listeners that only toggle classes.
-// Instead, always call openSettingsModal() when opening settings.
-
-async function openSettingsModal() {
-  const settingsModal = document.getElementById("settings-modal");
-  const profilePicPreview = document.getElementById("profile-pic-preview");
-  const displayNameInput = document.getElementById("display-name-input");
-  const themeToggle = document.getElementById("theme-toggle");
-  const emailNotificationsCheckbox = document.getElementById("email-notifications");
-  const pushNotificationsCheckbox = document.getElementById("push-notifications");
-  const currencySelect = document.getElementById("currency-select");
-
-  const user = auth.currentUser;
-  if (user) {
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      profilePicPreview.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
-      displayNameInput.value = data.displayName ? data.displayName : "";
-      if (data.preferences) {
-        themeToggle.checked = data.preferences.theme === "dark";
-        emailNotificationsCheckbox.checked = data.preferences.emailNotifications || false;
-        pushNotificationsCheckbox.checked = data.preferences.pushNotifications || false;
-        if (data.preferences.currency) {
-          currencySelect.value = data.preferences.currency;
-        }
-      }
+function showSection(sectionId) {
+  const sections = document.querySelectorAll('#main-content > section');
+  sections.forEach(section => {
+    if (section.id === sectionId) {
+      section.classList.remove('hidden');
+    } else {
+      section.classList.add('hidden');
     }
-  }
-  // Show the modal
-  settingsModal.classList.remove("hidden", "hide");
-  settingsModal.classList.add("show");
+  });
+  window.scrollTo(0, 0);
 }
 
-// For desktop, attach the listener to the settings button:
-document.getElementById("settings-button").addEventListener("click", (e) => {
+/************************************************
+  Navigation: Home & Transactions
+************************************************/
+document.getElementById('home-button').addEventListener('click', (e) => {
   e.preventDefault();
-  openSettingsModal();
+  showSection('dashboard-section');
 });
 
-// For mobile, attach the listener to the profile card settings:
-document.getElementById("profile-card-settings").addEventListener("click", (e) => {
+document.getElementById('transactions-button').addEventListener('click', (e) => {
   e.preventDefault();
-  openSettingsModal();
+  showSection('transactions-full');
+  // Call your function to load full transactions:
+  setActiveTransactionTab('all'); // This function should update the transaction list as needed
 });
 
-
-
-// Add Account card (placeholder)
-document.getElementById('profile-card-add-account').addEventListener('click', function(e) {
+// When the mobile profile icon is clicked, show the profile section
+document.getElementById('mobile-profile-icon').addEventListener('click', function(e) {
   e.preventDefault();
-  alert("Add Account functionality coming soon!");
+  showSection('profile-section');
 });
 
-// Learn More card (placeholder)
-document.getElementById('profile-card-learn-more').addEventListener('click', function(e) {
+/************************************************
+  Profile Page Card Event Listeners
+************************************************/
+/* 
+   Replace these placeholders with actual logic 
+   (e.g., opening modals, navigating, etc.) 
+*/
+document.getElementById('profile-card-premium').addEventListener('click', (e) => {
   e.preventDefault();
-  alert("Learn More functionality coming soon!");
+  alert("Premium functionality coming soon!");
 });
 
-// Helper function to log events to Firestore.
-// Make sure that updateDoc and arrayUnion are imported.
-async function logEvent(message) {
-  const user = auth.currentUser;
-  if (user) {
-    const userDocRef = doc(db, "users", user.uid);
-    const logEntry = {
-      message: message,
-      timestamp: new Date().toISOString()
-    };
-    try {
-      await updateDoc(userDocRef, {
-        logs: arrayUnion(logEntry)
-      });
-    } catch (error) {
-      console.error("Error logging event:", error);
-    }
+document.getElementById('profile-card-connect-bank').addEventListener('click', (e) => {
+  e.preventDefault();
+  alert("Connect Bank functionality coming soon!");
+});
+
+document.getElementById('profile-card-wallets').addEventListener('click', (e) => {
+  e.preventDefault();
+  alert("Wallets functionality coming soon!");
+});
+
+document.getElementById('profile-card-categories').addEventListener('click', (e) => {
+  e.preventDefault();
+  alert("Categories functionality coming soon!");
+});
+
+document.getElementById('profile-card-export-data').addEventListener('click', (e) => {
+  e.preventDefault();
+  alert("Export Data functionality coming soon!");
+});
+
+document.getElementById('profile-card-passcode').addEventListener('click', (e) => {
+  e.preventDefault();
+  alert("Passcode functionality coming soon!");
+});
+
+// Logs Card
+document.getElementById('profile-card-logs').addEventListener('click', (e) => {
+  e.preventDefault();
+  openLogsPopup();  // Existing function to open logs popup
+});
+
+// Logout Card
+document.getElementById('profile-card-logout').addEventListener('click', async function (e) {
+  e.preventDefault();
+  try {
+    await signOut(auth);
+    alert("Logged out successfully!");
+    // Optionally, reload the page or redirect to the login screen:
+    window.location.reload();
+  } catch (error) {
+    console.error("Error signing out:", error);
+    alert("Error logging out. Please try again.");
   }
-}
+});
 
-// Function to open the Logs Popup and display logs
+/************************************************
+  Logs Popup Functions
+************************************************/
 async function openLogsPopup() {
   const logsPopup = document.getElementById("logs-popup");
   const logsContainer = document.getElementById("logs-container");
@@ -715,71 +693,74 @@ document.getElementById("close-logs-popup").addEventListener("click", () => {
   logsPopup.classList.remove("show");
   logsPopup.classList.add("hidden");
 });
-
-// Attach the logs popup to the Logs card click event
-document.getElementById("profile-card-logs").addEventListener("click", (e) => {
+// Instead, call openSettingsModal() so user info is fetched:
+document.getElementById('profile-settings-button').addEventListener('click', (e) => {
   e.preventDefault();
-  openLogsPopup();
+  openSettingsModal();
 });
 
-// Example: Log events when certain actions occur
-// For instance, after a successful sign-in, you could call:
-async function onSuccessfulLogin() {
-  await logEvent("User logged in via email/password.");
-  // ... rest of your login logic
+// Also update the "profile-extra-button" if you want it to open settings:
+document.getElementById('profile-extra-button').addEventListener('click', (e) => {
+  e.preventDefault();
+  openSettingsModal();
+});
+
+// The function that actually loads user data from Firestore and shows the modal
+async function openSettingsModal() {
+  const settingsModal = document.getElementById("settings-modal");
+  const profilePicPreview = document.getElementById("profile-pic-preview");
+  const displayNameInput = document.getElementById("display-name-input");
+  const themeToggle = document.getElementById("theme-toggle");
+  const emailNotificationsCheckbox = document.getElementById("email-notifications");
+  const pushNotificationsCheckbox = document.getElementById("push-notifications");
+  const currencySelect = document.getElementById("currency-select");
+
+  const user = auth.currentUser;
+  if (user) {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      // Fill the modal fields
+      profilePicPreview.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
+      displayNameInput.value = data.displayName ? data.displayName : "";
+      if (data.preferences) {
+        themeToggle.checked = data.preferences.theme === "dark";
+        emailNotificationsCheckbox.checked = data.preferences.emailNotifications || false;
+        pushNotificationsCheckbox.checked = data.preferences.pushNotifications || false;
+        if (data.preferences.currency) {
+          currencySelect.value = data.preferences.currency;
+        }
+      }
+    }
+  }
+  
+  // Ensure we remove any leftover classes
+  settingsModal.classList.remove("hidden", "hide");
+  settingsModal.classList.add("show");
 }
 
-// Similarly, after saving settings, you could log:
-async function onSettingsSaved() {
-  await logEvent("User updated profile settings.");
-  // ... any additional logic
-}
-
-
-// Logout card (placeholder for logout functionality)
-document.getElementById("profile-card-logout").addEventListener("click", async function (e) {
-  e.preventDefault();
-  try {
-    await signOut(auth);
-    alert("Logged out successfully!");
-    // Optionally, reload the page or redirect to the login screen:
-    window.location.reload();
-  } catch (error) {
-    console.error("Error signing out:", error);
-    alert("Error logging out. Please try again.");
-  }
-});
-
-document.getElementById("logout-button").addEventListener("click", async function (e) {
-  e.preventDefault();
-  try {
-    await signOut(auth);
-    alert("Logged out successfully!");
-    window.location.reload();
-  } catch (error) {
-    console.error("Error signing out:", error);
-    alert("Error logging out. Please try again.");
-  }
-});
-
-// --- Settings Modal Close Logic ---
-// Ensure that closing the settings modal simply hides it so the underlying profile page remains visible.
+// Close the modal consistently (from a "close" button inside the modal)
 document.getElementById('close-settings').addEventListener('click', function(e) {
   e.preventDefault();
   const settingsModal = document.getElementById('settings-modal');
-  // Instead of adding "hide", add "hidden" so it matches the openSettingsModal logic
+  // Hide it properly so it can be opened again
   settingsModal.classList.remove('show');
   settingsModal.classList.add('hidden');
 });
-
-// Listen for window resize events
+/************************************************
+  Window Resize Logic
+************************************************/
 window.addEventListener("resize", function () {
+  // If the screen is resized to desktop width
+  // while the profile section is visible, show dashboard
   if (window.innerWidth >= 769) {
     if (!document.getElementById("profile-section").classList.contains("hidden")) {
       showSection("dashboard-section"); // Return to home page on desktop resize
     }
   }
 });
+
 
   const initializeFirebaseFeatures = (app) => {
     auth = getAuth(app);
@@ -798,6 +779,7 @@ window.addEventListener("resize", function () {
   
   // --- Settings Modal Enhancements ---
   // DOM elements for the Settings modal
+
   const settingsButton = document.getElementById("settings-button");
   const settingsModal = document.getElementById("settings-modal");
   const closeSettingsButton = document.getElementById("close-settings");
@@ -873,43 +855,54 @@ window.addEventListener("resize", function () {
       settingsModal.classList.add("hide");
     });
   }
-  
   // Save settings (profile info + preferences)
-  saveSettingsButton.addEventListener("click", async () => {
-    const displayName = displayNameInput.value;
-    const newPhotoUrl = profilePicPreview.src;
-    const theme = themeToggle.checked ? "dark" : "light";
-    const emailNotifications = emailNotificationsCheckbox.checked;
-    const pushNotifications = pushNotificationsCheckbox.checked;
-    const currency = currencySelect.value;
-    
-    try {
-      const user = auth.currentUser;
-      if (!user) {
-        alert("No user is logged in.");
-        return;
-      }
-      const userDocRef = doc(db, "users", user.uid);
-      await setDoc(userDocRef, {
-        displayName,
-        photoUrl: newPhotoUrl,
-        preferences: {
-          theme,
-          emailNotifications,
-          pushNotifications,
-          currency,
-        },
-      }, { merge: true });
-      alert("Settings saved successfully!");
-      loadDashboard(user); // Refresh dashboard to reflect changes
-    } catch (error) {
-      console.error("Error saving settings:", error);
-      alert("Failed to save settings. Check console for details.");
+saveSettingsButton.addEventListener("click", async () => {
+  const loadingOverlay = document.getElementById("loading-overlay");
+  // Show the full-screen loading overlay and disable the save button
+  loadingOverlay.classList.remove("hidden");
+  saveSettingsButton.disabled = true;
+  
+  const displayName = displayNameInput.value;
+  const newPhotoUrl = profilePicPreview.src;
+  const theme = themeToggle.checked ? "dark" : "light";
+  const emailNotifications = emailNotificationsCheckbox.checked;
+  const pushNotifications = pushNotificationsCheckbox.checked;
+  const currency = currencySelect.value;
+  
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("No user is logged in.");
+      return;
     }
+    const userDocRef = doc(db, "users", user.uid);
+    await setDoc(userDocRef, {
+      displayName,
+      photoUrl: newPhotoUrl,
+      preferences: {
+        theme,
+        emailNotifications,
+        pushNotifications,
+        currency,
+      },
+    }, { merge: true });
     
-    settingsModal.classList.remove("show");
-    settingsModal.classList.add("hidden");
-  });
+    // Once saved, wait briefly, then close the modal and hide the overlay
+    setTimeout(() => {
+      settingsModal.classList.remove("show");
+      settingsModal.classList.add("hidden");
+      loadingOverlay.classList.add("hidden");  // Hide loader
+      saveSettingsButton.disabled = false;  // Re-enable button
+    }, 600);
+  } catch (error) {
+    console.error("Error saving settings:", error);
+    alert("Failed to save settings.");
+    loadingOverlay.classList.add("hidden");  // Hide loader
+    saveSettingsButton.disabled = false;  // Re-enable button
+  }
+});
+
+
   
   
   // Update profile picture preview immediately when a new file is selected
@@ -1417,14 +1410,12 @@ discardConfirmBtn.addEventListener("click", () => {
   }
   
   
-  // Function to set active tab and load transactions accordingly
   async function setActiveTransactionTab(filter) {
-    // Remove 'active' class from all tab buttons
+    // Remove active class from all tabs
     allTab.classList.remove("active");
     incomeTabList.classList.remove("active");
     expenseTabList.classList.remove("active");
   
-    // Add 'active' to the selected tab
     if (filter === "all") {
       allTab.classList.add("active");
     } else if (filter === "income") {
@@ -1432,9 +1423,21 @@ discardConfirmBtn.addEventListener("click", () => {
     } else if (filter === "expense") {
       expenseTabList.classList.add("active");
     }
-    
+  
     await loadTransactions(filter);
   }
+  
+  document.querySelector('.income-box').addEventListener('click', async (e) => {
+    e.preventDefault();
+    showSection('transactions-section'); // Ensure this is the correct container ID
+    await setActiveTransactionTab("income");
+  });
+  
+  document.querySelector('.expense-box').addEventListener('click', async (e) => {
+    e.preventDefault();
+    showSection('transactions-section');
+    await setActiveTransactionTab("expense");
+  });
   
   // Function to load transactions from Firestore and render them as cards
   async function loadTransactions(filter) {
@@ -2178,20 +2181,21 @@ window.balanceChart.render();
       You can still use responsive if you want to tweak
       height or offset on smaller screens, but keep position: 'left'.
     */
-    responsive: [{
-      breakpoint: 768,
-      options: {
-        chart: {
-          height: 300,
-          // offsetX: 40 // optional: reduce offset on mobile if needed
-        },
-        legend: {
-          fontSize: '12px',
-          position: 'left', // remain on the left
-          horizontalAlign: 'center'
+      responsive: [{
+        breakpoint: 768,
+        options: {
+          chart: {
+            height: 300,
+            // offsetX: 40 // optional: reduce offset on mobile if needed
+          },
+          legend: {
+            fontSize: '12px',
+            position: 'left',
+            horizontalAlign: 'center'
+          }
         }
-      }
-    }]
+      }]
+      
   };
 
   const spendingChart = new ApexCharts(
@@ -2429,7 +2433,10 @@ document.getElementById('view-all-transactions').addEventListener('click', (e) =
   
   
   
-  
+
+
+
+
   
   // Start the app by initializing with the API key
   initializeAppWithApiKey();
@@ -2574,7 +2581,6 @@ document.getElementById('view-all-transactions').addEventListener('click', (e) =
   
   
   
-
 
 
 
