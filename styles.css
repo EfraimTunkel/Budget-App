@@ -3484,6 +3484,7 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   color: #fff;
 }
 
+
 @media (max-width: 768px) {
   /* Remove extra padding/margin from main containers for a full-width layout */
   #main-content,
@@ -3520,8 +3521,274 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   }
   .profile-card {
     flex: 0 0 calc(30% - 5px); /* Two per row; adjust gap if needed */
-    margin-bottom: 10px;
+    margin-bottom: 90px;
   }
   
 
+}
+@media (max-width: 768px) {
+  /* Make the section use the full width */
+  #transactions-section {
+ 
+    margin: 0;
+    width: 100%;
+    background: #fff;
+  }
+  
+  /* Section Title Styling */
+  .section-title {
+    font-size: 22px;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  /* Recent Transactions Tabs */
+  .recent-transactions-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .recent-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 25px;
+    background: #f0f0f0;
+    color: #555;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .recent-tab.active {
+    background: #4caf50;
+    color: #fff;
+  }
+  
+  .recent-tab:hover {
+    background: #66bb6a;
+  }
+  
+  /* Transactions List Container */
+  .transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  /* View All Button Styling */
+  .view-all-btn {
+    width: 100%;
+    padding: 12px;
+    background: #4caf50;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 15px;
+  }
+  
+  .view-all-btn:hover {
+    background: #43a047;
+  }
+
+
+
+
+
+   /* Header styling: full width, ample spacing */
+   .transactions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  .transactions-title h2 {
+    font-size: 18px;
+    margin: 0;
+    color: #333;
+  }
+  .transactions-actions {
+    display: flex;
+    gap: 12px;
+  }
+  .btn-download, .icon-button {
+    font-size: 20px;
+    padding: 10px;
+  }
+
+  /* Search Bar Container: full-width and comfortable */
+  .search-bar-container {
+    width: 95%;
+    margin: 10px ;
+    padding: 4px 4px;
+    border: 1px solid #ddd;
+    border-radius: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background-color: #fff;
+  }
+  .search-bar-container input[type="text"] {
+    font-size: 14px;
+    flex: 1;
+  }
+  .clear-button {
+    font-size: 16px;
+    padding: 0 10px;
+  }
+
+  /* Filter Popup: bottom sheet style */
+  .filter-popup {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    z-index: 1000;
+    animation: slideUp 0.3s ease-out;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .filter-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  .filter-popup-header h3 {
+    font-size: 22px;
+    margin: 0;
+    color: #4caf50;
+  }
+  .close-filter-popup {
+    font-size: 26px;
+    background: transparent;
+    border: none;
+    color: #666;
+    cursor: pointer;
+  }
+  .close-filter-popup:hover {
+    color: #f44336;
+  }
+  .filter-popup label {
+    display: block;
+    margin-top: 10px;
+    font-size: 16px;
+    color: #333;
+  }
+  .filter-popup input[type="date"],
+  .filter-popup input[type="number"],
+  .filter-popup input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+  .apply-button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    font-size: 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #4caf50;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .apply-button:hover {
+    background-color: #43a047;
+  }
+
+  /* Tabs for Transactions: pill-style and full-width */
+  .transactions-tabs {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    gap: 10px;
+  }
+  .transactions-tab {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    border-radius: 25px;
+    background-color: #f0f0f0;
+    font-size: 16px;
+    color: #555;
+    text-align: center;
+    transition: background-color 0.2s ease;
+  }
+  .transactions-tab.active {
+    background-color: #4caf50;
+    color: #fff;
+  }
+  .transactions-tab:hover {
+    background-color: #66bb6a;
+    color: #fff;
+  }
+
+  /* Transaction List Container: full-width vertical list */
+  .transactions-list {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+
+
+  @media (max-width: 768px) {
+    /* Mobile Bottom Navigation: Full width with more balanced spacing */
+    .bottom-nav {
+      padding: 4px 0; /* Reduce vertical padding */
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+      justify-content: space-around; /* Distribute items evenly */
+    }
+    
+    /* Ensure all nav items take equal space */
+    .nav-item {
+      
+      text-align: center;
+      padding: 10px 0;
+      font-size: 14px;
+    }
+    
+    /* Increase icon sizes for easier tapping */
+    .nav-item i {
+      font-size: 22px;  /* Larger icons */
+      margin-bottom: 3px; /* Slight spacing between icon and text */
+      color: #4caf50;
+    }
+    
+ 
+    
+    /* Profile Icon adjustments: ensure proper spacing */
+    .profile-icon-container {
+      margin-right: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .profile-icon-container img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #4caf50;
+      object-fit: cover;
+    }
+  }
+  
 }
