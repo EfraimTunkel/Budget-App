@@ -1715,7 +1715,9 @@ async function deleteTransaction(transactionId) {
     if (userDoc.exists()) {
       // Inside loadDashboard(user):
   const data = userDoc.data();
-     
+  const profileNameEl = document.getElementById("profile-name");
+  profileNameEl.textContent = data.displayName ? data.displayName : "Your Display Name";
+  
   // In loadDashboard(), update mobile profile images
 const mobileProfileIcon = document.getElementById("mobile-profile-icon");
 const mobileProfilePagePhoto = document.getElementById("profile-page-photo");
@@ -2581,6 +2583,7 @@ document.getElementById('view-all-transactions').addEventListener('click', (e) =
   
   
   
+
 
 
 
