@@ -71,7 +71,7 @@
       
       <nav class="bottom-nav">
         <!-- Home (shown on all) -->
-        <a href="#" class="nav-item show-on-all" id="home-button">
+        <a href="" class="nav-item show-on-all" id="home-button">
           <i class="fa-solid fa-house"></i><span>Home</span>
         </a>
       
@@ -81,17 +81,17 @@
         </button>
       
         <!-- Budgets (shown on all) -->
-        <a href="#" class="nav-item show-on-all" id="budgets-button">
+        <a href="" class="nav-item show-on-all" id="budgets-button">
           <i class="fa-solid fa-wallet"></i><span>Budgets</span>
         </a>
       
         <!-- Transactions (shown on all) -->
-        <a href="#" class="nav-item show-on-all" id="transactions-button">
+        <a href="" class="nav-item show-on-all" id="transactions-button">
           <i class="fa-solid fa-list"></i><span>Transactions</span>
         </a>
       
         <!-- Settings (hidden on mobile, shown on desktop) -->
-        <a href="#" class="nav-item hide-on-mobile" id="settings-button">
+        <a href="" class="nav-item hide-on-mobile" id="settings-button">
           <i class="fa-solid fa-gear"></i><span>Settings</span>
         </a>
       
@@ -125,19 +125,21 @@
             </div>
           </header>
       
-          <!-- Summary Boxes (Expense & Income) -->
-          <section class="summary-boxes-section">
-            <div class="summary-box expense-box">
-              <h3>Expense</h3>
-              <div class="amount negative">$0.00</div>
-              <div class="transactions-count">0 transactions</div>
-            </div>
-            <div class="summary-box income-box">
-              <h3>Income</h3>
-              <div class="amount positive">$0.00</div>
-              <div class="transactions-count">0 transactions</div>
-            </div>
-          </section>
+   <!-- Summary Boxes (Expense & Income) -->
+   <section class="summary-boxes-section">
+    <div class="summary-box expense-box">
+      <h3>Expense</h3>
+      <div class="amount negative">$0.00</div>
+      <div class="transactions-count">0 transactions</div>
+    </div>
+    <div class="summary-box income-box">
+      <h3>Income</h3>
+      <div class="amount positive">$0.00</div>
+      <div class="transactions-count">0 transactions</div>
+    </div>
+    
+  </section>
+  
       
           <!-- Main 2-column layout for line chart + recent transactions -->
           <div class="dashboard-grid">
@@ -233,26 +235,55 @@
           </section>
         </section>
         
-
-<!-- Profile Section (Full Page View) -->
+    <!-- Profile Section (Full Page View) -->
 <section id="profile-section" class="profile-section hidden">
   <div class="profile-page-content">
     <div class="profile-header">
-      <img src="default-avatar.png" alt="Profile Photo" id="profile-page-photo">
-      <h2>Your Profile</h2>
+      <!-- Left icon or placeholder (if you want something else here) -->
+      <button id="profile-extra-button" class="profile-icon-button">
+        <i class="fa-solid fa-user-plus"></i>
+      </button>
+
+      <!-- Centered avatar + info -->
+      <div class="profile-center">
+        <img src="default-avatar.png" alt="Profile Photo" id="profile-page-photo">
+        <div class="profile-info">
+          <h2 id="profile-name">Efraim</h2>
+          <p id="profile-subtext">Basic Account</p>
+        </div>
+      </div>
+
+      <!-- Right icon for settings -->
+      <button id="profile-settings-button" class="profile-icon-button">
+        <i class="fa-solid fa-gear"></i>
+      </button>
     </div>
-    <div class="profile-cards">
-      <div class="profile-card" id="profile-card-settings">
-        <i class="fas fa-cog"></i>
-        <span>Settings</span>
+    
+    <!-- Profile grid of cards -->
+    <div class="profile-grid">
+      <div class="profile-card" id="profile-card-premium">
+        <i class="fas fa-star"></i>
+        <span>Premium</span>
       </div>
-      <div class="profile-card" id="profile-card-add-account">
-        <i class="fas fa-user-plus"></i>
-        <span>Add Account</span>
+      <div class="profile-card" id="profile-card-connect-bank">
+        <i class="fas fa-university"></i>
+        <span>Connect Bank</span>
       </div>
-      <div class="profile-card" id="profile-card-learn-more">
-        <i class="fas fa-info-circle"></i>
-        <span>Learn More</span>
+      <div class="profile-card" id="profile-card-wallets">
+        <i class="fas fa-wallet"></i>
+        <span>Wallets</span>
+      </div>
+      <div class="profile-card" id="profile-card-categories">
+        <i class="fas fa-folder"></i>
+        <span>Categories</span>
+      </div>
+      <div class="profile-card" id="profile-card-export-data">
+        <i class="fas fa-file-export"></i>
+        <span>Export Data</span>
+      </div>
+      <div class="profile-card" id="profile-card-passcode">
+        <i class="fas fa-lock"></i>
+        <span>Passcode</span>
       </div>
       <div class="profile-card" id="profile-card-logs">
         <i class="fas fa-clipboard-list"></i>
@@ -263,8 +294,12 @@
         <span>Log Out</span>
       </div>
     </div>
+    
+    <p class="profile-version">Version: 12.41</p>
   </div>
 </section>
+
+
 
 
 
@@ -507,7 +542,6 @@
   </div>
 </div>
 
-
 <!-- SETTINGS MODAL -->
 <div id="settings-modal" class="modal hidden">
   <div class="modal-content">
@@ -518,8 +552,9 @@
     <!-- Profile Section -->
     <div class="settings-section">
       <h3>Profile</h3>
+      <!-- Only one upload control: the label triggers the hidden file input -->
       <label for="profile-pic-input" class="custom-file-label">Choose Image</label>
-      <input type="file" id="profile-pic-input" accept="image/*" />
+      <input type="file" id="profile-pic-input" accept="image/*" style="display:none;" />
       <img id="profile-pic-preview" src="default-avatar.png" alt="Profile Preview" style="width:100px; height:100px; border-radius:50%;" />
       
       <label for="display-name-input">Display Name:</label>
@@ -562,18 +597,21 @@
     <!-- Account Management Section -->
     <div class="settings-section">
       <h3>Account Management</h3>
-      <!-- Send a reset link to the user’s email -->
-      <button id="reset-password-button" >Reset Password</button>
-      <!-- Trigger the "Confirm Deletion" popup -->
-      <button id="delete-account-button" >Delete Account</button>
+      <button id="reset-password-button">Reset Password</button>
+      <button id="delete-account-button">Delete Account</button>
     </div>
     
-    <!-- Modal Buttons -->
+    <!-- Modal Buttons & Loading Indicator -->
     <div class="modal-buttons">
       <button id="save-settings">Save Settings</button>
       <button id="close-settings">Cancel</button>
-    </div>
-  </div>
+      <div id="loading-overlay" class="loading-overlay hidden">
+        <span class="loader"></span>
+      </div>
+      
+      
+      
+      
 </div>
 
 <!-- CONFIRM DELETION POPUP -->
@@ -583,9 +621,10 @@
     <h2>Confirm Deletion</h2>
     <p>Please enter your current password to delete your account.</p>
     <input type="password" id="delete-account-password" placeholder="Current password" />
-    <button id="confirm-delete-button" >Confirm Delete</button>
+    <button id="confirm-delete-button">Confirm Delete</button>
   </div>
 </div>
+
 
 
 
