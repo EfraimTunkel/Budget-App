@@ -17,53 +17,60 @@
   </head>
   <body>
     <!-- AUTH CONTAINER -->
-    <div id="auth-container">
-      <div class="logo">
-        <img src="logo.png" alt="Budget App Logo" />
-      </div>
-      <h1 class="app-title" id="form-title">Create an account</h1>
-      
-      <form id="auth-form">
-        <div class="input-group">
-          <label for="auth-email">Email address*</label>
-          <input type="email" id="auth-email" placeholder="Enter your email address" required />
-        </div>
-        <div class="input-group">
-          <label for="auth-password">Password*</label>
-          <div class="password-wrapper">
-            <input type="password" id="auth-password" placeholder="Create a strong password" required />
-            <button type="button" id="toggle-password-visibility" class="toggle-password">
-              <i class="fa fa-eye" aria-hidden="true"></i>
-            </button>
-          </div>
-        </div>
-        <button type="submit" id="auth-button" class="btn-auth">Continue</button>
-      </form>
-
-      <p>
-        <button type="button" id="forgot-password-button">Forgot Password?</button>
-      </p>
-      
-
-      <p class="toggle-auth">
-        Already have an account? <a href="#" id="toggle-link">Login</a>
-      </p>
-      
-      <p id="verification-message" class="hidden">
-        A verification email was sent to your inbox. Please verify your email before logging in.
-      </p>
-      
-    
-      <div class="divider"><span>OR</span></div>
-    
-      <button id="google-signin-button" class="btn-auth social-btn">
-        <i class="fab fa-google google-icon"></i> Continue with Google
-      </button>
-      <button id="microsoft-signin-button" class="btn-auth social-btn">
-        <i class="fab fa-microsoft microsoft-icon"></i> Continue with Microsoft
-      </button>
-    
+  <!-- AUTH CONTAINER -->
+<div id="auth-container">
+  <div class="logo">
+    <img src="logo.png" alt="Budget App Logo" />
+  </div>
+  <h1 class="app-title" id="form-title">Welcome to Budget App</h1>
+  <p class="app-tagline">Manage your finances effortlessly.</p>
+  
+  <form id="auth-form">
+    <div class="input-group">
+      <label for="auth-email">Email address*</label>
+      <input type="email" id="auth-email" placeholder="Enter your email address" required />
     </div>
+    <div class="input-group">
+      <label for="auth-password">Password*</label>
+      <div class="password-wrapper">
+        <input type="password" id="auth-password" placeholder="Create a strong password" required />
+        <button type="button" id="toggle-password-visibility" class="toggle-password">
+          <i class="fa fa-eye" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+    <button type="submit" id="auth-button" class="btn-auth">Continue</button>
+  </form>
+  
+ 
+  
+  <p>
+    <button type="button" id="forgot-password-button" class="link-button">Forgot Password?</button>
+  </p>
+  
+  <p class="toggle-auth">
+    Already have an account? <a href="#" id="toggle-link">Login</a>
+  </p>
+  
+  <p id="verification-message" class="hidden">
+    A verification email was sent to your inbox. Please verify your email before logging in.
+  </p>
+  
+  <div class="divider"><span>OR</span></div>
+  
+  <button id="google-signin-button" class="btn-auth social-btn">
+    <i class="fab fa-google google-icon"></i> Continue with Google
+  </button>
+  <button id="microsoft-signin-button" class="btn-auth social-btn">
+    <i class="fab fa-microsoft microsoft-icon"></i> Continue with Microsoft
+  </button>
+  <p class="tos-text">
+    By continuing, you agree to the 
+    <a href="terms.html">Terms of Service</a> and 
+    <a href="privacy.html">Privacy Policy</a>.
+  </p>
+</div>
+
     
 
     <!-- DASHBOARD CONTAINER -->
@@ -244,14 +251,16 @@
         <i class="fa-solid fa-user-plus"></i>
       </button>
 
-      <!-- Centered avatar + info -->
-      <div class="profile-center">
-        <img src="default-avatar.png" alt="Profile Photo" id="profile-page-photo">
-        <div class="profile-info">
-          <h2 id="profile-name">Efraim</h2>
-          <p id="profile-subtext">Basic Account</p>
-        </div>
-      </div>
+   <!-- Centered avatar + info -->
+<div class="profile-center">
+  <img src="default-avatar.png" alt="Profile Photo" id="profile-page-photo">
+  <div class="profile-info">
+    <!-- This will be updated with the user's saved display name -->
+    <h2 id="profile-name">Your Display Name</h2>
+    <p id="profile-subtext">Basic Account</p>
+  </div>
+</div>
+
 
       <!-- Right icon for settings -->
       <button id="profile-settings-button" class="profile-icon-button">
@@ -260,42 +269,51 @@
     </div>
     
     <!-- Profile grid of cards -->
-    <div class="profile-grid">
-      <div class="profile-card" id="profile-card-premium">
-        <i class="fas fa-star"></i>
-        <span>Premium</span>
-      </div>
-      <div class="profile-card" id="profile-card-connect-bank">
-        <i class="fas fa-university"></i>
-        <span>Connect Bank</span>
-      </div>
-      <div class="profile-card" id="profile-card-wallets">
-        <i class="fas fa-wallet"></i>
-        <span>Wallets</span>
-      </div>
-      <div class="profile-card" id="profile-card-categories">
-        <i class="fas fa-folder"></i>
-        <span>Categories</span>
-      </div>
-      <div class="profile-card" id="profile-card-export-data">
-        <i class="fas fa-file-export"></i>
-        <span>Export Data</span>
-      </div>
-      <div class="profile-card" id="profile-card-passcode">
-        <i class="fas fa-lock"></i>
-        <span>Passcode</span>
-      </div>
-      <div class="profile-card" id="profile-card-logs">
-        <i class="fas fa-clipboard-list"></i>
-        <span>Logs</span>
-      </div>
-      <div class="profile-card" id="profile-card-logout">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Log Out</span>
-      </div>
-    </div>
-    
-    <p class="profile-version">Version: 12.41</p>
+  <!-- Profile grid of cards -->
+<div class="profile-grid">
+  <div class="profile-card" id="profile-card-premium">
+    <i class="fas fa-star"></i>
+    <span class="card-title">Premium</span>
+    <p class="card-subtitle">Unlock extra features</p>
+  </div>
+  <div class="profile-card" id="profile-card-connect-bank">
+    <i class="fas fa-university"></i>
+    <span class="card-title">Connect Bank</span>
+    <p class="card-subtitle">Link your bank for auto-updates</p>
+  </div>
+  <div class="profile-card" id="profile-card-wallets">
+    <i class="fas fa-wallet"></i>
+    <span class="card-title">Wallets</span>
+    <p class="card-subtitle">Manage cash & cards</p>
+  </div>
+  <div class="profile-card" id="profile-card-categories">
+    <i class="fas fa-folder"></i>
+    <span class="card-title">Categories</span>
+    <p class="card-subtitle">Organize your spending</p>
+  </div>
+  <div class="profile-card" id="profile-card-export-data">
+    <i class="fas fa-file-export"></i>
+    <span class="card-title">Export Data</span>
+    <p class="card-subtitle">Download your history</p>
+  </div>
+  <div class="profile-card" id="profile-card-passcode">
+    <i class="fas fa-lock"></i>
+    <span class="card-title">Passcode</span>
+    <p class="card-subtitle">Secure your access</p>
+  </div>
+  <div class="profile-card" id="profile-card-logs">
+    <i class="fas fa-clipboard-list"></i>
+    <span class="card-title">Activity</span>
+    <p class="card-subtitle">Review your logs</p>
+  </div>
+  <div class="profile-card" id="profile-card-logout">
+    <i class="fas fa-sign-out-alt"></i>
+    <span class="card-title">Log Out</span>
+    <p class="card-subtitle">Exit your account</p>
+  </div>
+</div>
+
+
   </div>
 </section>
 
