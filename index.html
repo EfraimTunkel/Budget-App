@@ -93,12 +93,12 @@
         </a>
       
         <!-- Transactions (shown on all) -->
-        <a  class="nav-item show-on-all" id="transactions-button">
+        <a class="nav-item show-on-all" id="transactions-button">
           <i class="fa-solid fa-list"></i><span>Transactions</span>
         </a>
       
         <!-- Settings (hidden on mobile, shown on desktop) -->
-        <a  class="nav-item hide-on-mobile" id="settings-button">
+        <a href="" class="nav-item hide-on-mobile" id="settings-button">
           <i class="fa-solid fa-gear"></i><span>Settings</span>
         </a>
       
@@ -205,29 +205,33 @@
               <i class="fa fa-times"></i>
             </button>
           </div>
-        
-          <!-- Filter Popup Card (hidden by default) -->
-          <div id="filter-popup" class="filter-popup hidden">
-            <div class="filter-popup-header">
-              <h3>Filter Transactions</h3>
-              <button id="close-filter-popup" class="close-filter-popup">
-                <i class="fa fa-times"></i>
-              </button>
-            </div>
-            <label for="filter-date">Date:</label>
-            <input type="date" id="filter-date" />
-        
-            <label for="filter-amount">Amount:</label>
-            <input type="number" id="filter-amount" placeholder="Enter amount" />
-        
-            <label for="filter-title">Title:</label>
-            <input type="text" id="filter-title" placeholder="Enter title" />
-        
-            <label for="filter-category">Category:</label>
-            <input type="text" id="filter-category" placeholder="Enter category" />
-        
-            <button id="apply-filter" class="apply-button">Apply</button>
+        <!-- Filter Popup Card (hidden by default) -->
+        <div id="filter-popup" class="filter-popup hidden">
+          <div class="filter-popup-header">
+            <h3>Filters</h3>
+            <button id="close-filter-popup" class="close-filter-popup">
+              <i class="fa fa-times"></i>
+            </button>
           </div>
+          <div class="filter-content">
+  <label for="filter-date">Date:</label>
+  <input type="date" id="filter-date" />
+
+  <label for="filter-amount">Amount:</label>
+  <input type="number" id="filter-amount" placeholder="Enter amount" />
+
+  <label for="filter-title">Title:</label>
+  <input type="text" id="filter-title" placeholder="Enter title" />
+
+  <label for="filter-category">Category:</label>
+  <input type="text" id="filter-category" placeholder="Enter category" />
+
+  <div class="filter-buttons">
+    <button id="reset-filter" class="reset-button">Reset</button>
+    <button id="apply-filter" class="apply-button">Apply</button>
+  </div>
+</div>
+</div>
         
           <!-- Tabs for Transactions -->
           <div class="transactions-tabs">
@@ -385,12 +389,7 @@
         ></textarea>
 
         <!-- Amount Field -->
-        <input 
-          type="number"
-          id="cr-popup-income-amount"
-          placeholder="Amount"
-          required
-        />
+        <input type="number" id="cr-popup-income-amount" placeholder="Amount" step="0.01" required />
 
         <!-- Category (Source) Selection -->
         <div class="category-wrapper">
@@ -419,12 +418,7 @@
           placeholder="Notes (optional)"
         ></textarea>
 
-        <input
-          type="number"
-          id="cr-popup-expense-amount"
-          placeholder="Amount"
-          required
-        />
+        <input type="number" id="cr-popup-expense-amount" placeholder="Amount" step="0.01" required />
 
         <!-- Category Selection -->
         <div class="category-wrapper">
