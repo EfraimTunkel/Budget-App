@@ -429,8 +429,8 @@ body {
 
 /* The user’s profile pic: circle shape, small border, etc. */
 #user-profile-pic {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   border: 2px solid white;
   object-fit: cover;
@@ -2201,81 +2201,161 @@ document.querySelectorAll('.color-circle').forEach(circle => {
 .clear-button:hover {
   color: var(--secondary-color);
 }
-
-/* Filter Popup Card */
+/* Base styles for the filter popup (desktop by default) */
 .filter-popup {
-  position: absolute;
-  top: 60px;
-  right: 20px;
+  position: fixed;
+  z-index: 9999;
   background: #fff;
-  border: 1px solid var(--border-color);
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  width: 280px;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-in-out;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  animation: slideUp 0.3s ease-out;
+  /* Hidden by default */
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Slide up keyframe for the bottom sheet or modal */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
+/* Header: Title + Close button */
 .filter-popup-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
-
 .filter-popup-header h3 {
   margin: 0;
   font-size: 20px;
-  color: var(--secondary-color);
+  color: #333;
 }
-
 .close-filter-popup {
   background: transparent;
   border: none;
-  font-size: 20px;
-  cursor: pointer;
+  font-size: 24px;
   color: #666;
-}
-
-/* Filter Popup Form Elements */
-.filter-popup label {
-  display: block;
-  margin-top: 10px;
-  font-size: 14px;
-}
-
-.filter-popup input[type="date"],
-.filter-popup input[type="number"],
-.filter-popup input[type="text"] {
-  width: 100%;
-  padding: 6px 8px;
-  margin-top: 5px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.apply-button {
-  margin-top: 15px;
-  padding: 8px 12px;
-  border: none;
-  background-color: var(--primary-color);
-  color: #312525;
-  border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  transition: color 0.2s ease;
+}
+.close-filter-popup:hover {
+  color: #f44336;
 }
 
-.apply-button:hover {
-  background-color: var(--secondary-color);
+/* Filter Content */
+.filter-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Space between fields */
 }
+
+/* Example label + input styling */
+.filter-content label {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 5px;
+}
+.filter-content input[type="date"],
+.filter-content input[type="number"],
+.filter-content input[type="text"] {
+  width: 97%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+/* Filter buttons row */
+.filter-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Reset / Apply Buttons */
+.reset-button,
+.apply-button {
+  flex: 1;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Example styling for reset button */
+.reset-button {
+  background-color: #e0e0e0;
+  color: #333;
+}
+.reset-button:hover {
+  background-color: #d6d6d6;
+}
+
+/* Example styling for apply button */
+.apply-button {
+  background-color: #4caf50;
+  color: #fff;
+}
+.apply-button:hover {
+  background-color: #43a047;
+}
+
+/* Utility class for hiding elements */
+.hidden {
+  display: none !important;
+}
+
+/* ---------- MOBILE (Bottom Sheet) ---------- */
+@media (max-width: 768px) {
+  .filter-popup {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    animation: slideUp 0.3s ease-out;
+  }
+}
+
+/* Desktop (769px and above): Right-Side Panel */
+@media (min-width: 769px) {
+  .filter-popup {
+    position: fixed;
+    top: 20px;               /* Spacing from the top */
+    bottom: 20px;            /* Spacing from the bottom */
+    right: 20px;             /* Panel is placed 20px from the right edge */
+    left: auto;              /* Ensure it's not centered */
+    width: 320px;            /* Adjust panel width as desired */
+    z-index: 9999;
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    padding: 20px;
+    animation: slideInRight 0.3s ease-out; /* custom keyframe */
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%); /* start off-screen to the right */
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+}
+
+
+
 .btn-download {
   background: #4caf50;
   border: none;
@@ -3914,77 +3994,6 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   
 
 
-
-  /* Filter Popup: bottom sheet style */
-  .filter-popup {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: #fff;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    z-index: 1000;
-    animation: slideUp 0.3s ease-out;
-  }
-  @keyframes slideUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  .filter-popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-  }
-  .filter-popup-header h3 {
-    font-size: 22px;
-    margin: 0;
-    color: #4caf50;
-  }
-  .close-filter-popup {
-    font-size: 26px;
-    background: transparent;
-    border: none;
-    color: #666;
-    cursor: pointer;
-  }
-  .close-filter-popup:hover {
-    color: #f44336;
-  }
-  .filter-popup label {
-    display: block;
-    margin-top: 10px;
-    font-size: 16px;
-    color: #333;
-  }
-  .filter-popup input[type="date"],
-  .filter-popup input[type="number"],
-  .filter-popup input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
-  }
-  .apply-button {
-    margin-top: 20px;
-    width: 100%;
-    padding: 12px;
-    font-size: 20px;
-    border: none;
-    border-radius: 8px;
-    background-color: #4caf50;
-    color: #fff;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  .apply-button:hover {
-    background-color: #43a047;
-  }
 
   /* Tabs for Transactions: pill-style and full-width */
   .transactions-tabs {
