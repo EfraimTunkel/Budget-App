@@ -1002,15 +1002,13 @@ document.getElementById('filter-icon').addEventListener('click', () => {
 
 // Close the filter popup and clear all filter fields when the "X" button is clicked
 document.getElementById('close-filter-popup').addEventListener('click', () => {
-  // Clear filter input values
   document.getElementById('filter-date').value = "";
   document.getElementById('filter-amount').value = "";
   document.getElementById('filter-title').value = "";
   document.getElementById('filter-category').value = "";
-  
-  // Hide the filter popup
   document.getElementById('filter-popup').classList.add('hidden');
 });
+
 
 // Search functionality: filter transactions as the user types
 document.getElementById('search-bar').addEventListener('keyup', (e) => {
@@ -1544,17 +1542,18 @@ function updateHeaderAmount(e) {
   const value = parseFloat(e.target.value) || 0;
   document.getElementById("header-amount-text").textContent = `$${value.toFixed(2)}`;
 }
-
-// Open the Edit Transaction Popup (with Delete icon logic)
 function openEditTransactionPopup(tx, index) {
-  // --- CLEAR PREVIOUS VALUES ---
-  document.getElementById("header-amount-text").textContent = '$0';
-  document.getElementById("cr-popup-income-amount").value = '';
-  document.getElementById("cr-popup-expense-amount").value = '';
+  // Grab common DOM elements
+  const headerAmountText = document.getElementById("header-amount-text");
+  const incomeInput = document.getElementById("cr-popup-income-amount");
+  const expenseInput = document.getElementById("cr-popup-expense-amount");
+
+  // Clear fields for both new and editing transactions
+  headerAmountText.textContent = '$0';
+  incomeInput.value = '';
+  expenseInput.value = '';
   document.getElementById("cr-income-title").value = '';
   document.getElementById("cr-expense-title").value = '';
-  
-  // Clear notes, categories, etc.
   if (document.getElementById("cr-income-notes")) {
     document.getElementById("cr-income-notes").value = '';
   }
@@ -1565,85 +1564,78 @@ function openEditTransactionPopup(tx, index) {
   document.getElementById("cr-chosen-income-category-text").textContent = '';
   document.getElementById("cr-chosen-expense-category").value = '';
   document.getElementById("cr-chosen-expense-category-text").textContent = '';
-  
-  // --- SET UP THE POPUP ---
-  editingTransactionId = tx.id;
-  editingTransactionType = tx.type;
+
+  // If tx is not provided or tx.id is falsy, this is a new transaction.
+  if (!tx || !tx.id) {
+    editingTransactionId = null;
+    editingTransactionType = null;
+    // Ensure the delete icon is hidden for new transactions
+    document.getElementById("delete-transaction-btn").classList.add("hidden");
+    // Reset header amount to $0 explicitly (redundant, but ensures clarity)
+    headerAmountText.textContent = '$0';
+  } else {
+    // Otherwise, editing an existing transaction:
+    editingTransactionId = tx.id;
+    editingTransactionType = tx.type;
+    document.getElementById("delete-transaction-btn").classList.remove("hidden");
+
+    const storedAmount = parseFloat(tx.amount) || 0;
+    headerAmountText.textContent = `$${storedAmount.toFixed(2)}`;
+
+    // Remove previous event listeners to avoid duplicates
+    incomeInput.removeEventListener("input", updateHeaderAmount);
+    expenseInput.removeEventListener("input", updateHeaderAmount);
+
+    if (tx.type === "Income") {
+      incomeTab.classList.add("active");
+      expenseTab.classList.remove("active");
+      document.getElementById("cr-income-form").classList.add("active");
+      document.getElementById("cr-income-form").classList.remove("hidden");
+      document.getElementById("cr-expense-form").classList.add("hidden");
+      document.getElementById("cr-expense-form").classList.remove("active");
+
+      document.getElementById("cr-income-title").value = tx.title || "";
+      document.getElementById("cr-income-notes").value = tx.notes || "";
+      incomeInput.value = tx.amount;
+      document.getElementById("cr-chosen-income-category").value = tx.source || "";
+      document.getElementById("cr-chosen-income-category-text").textContent = tx.source || "";
+      headerAmountText.style.color = "#2e7d32";
+
+      incomeInput.addEventListener("input", updateHeaderAmount);
+    } else {
+      expenseTab.classList.add("active");
+      incomeTab.classList.remove("active");
+      document.getElementById("cr-expense-form").classList.add("active");
+      document.getElementById("cr-expense-form").classList.remove("hidden");
+      document.getElementById("cr-income-form").classList.add("hidden");
+      document.getElementById("cr-income-form").classList.remove("active");
+
+      document.getElementById("cr-expense-title").value = tx.title || "";
+      document.getElementById("cr-expense-notes").value = tx.notes || "";
+      expenseInput.value = tx.amount;
+      document.getElementById("cr-chosen-expense-category").value = tx.category || "";
+      document.getElementById("cr-chosen-expense-category-text").textContent = tx.category || "";
+      headerAmountText.style.color = "#d32f2f";
+
+      expenseInput.addEventListener("input", updateHeaderAmount);
+    }
+    // Update submit button texts for editing
+    const saveIncomeBtn = document.querySelector("#cr-income-form .btn-primary");
+    const saveExpenseBtn = document.querySelector("#cr-expense-form .btn-primary");
+    saveIncomeBtn.textContent = "Save Income";
+    saveExpenseBtn.textContent = "Save Expense";
+  }
+
+  // Hide transactions page and show the transaction popup
   const transactionsPage = document.getElementById("transactions-section");
   if (transactionsPage) {
     transactionsPage.classList.add("hidden");
     transactionsPage.classList.remove("show");
   }
   transactionPopup.classList.remove("hidden");
-  
-  // Show delete icon ONLY if this is an existing transaction
-  if (tx && tx.id) {
-    document.getElementById("delete-transaction-btn").classList.remove("hidden");
-  } else {
-    document.getElementById("delete-transaction-btn").classList.add("hidden");
-  }
-  
-  // Immediately update the header with the stored transaction amount
-  const storedAmount = parseFloat(tx.amount) || 0;
-  document.getElementById("header-amount-text").textContent = `$${storedAmount.toFixed(2)}`;
-  
-  // Get references to the amount input fields
-  const incomeInput = document.getElementById("cr-popup-income-amount");
-  const expenseInput = document.getElementById("cr-popup-expense-amount");
-  
-  // Remove any previous input event listeners
-  incomeInput.removeEventListener("input", updateHeaderAmount);
-  expenseInput.removeEventListener("input", updateHeaderAmount);
-  
-  // --- POPULATE THE FIELDS BASED ON TRANSACTION TYPE ---
-  if (tx.type === "Income") {
-    // Switch to income tab
-    incomeTab.classList.add("active");
-    expenseTab.classList.remove("active");
-    document.getElementById("cr-income-form").classList.add("active");
-    document.getElementById("cr-income-form").classList.remove("hidden");
-    document.getElementById("cr-expense-form").classList.add("hidden");
-    document.getElementById("cr-expense-form").classList.remove("active");
-    
-    // Fill income fields
-    document.getElementById("cr-income-title").value = tx.title || "";
-    document.getElementById("cr-income-notes").value = tx.notes || "";
-    incomeInput.value = tx.amount;
-    document.getElementById("cr-chosen-income-category").value = tx.source || "";
-    document.getElementById("cr-chosen-income-category-text").textContent = tx.source || "";
-    // Set header color for income
-    document.getElementById("header-amount-text").style.color = "#2e7d32";
-    
-    // Add live update listener for income input
-    incomeInput.addEventListener("input", updateHeaderAmount);
-  } else {
-    // Switch to expense tab
-    expenseTab.classList.add("active");
-    incomeTab.classList.remove("active");
-    document.getElementById("cr-expense-form").classList.add("active");
-    document.getElementById("cr-expense-form").classList.remove("hidden");
-    document.getElementById("cr-income-form").classList.add("hidden");
-    document.getElementById("cr-income-form").classList.remove("active");
-    
-    // Fill expense fields
-    document.getElementById("cr-expense-title").value = tx.title || "";
-    document.getElementById("cr-expense-notes").value = tx.notes || "";
-    expenseInput.value = tx.amount;
-    document.getElementById("cr-chosen-expense-category").value = tx.category || "";
-    document.getElementById("cr-chosen-expense-category-text").textContent = tx.category || "";
-    // Set header color for expense
-    document.getElementById("header-amount-text").style.color = "#d32f2f";
-    
-    // Add live update listener for expense input
-    expenseInput.addEventListener("input", updateHeaderAmount);
-  }
-  
-  // Update the submit buttons to indicate "Update" instead of "Save"
-  const saveIncomeBtn = document.querySelector("#cr-income-form .btn-primary");
-  const saveExpenseBtn = document.querySelector("#cr-expense-form .btn-primary");
-  saveIncomeBtn.textContent = "Update Income";
-  saveExpenseBtn.textContent = "Update Expense";
 }
+
+
 
 // ---------- DELETE TRANSACTION FUNCTIONALITY ----------
 
@@ -1662,7 +1654,7 @@ document.getElementById("delete-transaction-btn").addEventListener("click", () =
 document.getElementById("confirm-delete-btn").addEventListener("click", async () => {
   try {
     await deleteTransaction(editingTransactionId);
-    alert("Transaction deleted successfully!");
+   
     // Hide the overlay and the transaction popup
     document.getElementById("delete-confirmation-overlay").classList.add("hidden");
     transactionPopup.classList.add("hidden");
@@ -1678,11 +1670,54 @@ document.getElementById("cancel-delete-btn").addEventListener("click", () => {
   document.getElementById("delete-confirmation-overlay").classList.add("hidden");
 });
 
-// Dummy function – replace with your actual deletion logic
 async function deleteTransaction(transactionId) {
-  console.log("Deleting transaction with ID:", transactionId);
-  // e.g., await deleteDoc(doc(db, "transactions", transactionId));
+  const user = auth.currentUser;
+  if (!user) {
+    console.error("No user is logged in.");
+    return;
+  }
+  
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+  if (!userDoc.exists()) {
+    console.error("User document not found.");
+    return;
+  }
+  
+  const data = userDoc.data();
+  let incomes = data.incomes || [];
+  let expenses = data.expenses || [];
+  let newBalance = typeof data.balance === "number" ? data.balance : 0;
+  
+  // Try to find the transaction in incomes first
+  let index = incomes.findIndex(tx => tx.id === transactionId);
+  if (index > -1) {
+    const tx = incomes[index];
+    incomes.splice(index, 1);
+    // Removing an income should decrease the balance by its amount
+    newBalance -= parseFloat(tx.amount);
+  } else {
+    // Otherwise, look in expenses
+    index = expenses.findIndex(tx => tx.id === transactionId);
+    if (index > -1) {
+      const tx = expenses[index];
+      expenses.splice(index, 1);
+      // Removing an expense should increase the balance (because the expense was subtracted when added)
+      newBalance += parseFloat(tx.amount);
+    } else {
+      console.error("Transaction not found.");
+      return;
+    }
+  }
+  
+  // Update the user document with the new arrays and balance
+  await setDoc(userDocRef, {
+    incomes,
+    expenses,
+    balance: newBalance
+  }, { merge: true });
 }
+
 
 
   
@@ -2353,11 +2388,40 @@ document.getElementById('view-all-transactions').addEventListener('click', (e) =
   };
   
   
-  // Handle Add Transaction Button Click (Show Popup)
   addTransactionButton.addEventListener("click", () => {
+    // Clear header and amount fields
+    document.getElementById("header-amount-text").textContent = '$0';
+    document.getElementById("cr-popup-income-amount").value = '';
+    document.getElementById("cr-popup-expense-amount").value = '';
+  
+    // Clear title and notes
+    document.getElementById("cr-income-title").value = '';
+    document.getElementById("cr-expense-title").value = '';
+    if (document.getElementById("cr-income-notes")) {
+      document.getElementById("cr-income-notes").value = '';
+    }
+    if (document.getElementById("cr-expense-notes")) {
+      document.getElementById("cr-expense-notes").value = '';
+    }
+    
+    // Clear category selections
+    document.getElementById("cr-chosen-income-category").value = '';
+    document.getElementById("cr-chosen-income-category-text").textContent = '';
+    document.getElementById("cr-chosen-expense-category").value = '';
+    document.getElementById("cr-chosen-expense-category-text").textContent = '';
+  
+    // Reset editing state (so it knows this is a new transaction)
+    editingTransactionId = null;
+    editingTransactionType = null;
+  
+    // Hide delete icon since this is a new transaction
+    document.getElementById("delete-transaction-btn").classList.add("hidden");
+  
+    // Show the popup and default to Income tab
     transactionPopup.classList.remove("hidden");
-    setActiveTab(incomeTab, incomeFields); // Default to showing Income tab
+    setActiveTab(incomeTab, incomeFields);
   });
+  
   
 
   
@@ -2583,7 +2647,6 @@ document.getElementById('view-all-transactions').addEventListener('click', (e) =
   
   
   
-
 
 
 
