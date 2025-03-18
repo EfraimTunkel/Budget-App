@@ -334,64 +334,44 @@
  <!-- TRANSACTION POPUP -->
 <div id="cr-transaction-popup" class="popup hidden">
   <div class="popup-content transaction-container">
-    <!-- Loading spinner (hidden by default) -->
+    <!-- Loading Spinner (hidden by default) -->
     <div id="transaction-loading" class="loading-spinner hidden">
       <div class="spinner"></div>
       <p>Saving...</p>
     </div>
 
-    <!-- Close Button -->
+    <!-- Close (×) and Delete Buttons -->
     <button id="cr-close-transaction-popup" class="close-button">&times;</button>
-<!-- Delete Icon: Only visible when editing an existing transaction -->
-<button
-  id="delete-transaction-btn"
-  class="delete-transaction-btn hidden"
->
-  <i class="fa fa-trash"></i>
-</button>
+    <button id="delete-transaction-btn" class="delete-transaction-btn hidden">
+      <i class="fa fa-trash"></i>
+    </button>
 
-    <!-- Header area: gradient background, toggle, amount, clock -->
+    <!-- Header Section -->
     <div class="transaction-header">
       <div class="header-top">
-        <!-- Income/Expense Toggle -->
+        <!-- Toggle for Income / Expense -->
         <div class="toggle-buttons fancy-toggle">
           <button id="cr-income-tab" class="toggle-button active">Income</button>
           <button id="cr-expense-tab" class="toggle-button">Expense</button>
         </div>
-
-        <!-- Real-time clock on the right -->
+        <!-- Real-time Clock -->
         <div class="transaction-clock" id="transaction-clock">--:--</div>
       </div>
-
-      <!-- Big amount display (will change based on Income/Expense) -->
+      <!-- Big Amount Display -->
       <div class="header-amount">
-        <!-- We will show $0 by default, user enters amount below -->
         <span id="header-amount-text">$0</span>
       </div>
     </div>
 
-    <!-- Body area: date, forms, notes, attachment -->
+    <!-- Body Section -->
     <div class="transaction-body">
-      <!-- e.g. "Today" or you can dynamically set the date -->
+      <!-- Date Label -->
       <div class="transaction-date">Today</div>
-
       <!-- INCOME FORM (active by default) -->
       <form id="cr-income-form" class="transaction-fields active">
-        <input
-          type="text"
-          id="cr-income-title"
-          placeholder="Title (e.g., Salary, Gift)"
-        />
-
-        <textarea
-          id="cr-income-notes"
-          placeholder="Notes (optional)"
-        ></textarea>
-
-        <!-- Amount Field -->
+        <input type="text" id="cr-income-title" placeholder="Title (e.g., Salary, Gift)" />
+        <textarea id="cr-income-notes" placeholder="Notes (optional)"></textarea>
         <input type="number" id="cr-popup-income-amount" placeholder="Amount" step="0.01" required />
-
-        <!-- Category (Source) Selection -->
         <div class="category-wrapper">
           <button type="button" id="cr-select-income-category-btn" class="btn-category-select">
             Select Source
@@ -399,28 +379,14 @@
           <input type="hidden" id="cr-chosen-income-category" />
           <span id="cr-chosen-income-category-text"></span>
         </div>
-
-   
-        <!-- Save Button -->
         <button type="submit" class="btn-primary">Save Income</button>
       </form>
 
       <!-- EXPENSE FORM (hidden initially) -->
       <form id="cr-expense-form" class="transaction-fields hidden">
-        <input
-          type="text"
-          id="cr-expense-title"
-          placeholder="Title (e.g., Groceries, Rent)"
-        />
-
-        <textarea
-          id="cr-expense-notes"
-          placeholder="Notes (optional)"
-        ></textarea>
-
+        <input type="text" id="cr-expense-title" placeholder="Title (e.g., Groceries, Rent)" />
+        <textarea id="cr-expense-notes" placeholder="Notes (optional)"></textarea>
         <input type="number" id="cr-popup-expense-amount" placeholder="Amount" step="0.01" required />
-
-        <!-- Category Selection -->
         <div class="category-wrapper">
           <button type="button" id="cr-select-expense-category-btn" class="btn-category-select">
             Select Category
@@ -428,15 +394,56 @@
           <input type="hidden" id="cr-chosen-expense-category" />
           <span id="cr-chosen-expense-category-text"></span>
         </div>
-
-  
-        <!-- Save Button -->
         <button type="submit" class="btn-primary">Save Expense</button>
       </form>
     </div>
   </div>
 </div>
 
+<!-- CATEGORY SELECTION POPUP -->
+<div id="cr-category-overlay" class="overlay hidden">
+  <div class="thispopup">
+    <button class="thisclose-btn" id="cr-close-category-popup">&times;</button>
+    <div class="category-tabs">
+      <div id="cr-cat-income-tab" class="category-tab income-tab">Income</div>
+      <div id="cr-cat-expense-tab" class="category-tab active">Expense</div>
+    </div>
+    <button id="cr-show-add-cat-form" class="add-cat-button">+</button>
+    <div id="cr-category-list" class="category-list">
+      <!-- Categories will be injected here -->
+    </div>
+  </div>
+</div>
+
+<!-- FULL-SCREEN ADD NEW CATEGORY POPUP -->
+<div id="cr-add-cat-form" class="add-cat-form hidden">
+  <button id="cr-close-add-cat-form" class="thisclose-btn">&times;</button>
+  <div class="add-cat-top">
+    <div class="preview-icon">
+      <img src="default-preview.png" alt="Category Preview" id="cat-preview-img" />
+    </div>
+    <div class="cat-name-section">
+      <input type="text" id="cr-new-cat-name" placeholder="Name" />
+      <div class="color-palette" id="color-palette">
+        <div class="color-circle" data-color="#4CAF50"></div>
+        <div class="color-circle" data-color="#26a69a"></div>
+        <div class="color-circle" data-color="#03a9f4"></div>
+        <div class="color-circle" data-color="#2196f3"></div>
+        <div class="color-circle" data-color="#3f51b5"></div>
+        <div class="color-circle" data-color="#673ab7"></div>
+        <div class="color-circle" data-color="#9c27b0"></div>
+        <div class="color-circle" data-color="#ff9800"></div>
+        <div class="color-circle" data-color="#ff5722"></div>
+        <div class="color-circle" data-color="#795548"></div>
+        <div class="color-circle" data-color="#607d8b"></div>
+      </div>
+    </div>
+  </div>
+  <div id="cr-icons-grid" class="icons-grid">
+    <!-- Icons injected via JavaScript -->
+  </div>
+  <button id="cr-save-new-cat-btn" class="save-cat-btn">Save</button>
+</div>
 
 <div id="discard-popup" class="popup hidden">
   <div class="popup-content discard-popup-content">
@@ -451,76 +458,6 @@
     </div>
   </div>
 </div>
-<!-- CATEGORY SELECTION POPUP -->
-<div id="cr-category-overlay" class="overlay hidden">
-  <div class="thispopup">
-    <!-- Close button (X) -->
-    <button class="thisclose-btn" id="cr-close-category-popup">&times;</button>
-
-    <!-- Top tab headers for the category overlay -->
-    <div class="category-tabs">
-      <div id="cr-cat-income-tab" class="category-tab income-tab">Income</div>
-      <div id="cr-cat-expense-tab" class="category-tab active">Expense</div>
-    </div>
-
-    <!-- The plus button (first) to reveal the Add New Category form -->
-    <button id="cr-show-add-cat-form" class="add-cat-button">+</button>
-
-    <!-- Grid of categories from Firestore -->
-    <div id="cr-category-list" class="category-list">
-      <!-- Categories will be injected here by JS -->
-    </div>
-  </div> <!-- end of .thispopup -->
-</div> <!-- end of #cr-category-overlay -->
-
-<!-- FULL-SCREEN ADD NEW CATEGORY POPUP -->
-<div id="cr-add-cat-form" class="add-cat-form hidden">
-  <!-- Close button (X) in top-right corner -->
-  <button id="cr-close-add-cat-form" class="thisclose-btn">&times;</button>
-  <div class="add-cat-top">
-    <!-- Icon on the left -->
-    <div class="preview-icon">
-      <img src="default-preview.png" alt="Category Preview" id="cat-preview-img" />
-    </div>
-  
-    <!-- Name + color palette stacked -->
-    <div class="cat-name-section">
-      <input 
-        type="text"
-        id="cr-new-cat-name"
-        placeholder="Name"
-      />
-  
-      <!-- Horizontally scrollable color circles -->
-      <div class="color-palette" id="color-palette">
-        <div class="color-circle" data-color="#4CAF50"></div>
-        <div class="color-circle" data-color="#26a69a"></div>
-        <div class="color-circle" data-color="#03a9f4"></div>
-        <div class="color-circle" data-color="#2196f3"></div>
-        <div class="color-circle" data-color="#3f51b5"></div>
-        <div class="color-circle" data-color="#673ab7"></div>
-        <div class="color-circle" data-color="#9c27b0"></div>
-        <div class="color-circle" data-color="#ff9800"></div>
-        <div class="color-circle" data-color="#ff5722"></div>
-        <div class="color-circle" data-color="#795548"></div>
-        <div class="color-circle" data-color="#607d8b"></div>
-        <!-- etc. -->
-      </div>
-    </div>
-  </div>
-  
-  <!-- Icon grid (if needed) -->
-  <div id="cr-icons-grid" class="icons-grid">
-    <!-- Icons injected via JavaScript -->
-  </div>
-  
-  <!-- The Save button at the bottom (sticky) -->
-  <button id="cr-save-new-cat-btn" class="save-cat-btn">
-    Save
-  </button>
-  
-</div>
-
 
 <!-- Delete Confirmation Overlay (placed outside the transaction popup) -->
 <div id="delete-confirmation-overlay" class="delete-confirmation-overlay hidden">
