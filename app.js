@@ -569,6 +569,7 @@ function showSection(sectionId) {
   window.scrollTo(0, 0);
 }
 
+
 /************************************************
   Navigation: Home & Transactions
 ************************************************/
@@ -589,6 +590,336 @@ document.getElementById('mobile-profile-icon').addEventListener('click', functio
   e.preventDefault();
   showSection('profile-section');
 });
+
+
+
+/************************************************************
+ * budgets.js
+ * 
+ * Includes:
+ *  - Event listeners for Budgets page
+ *  - Firestore load/save logic (loadBudgets, loadUserCategoriesForBudget, etc.)
+ *  - Material-Style Date Picker (open, close, select date)
+ ************************************************************/
+
+/************************************************************
+ * ========== BUDGETS PAGE EVENT LISTENERS & FUNCTIONS ======
+ ************************************************************/
+
+// Show Budgets Page when "Budgets" nav button is clicked
+document.getElementById('budgets-button')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  showSection('budgets-page'); // Some function in your code that shows this section
+  loadBudgets();
+});
+
+// Open Add Budget Modal
+document.getElementById('add-budget-button')?.addEventListener('click', () => {
+  document.getElementById('add-budget-modal').classList.remove('hidden');
+  loadUserCategoriesForBudget();
+});
+
+// Close Add Budget Modal
+document.getElementById('close-add-budget-modal')?.addEventListener('click', () => {
+  document.getElementById('add-budget-modal').classList.add('hidden');
+});
+
+// Load Budgets from Firestore and render in the budgets grid
+async function loadBudgets() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const userDocRef = doc(db, 'users', user.uid);
+  const userDoc = await getDoc(userDocRef);
+  const budgetsGrid = document.querySelector('.budgets-grid');
+
+  if (userDoc.exists()) {
+    const data = userDoc.data();
+    const budgets = data.budgets || [];
+    budgetsGrid.innerHTML = '';
+    
+    if (budgets.length === 0) {
+      budgetsGrid.innerHTML = `
+        <p class='no-budgets'>
+          No budgets available. Click “New Budget” to create one.
+        </p>`;
+    } else {
+      budgets.forEach((budget) => {
+        // Calculate percentage spent (ensure goal is greater than 0)
+        const progress = budget.goal > 0
+          ? Math.min((budget.spent / budget.goal) * 100, 100)
+          : 0;
+        
+        // Create the budget card
+        const card = document.createElement('div');
+        card.className = 'budget-card';
+        card.style.borderLeft = `5px solid ${budget.color || '#4caf50'}`;
+        card.innerHTML = `
+          <div class="budget-card-header">
+            <i class="fa-solid fa-wallet"></i>
+            <h3>${budget.name}</h3>
+          </div>
+          <p>Goal: $${parseFloat(budget.goal).toFixed(2)}</p>
+          <p>Spent: $${parseFloat(budget.spent || 0).toFixed(2)}</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar" style="width: ${progress}%;"></div>
+          </div>
+          <p>${budget.description || ''}</p>
+          <p class="deadline">
+            Deadline: ${
+              budget.deadline
+                ? new Date(budget.deadline).toLocaleDateString()
+                : '—'
+            }
+          </p>
+        `;
+        budgetsGrid.appendChild(card);
+      });
+    }
+  }
+}
+
+// Fetch and render user's saved categories as chips for budget attachment
+function loadUserCategoriesForBudget() {
+  const container = document.getElementById('budget-categories');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // Merge expense and income categories (if that's your logic)
+  const allCategories = [...expenseCategories, ...incomeCategories];
+  allCategories.forEach((cat) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'cat-chip';
+    chip.textContent = cat.name;
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('selected');
+    });
+    container.appendChild(chip);
+  });
+}
+
+// Handle Add Budget form submission
+document.getElementById('add-budget-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById('budget-name').value.trim();
+  // Determine budget type from active tab
+  const isExpenseTabActive = document
+    .getElementById('budget-expense-tab')
+    .classList.contains('active');
+  const type = isExpenseTabActive ? 'expense' : 'savings';
+
+  const goal = parseFloat(document.getElementById('budget-goal').value);
+  const color = document.getElementById('budget-color').value;
+
+  // Optional: if you have #budget-start / #budget-end
+  const startInput = document.getElementById('budget-start');
+  const endInput = document.getElementById('budget-end');
+  const start = startInput ? startInput.value : '';
+  const end = endInput ? endInput.value : '';
+
+  const description = document.getElementById('budget-description').value.trim();
+
+  // Get selected categories
+  const selectedChips = document.querySelectorAll('#budget-categories .cat-chip.selected');
+  const categories = Array.from(selectedChips).map((chip) => chip.textContent);
+
+  const newBudget = {
+    name,
+    type,
+    goal,
+    color,
+    start,
+    deadline: end,
+    description,
+    categories,
+    spent: 0,
+    createdAt: new Date().toISOString()
+  };
+  
+  // Save to Firestore
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const userDocRef = doc(db, 'users', user.uid);
+  const userDoc = await getDoc(userDocRef);
+  let budgets = [];
+  if (userDoc.exists()) {
+    const data = userDoc.data();
+    budgets = data.budgets || [];
+  }
+  budgets.push(newBudget);
+
+  await setDoc(userDocRef, { budgets }, { merge: true });
+  
+  // Reload budgets, reset form, and close modal
+  loadBudgets();
+  document.getElementById('add-budget-form').reset();
+  document.querySelectorAll('.color-swatch').forEach((s) => s.classList.remove('selected'));
+  document.querySelector('.color-swatch[data-color="#4caf50"]')?.classList.add('selected');
+  document.getElementById('add-budget-modal').classList.add('hidden');
+});
+
+// --- Budget Type Tab Switching ---
+document.getElementById('budget-expense-tab')?.addEventListener('click', () => {
+  document.getElementById('budget-expense-tab').classList.add('active');
+  document.getElementById('budget-savings-tab').classList.remove('active');
+});
+document.getElementById('budget-savings-tab')?.addEventListener('click', () => {
+  document.getElementById('budget-savings-tab').classList.add('active');
+  document.getElementById('budget-expense-tab').classList.remove('active');
+});
+
+// --- Custom Color Picker ---
+const colorSwatches = document.querySelectorAll('.color-swatch');
+colorSwatches.forEach((swatch) => {
+  swatch.addEventListener('click', () => {
+    colorSwatches.forEach((s) => s.classList.remove('selected'));
+    swatch.classList.add('selected');
+    document.getElementById('budget-color').value = swatch.getAttribute('data-color');
+  });
+});
+
+/************************************************************
+ * ===== MATERIAL-STYLE DATE PICKER (SAME FORMAT) =====
+ ************************************************************/
+
+// Basic date picker state
+let currentDate = new Date();
+let selectedDate = new Date(); // user-chosen date
+
+// References (make sure these IDs exist in your HTML)
+const calendarInput = document.getElementById('calendar-input'); // The field to open date picker
+const mdpOverlay = document.getElementById('material-date-picker'); // The date picker overlay
+const mdpSelectedDate = document.getElementById('mdp-selected-date');
+const mdpSubtitle = document.getElementById('mdp-subtitle');
+const mdpMonthYear = document.getElementById('mdp-month-year');
+const mdpCalendarGrid = document.querySelector('.mdp-calendar-grid');
+
+const mdpPrevMonth = document.getElementById('mdp-prev-month');
+const mdpNextMonth = document.getElementById('mdp-next-month');
+const mdpCancel = document.getElementById('mdp-cancel');
+const mdpOk = document.getElementById('mdp-ok');
+
+// 1) Open the date picker when user clicks the #calendar-input
+calendarInput?.addEventListener('click', () => {
+  mdpOverlay.classList.remove('hidden');
+  // Sync the "currentDate" to the last selected date
+  currentDate = new Date(selectedDate.valueOf());
+  renderCalendar();
+  updateHeaderInfo();
+});
+
+// 2) Cancel => close overlay
+mdpCancel?.addEventListener('click', () => {
+  mdpOverlay.classList.add('hidden');
+});
+
+// 3) OK => fill the #budget-period input with the chosen date, then close
+mdpOk?.addEventListener('click', () => {
+  const dateString = formatDate(selectedDate, 'MMM d, yyyy');
+  document.getElementById('budget-period').value = dateString;
+  mdpOverlay.classList.add('hidden');
+});
+
+// 4) Prev / Next Month
+mdpPrevMonth?.addEventListener('click', () => {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  renderCalendar();
+  updateHeaderInfo();
+});
+mdpNextMonth?.addEventListener('click', () => {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  renderCalendar();
+  updateHeaderInfo();
+});
+
+function updateHeaderInfo() {
+  // Example: 
+  mdpSelectedDate.textContent = 'Select Date';
+  mdpSubtitle.textContent = formatDate(selectedDate, 'EEE, MMM d');
+  mdpMonthYear.textContent = formatDate(currentDate, 'MMMM yyyy');
+}
+
+function renderCalendar() {
+  // Remove old day cells (but keep the 7 headers)
+  const oldCells = mdpCalendarGrid.querySelectorAll('.mdp-cell:not(.header)');
+  oldCells.forEach((cell) => cell.remove());
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  // First day of this month, total days
+  const firstDay = new Date(year, month, 1).getDay(); 
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // Add blank cells before day 1
+  for (let i = 0; i < firstDay; i++) {
+    const blankCell = document.createElement('div');
+    blankCell.classList.add('mdp-cell', 'inactive');
+    mdpCalendarGrid.appendChild(blankCell);
+  }
+
+  // Add actual days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateObj = new Date(year, month, day);
+
+    const cell = document.createElement('div');
+    cell.classList.add('mdp-cell');
+    cell.textContent = day;
+
+    // Highlight if it's the selectedDate
+    if (
+      dateObj.getFullYear() === selectedDate.getFullYear() &&
+      dateObj.getMonth() === selectedDate.getMonth() &&
+      dateObj.getDate() === selectedDate.getDate()
+    ) {
+      cell.classList.add('selected');
+    }
+
+    // On cell click => set new selectedDate
+    cell.addEventListener('click', () => {
+      selectedDate = new Date(dateObj);
+      // Remove old 'selected' class
+      mdpCalendarGrid.querySelectorAll('.mdp-cell.selected')
+        .forEach((c) => c.classList.remove('selected'));
+      cell.classList.add('selected');
+
+      // Update subtitle to show chosen day
+      mdpSubtitle.textContent = formatDate(selectedDate, 'EEE, MMM d');
+    });
+
+    mdpCalendarGrid.appendChild(cell);
+  }
+}
+
+// Minimal date formatting utility
+function formatDate(date, pattern) {
+  const shortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const longMonths = [
+    'January','February','March','April','May','June',
+    'July','August','September','October','November','December'
+  ];
+  const shortDays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  let yy = date.getFullYear();
+  let mm = date.getMonth();
+  let dd = date.getDate();
+  let dayOfWeek = date.getDay();
+
+  switch (pattern) {
+    case 'EEE, MMM d':
+      return `${shortDays[dayOfWeek]}, ${shortMonths[mm]} ${dd}`;
+    case 'MMMM yyyy':
+      return `${longMonths[mm]} ${yy}`;
+    case 'MMM d, yyyy':
+      return `${shortMonths[mm]} ${dd}, ${yy}`;
+    default:
+      // fallback: e.g., "3/21/2025"
+      return `${mm + 1}/${dd}/${yy}`;
+  }
+}
 
 /************************************************
   Profile Page Card Event Listeners
@@ -760,6 +1091,7 @@ window.addEventListener("resize", function () {
     }
   }
 });
+
 
 
   const initializeFirebaseFeatures = (app) => {
@@ -2620,52 +2952,3 @@ document.getElementById('view-all-transactions').addEventListener('click', (e) =
  
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  
-  
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
