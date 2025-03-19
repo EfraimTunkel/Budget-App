@@ -265,24 +265,28 @@
 <!-- ================= ADD/EDIT BUDGET MODAL ============== -->
 <div id="add-budget-modal" class="modal hidden">
   <div class="modal-content add-budget-modal">
-    <button id="close-add-budget-modal" class="close-button">&times;</button>
+    <!-- Back Button (left side) -->
+    <button class="back-button" id="back-button">
+      <i class="fa fa-arrow-left"></i>
+    </button>
+
     <h2 id="budget-modal-title">Add New Budget</h2>
     
     <!-- Budget Type Tabs -->
     <div class="budget-type-tabs">
       <button
         id="budget-expense-tab"
-        class="budget-tab active"
+        class="budget-tab expense active"
         data-type="expense"
       >
-        <i class="fa-solid fa-arrow-down"></i> Expense
+        Expense budget
       </button>
       <button
         id="budget-savings-tab"
-        class="budget-tab"
+        class="budget-tab savings"
         data-type="savings"
       >
-        <i class="fa-solid fa-arrow-up"></i> Savings
+        Savings budget
       </button>
     </div>
     
@@ -314,6 +318,7 @@
       <div class="form-group color-picker-group">
         <label>Select Budget Color</label>
         <div class="color-palette">
+          <!-- Add more colors as requested -->
           <span
             class="color-swatch selected"
             data-color="#4caf50"
@@ -339,25 +344,69 @@
             data-color="#f44336"
             style="background-color: #f44336;"
           ></span>
+          <span
+            class="color-swatch"
+            data-color="#e91e63"
+            style="background-color: #e91e63;"
+          ></span>
+          <span
+            class="color-swatch"
+            data-color="#ffeb3b"
+            style="background-color: #ffeb3b;"
+          ></span>
+          <span
+            class="color-swatch"
+            data-color="#795548"
+            style="background-color: #795548;"
+          ></span>
+          <span
+            class="color-swatch"
+            data-color="#607d8b"
+            style="background-color: #607d8b;"
+          ></span>
         </div>
         <input type="hidden" id="budget-color" value="#4caf50" />
       </div>
       
-      <!-- Budget Period (Date Picker Trigger) -->
- <!-- Budget Period Field -->
-<div class="form-group">
-  <label for="budget-period">Budget Period</label>
-  <div class="calendar-input" id="calendar-input">
-    <input
-      type="text"
-      id="budget-period"
-      readonly
-      placeholder="Select period"
-    />
-    <i class="fa fa-calendar"></i>
-  </div>
-</div>
+      <!-- Start & End Date Row -->
+      <div class="form-row">
+        <!-- START DATE (always visible) -->
+        <div class="form-group">
+          <label for="budget-start">Budget Start Date</label>
+          <div class="calendar-input" id="calendar-input-start">
+            <input
+              type="text"
+              id="budget-start"
+              readonly
+              placeholder="Select start date"
+            />
+            <i class="fa fa-calendar"></i>
+          </div>
+          <!-- If left blank, default to "today" in JS -->
+        </div>
 
+        <!-- END DATE (hidden unless "Set a Deadline?" is checked) -->
+        <div class="form-group">
+          <label for="enable-deadline" style="display: flex; align-items: center;">
+            <input 
+              type="checkbox" 
+              id="enable-deadline" 
+              style="margin-right: 8px;" 
+            />
+            Set a Deadline?
+          </label>
+          <!-- The actual end date input, hidden by default -->
+          <div class="calendar-input hidden" id="calendar-input-end">
+            <input
+              type="text"
+              id="budget-end"
+              readonly
+              placeholder="Select end date"
+            />
+            <i class="fa fa-calendar"></i>
+          </div>
+        </div>
+      </div>
       
       <!-- Description -->
       <div class="form-group">
