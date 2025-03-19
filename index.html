@@ -246,6 +246,175 @@
           </section>
         </section>
         
+
+
+<!-- ================== BUDGETS PAGE ================== -->
+<section id="budgets-page" class="budgets-page hidden">
+  <header class="budgets-header">
+    <h2>My Budgets</h2>
+    <button id="add-budget-button" class="btn add-budget-button">
+      <i class="fa-solid fa-plus"></i> New Budget
+    </button>
+  </header>
+  <div class="budgets-grid">
+    <!-- Budget cards will be dynamically inserted here -->
+    <p class="no-budgets">No budgets available. Click “New Budget” to create one.</p>
+  </div>
+</section>
+
+<!-- ================= ADD/EDIT BUDGET MODAL ============== -->
+<div id="add-budget-modal" class="modal hidden">
+  <div class="modal-content add-budget-modal">
+    <button id="close-add-budget-modal" class="close-button">&times;</button>
+    <h2 id="budget-modal-title">Add New Budget</h2>
+    
+    <!-- Budget Type Tabs -->
+    <div class="budget-type-tabs">
+      <button
+        id="budget-expense-tab"
+        class="budget-tab active"
+        data-type="expense"
+      >
+        <i class="fa-solid fa-arrow-down"></i> Expense
+      </button>
+      <button
+        id="budget-savings-tab"
+        class="budget-tab"
+        data-type="savings"
+      >
+        <i class="fa-solid fa-arrow-up"></i> Savings
+      </button>
+    </div>
+    
+    <form id="add-budget-form">
+      <!-- Row for Budget Name and Goal -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="budget-name">Budget Name</label>
+          <input
+            type="text"
+            id="budget-name"
+            placeholder="e.g., Transportation"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="budget-goal">Goal Amount ($)</label>
+          <input
+            type="number"
+            id="budget-goal"
+            placeholder="e.g., 500"
+            step="0.01"
+            required
+          />
+        </div>
+      </div>
+      
+      <!-- Color Picker -->
+      <div class="form-group color-picker-group">
+        <label>Select Budget Color</label>
+        <div class="color-palette">
+          <span
+            class="color-swatch selected"
+            data-color="#4caf50"
+            style="background-color: #4caf50;"
+          ></span>
+          <span
+            class="color-swatch"
+            data-color="#ff9800"
+            style="background-color: #ff9800;"
+          ></span>
+          <span
+            class="color-swatch"
+            data-color="#2196f3"
+            style="background-color: #2196f3;"
+          ></span>
+          <span
+            class="color-swatch"
+            data-color="#9c27b0"
+            style="background-color: #9c27b0;"
+          ></span>
+          <span
+            class="color-swatch"
+            data-color="#f44336"
+            style="background-color: #f44336;"
+          ></span>
+        </div>
+        <input type="hidden" id="budget-color" value="#4caf50" />
+      </div>
+      
+      <!-- Budget Period (Date Picker Trigger) -->
+ <!-- Budget Period Field -->
+<div class="form-group">
+  <label for="budget-period">Budget Period</label>
+  <div class="calendar-input" id="calendar-input">
+    <input
+      type="text"
+      id="budget-period"
+      readonly
+      placeholder="Select period"
+    />
+    <i class="fa fa-calendar"></i>
+  </div>
+</div>
+
+      
+      <!-- Description -->
+      <div class="form-group">
+        <label for="budget-description">Description</label>
+        <textarea
+          id="budget-description"
+          placeholder="Why are you saving?"
+        ></textarea>
+      </div>
+      
+      <!-- Attach Categories -->
+      <div class="form-group">
+        <label>Attach Categories</label>
+        <div id="budget-categories" class="budget-categories">
+          <!-- Category chips will be injected here -->
+        </div>
+      </div>
+      
+      <button type="submit" class="btn submit-btn">Save Budget</button>
+    </form>
+  </div>
+</div>
+
+<!-- ================== MATERIAL DATE PICKER ================== -->
+<div id="mdp-overlay" class="mdp-overlay hidden">
+  <div class="mdp-dialog">
+    <div class="mdp-header">
+      <h2 id="mdp-header-title">Select Date</h2>
+      <p id="mdp-header-subtitle">Sat, Mar 1</p>
+    </div>
+    <div class="mdp-month-nav">
+      <button id="mdp-prev-month" class="mdp-nav-btn">&lt;</button>
+      <span id="mdp-month-year">March 2025</span>
+      <button id="mdp-next-month" class="mdp-nav-btn">&gt;</button>
+    </div>
+    <div class="mdp-calendar-grid">
+      <!-- 7 header cells (S, M, T, W, T, F, S) -->
+      <div class="mdp-cell header">S</div>
+      <div class="mdp-cell header">M</div>
+      <div class="mdp-cell header">T</div>
+      <div class="mdp-cell header">W</div>
+      <div class="mdp-cell header">T</div>
+      <div class="mdp-cell header">F</div>
+      <div class="mdp-cell header">S</div>
+      <!-- Date cells inserted via JS -->
+    </div>
+    <div class="mdp-footer">
+      <button id="mdp-cancel" class="mdp-action-btn">CANCEL</button>
+      <button id="mdp-ok" class="mdp-action-btn primary">OK</button>
+    </div>
+  </div>
+</div>
+
+
+
+        
+
     <!-- Profile Section (Full Page View) -->
 <section id="profile-section" class="profile-section hidden">
   <div class="profile-page-content">
@@ -480,6 +649,8 @@
 
 
 
+
+
 <!-- LOGS POPUP -->
 <div id="logs-popup" class="popup hidden">
   <div class="popup-content logs-popup-content">
@@ -573,6 +744,8 @@
     <button id="confirm-delete-button">Confirm Delete</button>
   </div>
 </div>
+
+
 
 
 
