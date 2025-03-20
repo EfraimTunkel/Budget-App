@@ -4527,11 +4527,14 @@ button:hover {
 /****************************************************
  * ===========   COLOR PICKER & CHIPS   =============
  ****************************************************/
+
 .color-picker-group .color-palette {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 8px;
+  padding-top: 10px;
+  cursor: pointer;
 }
 .color-swatch {
   width: 32px;
@@ -4787,4 +4790,285 @@ html::-webkit-scrollbar {
 }
 html {
   font-size: 16px;
+}
+@media screen and (max-width: 768px) {
+  #abcd {
+    padding-top: 60px;
+  }
+  }
+  /***********************************************
+  BUDGET DETAILS POPUP OVERLAY
+************************************************/
+#budget-details-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;               /* so content can center */
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 5000; /* or higher than other modals */
+}
+
+#budget-details-popup.hidden {
+  display: none !important;
+}
+
+.bdp-content {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;       /* so we can scroll if needed */
+  overflow-y: auto;
+  padding: 20px;
+  position: relative;
+  animation: scaleIn 0.3s ease-out;
+}
+
+/***********************************************
+  POPUP HEADER
+************************************************/
+.bdp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.bdp-header h2 {
+  font-size: 1.5rem;
+  margin: 0;
+  text-align: center;
+  flex: 1; /* so the title can expand and center if needed */
+}
+
+/* Reusable button style inside popup */
+.bdp-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  outline: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+  margin: 0 5px;
+}
+
+.bdp-btn:hover {
+  color: #4caf50;
+  transform: scale(1.1);
+}
+
+.bdp-btn-back i {
+  font-size: 1.2rem;
+}
+
+.bdp-btn-delete i {
+  font-size: 1.2rem;
+  color: #f44336;
+}
+
+/***********************************************
+  BUDGET INFO, GOAL, PROGRESS, CHART
+************************************************/
+.bdp-info {
+  margin-bottom: 1rem;
+}
+
+#bdp-goal {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+#bdp-progress-bar {
+  height: 10px;
+  background-color: #ddd;
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+#bdp-progress-bar {
+  height: 10px;
+  background-color: #ddd;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+/* The green fill inside it */
+#bdp-progress-fill {
+  height: 100%;
+  width: 0%; /* default */
+  background-color: #4caf50;
+  transition: width 0.3s ease;
+}
+
+
+/* If you want to center the progress text: */
+#bdp-progress-text {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Chart container in the popup */
+.bdp-chart {
+  width: 100%;
+  height: 220px; /* or whatever you like */
+  margin-bottom: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+/***********************************************
+  TRANSACTIONS LIST STYLING
+************************************************/
+.bdp-transactions-list {
+  padding: 0.5rem 0;
+}
+
+/* Match style of your normal .transaction-card if you have one. */
+.bdp-transaction-card {
+  display: flex;
+  align-items: center;
+  background-color: #fafafa;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  gap: 10px;  /* space between icon & text */
+}
+
+/* Category icon circle */
+.bdp-transaction-card .bdp-icon-circle {
+  width: 40px;
+  height: 40px;
+  background-color: #eee; /* or dynamic based on category? */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bdp-transaction-card .bdp-icon-circle img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* Transaction info container */
+.bdp-transaction-details {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* so this can stretch */
+}
+
+.bdp-transaction-details .bdp-transaction-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.bdp-transaction-details .bdp-transaction-category {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Amount displayed on the right, e.g. negative red or positive green */
+.bdp-transaction-amount {
+  font-size: 0.95rem;
+  font-weight: bold;
+  margin-left: auto; /* push it to the far right */
+}
+.bdp-transaction-amount.negative {
+  color: #f44336;
+}
+.bdp-transaction-amount.positive {
+  color: #4caf50;
+}
+
+/***********************************************
+  DELETE CONFIRMATION POPUP
+************************************************/
+#delete-budget-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 6000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#delete-budget-popup.hidden {
+  display: none !important;
+}
+
+.delete-budget-content {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  animation: scaleIn 0.3s ease-out;
+}
+
+.delete-budget-content p {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.delete-budget-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* Shared button style */
+.db-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.db-cancel {
+  background-color: #ccc;
+  color: #333;
+}
+.db-cancel:hover {
+  background-color: #b0b0b0;
+}
+
+.db-confirm {
+  background-color: #f44336;
+  color: #fff;
+}
+.db-confirm:hover {
+  background-color: #d32f2f;
+}
+
+/***********************************************
+  SIMPLE SCALE-IN ANIMATION
+************************************************/
+@keyframes scaleIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
