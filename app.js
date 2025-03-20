@@ -6,7 +6,7 @@
     initializeApp 
   } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
   import { OAuthProvider } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
-  import { updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+  import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
 
   import { 
     getAuth, 
@@ -27,7 +27,9 @@
     getFirestore, 
     doc, 
     setDoc, 
-    getDoc 
+    getDoc, 
+    collection,
+    getDocs
   } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
   
   // Fetch the API key securely from the Firebase Cloud Function
@@ -599,8 +601,12 @@ document.getElementById('mobile-profile-icon').addEventListener('click', functio
 document.getElementById('budgets-button')?.addEventListener('click', (e) => {
   e.preventDefault();
   showSection('budgets-page');
-  loadBudgets();
+
+  // Instead of calling loadBudgets once,
+  // start the real-time listener
+  listenToBudgets();
 });
+
 
 // Open the "Add Budget" modal
 document.getElementById('add-budget-button')?.addEventListener('click', () => {
@@ -615,80 +621,326 @@ if (backButton) {
     document.getElementById('add-budget-modal').classList.add('hidden');
   });
 }
+function renderBudgets(userDocData) {
+  let { budgets = [], incomes = [], expenses = [] } = userDocData;
 
-/************************************************************
- * ==========  LOAD BUDGETS (FROM FIRESTORE)  ==============
- ************************************************************/
-async function loadBudgets() {
-  const user = auth.currentUser;
-  if (!user) return;
+  incomes = incomes.map(tx => ({ ...tx, type: "Income" }));
+  expenses = expenses.map(tx => ({ ...tx, type: "Expense" }));
+  const allTransactions = [...incomes, ...expenses];
 
-  const userDocRef = doc(db, 'users', user.uid);
-  const userDoc = await getDoc(userDocRef);
-  if (!userDoc.exists()) return;
+  const budgetsGrid = document.querySelector(".budgets-grid");
+  budgetsGrid.innerHTML = "";
 
-  // Fetch user transactions separately (adjust as needed)
- // If you have no transaction logic yet, just do:
-const transactions = [];
+  // If no budgets exist, show a message
+  if (budgets.length === 0) {
+    const msg = document.createElement("p");
+    msg.textContent = "No budgets available. Click 'New Budget' to create one.";
+    msg.classList.add("no-budgets");
+    budgetsGrid.appendChild(msg);
+    return;
+  }
 
-  const budgetsGrid = document.querySelector('.budgets-grid');
-  budgetsGrid.innerHTML = '';
-
-  let { budgets = [] } = userDoc.data();
-
+  // Existing code to loop over and render each budget card:
   budgets.forEach((budget) => {
+    let currentAmount = 0;
     const startDate = new Date(budget.start);
-    const hasDeadline = budget.deadline && budget.deadline.trim() !== '';
+    const hasDeadline = budget.deadline && budget.deadline.trim() !== "";
     const endDate = hasDeadline ? new Date(budget.deadline) : null;
-
-    // Sum relevant expenses in this category/time range
-    let totalSpent = 0;
-    transactions.forEach((tx) => {
-      if (budget.categories.includes(tx.category)) {
-        const txDate = new Date(tx.timestamp);
-        const inRange = txDate >= startDate && (!endDate || txDate <= endDate);
-
-        if (inRange && tx.type === 'expense') {
-          // If DB has expenses as positive values, just parse them
-          // If negative, do something like: totalSpent += Math.abs(parseFloat(tx.amount))
-          totalSpent += parseFloat(tx.amount);
+  
+    allTransactions.forEach((tx) => {
+      const txDate = new Date(tx.timestamp);
+      const inRange = txDate >= startDate && (!endDate || txDate <= endDate);
+      if (!inRange) return;
+  
+      if (budget.type === "expense") {
+        if (tx.type === "Expense" && budget.categories.includes(tx.category)) {
+          currentAmount += parseFloat(tx.amount);
+        }
+      } else if (budget.type === "savings") {
+        if (tx.type === "Income" && budget.categories.includes(tx.source)) {
+          currentAmount += parseFloat(tx.amount);
         }
       }
     });
-
-    budget.spent = totalSpent;
-
-    // Calculate progress (cap at 100%)
+  
     const progress = budget.goal > 0
-      ? Math.min((totalSpent / budget.goal) * 100, 100)
+      ? Math.min((currentAmount / budget.goal) * 100, 100)
       : 0;
-
-    // Create the budget card in the grid
-    const card = document.createElement('div');
-    card.className = 'budget-card';
+  
+    const card = document.createElement("div");
+    card.className = "budget-card";
     card.style.borderLeft = `5px solid ${budget.color || '#4caf50'}`;
-
+  
+    const labelText = (budget.type === "expense") ? "Spent" : "Saved";
+  
     card.innerHTML = `
       <div class="budget-card-header">
         <i class="fa-solid fa-wallet"></i>
         <h3>${budget.name}</h3>
       </div>
       <p>Goal: $${budget.goal.toFixed(2)}</p>
-      <p>Spent: $${totalSpent.toFixed(2)}</p>
+      <p>${labelText}: $${currentAmount.toFixed(2)}</p>
       <div class="progress-bar-container">
         <div class="progress-bar" style="width: ${progress}%;"></div>
       </div>
       <p>${budget.description || ''}</p>
       <p class="deadline">
-        ${
-          hasDeadline
-            ? 'Deadline: ' + new Date(budget.deadline).toLocaleDateString()
-            : ''
-        }
+        ${ hasDeadline ? 'Deadline: ' + new Date(budget.deadline).toLocaleDateString() : '' }
       </p>
     `;
-
+  
+    card.addEventListener('click', () => {
+      openBudgetDetailsPopup(budget, allTransactions);
+    });
+  
     budgetsGrid.appendChild(card);
+  });
+}
+
+
+ 
+/***************************************************
+  DOM REFERENCES FOR BUDGET DETAILS + DELETE POPUPS
+****************************************************/
+const budgetDetailsPopup = document.getElementById("budget-details-popup");
+const bdpTitle = document.getElementById("bdp-title");
+const bdpGoal = document.getElementById("bdp-goal");
+const bdpProgressBar = document.getElementById("bdp-progress-bar");
+const bdpProgressText = document.getElementById("bdp-progress-text");
+const bdpChartEl = document.getElementById("bdp-chart");
+const bdpTransactionsList = document.getElementById("bdp-transactions-list");
+
+const bdpBackButton = document.getElementById("bdp-back-button");
+const bdpDeleteButton = document.getElementById("bdp-delete-button");
+
+const deleteBudgetPopup = document.getElementById("delete-budget-popup");
+const deleteBudgetMessage = document.getElementById("delete-budget-message");
+const cancelDeleteBudget = document.getElementById("cancel-delete-budget");
+const confirmDeleteBudget = document.getElementById("confirm-delete-budget");
+
+// Keep track of whichever budget is "open" in the popup
+let currentOpenBudget = null;
+
+// For the ApexCharts instance in the popup
+let bdpChartInstance = null;
+async function deleteBudget(budgetId) {
+  // 1) Get current user
+  const user = auth.currentUser;
+  if (!user) return;
+  
+  // 2) Load user doc
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+  if (!userDoc.exists()) return;
+  
+  // 3) Filter out the budget with matching ID
+  const data = userDoc.data();
+  const oldBudgets = data.budgets || [];
+  const newBudgets = oldBudgets.filter((b) => b.id !== budgetId);
+  
+  // 4) Save updated budgets array
+  await setDoc(userDocRef, { budgets: newBudgets }, { merge: true });
+}
+
+async function openBudgetDetailsPopup(budget, allTx) {
+  // Store the currently open budget so we can delete it later if needed
+  currentOpenBudget = budget;
+
+  // Show the popup
+  budgetDetailsPopup.classList.remove("hidden");
+
+  // 1) Calculate how much is currently spent or saved
+  //    (depending on budget.type === 'expense' or 'savings')
+  let currentAmount = 0;
+
+  const startDate = new Date(budget.start);
+  const hasDeadline = budget.deadline && budget.deadline.trim() !== "";
+  const endDate = hasDeadline ? new Date(budget.deadline) : null;
+
+  // Filter transactions that fall within the date range and match categories
+  const relevantTx = allTx.filter(tx => {
+    const txDate = new Date(tx.timestamp);
+    const inRange = txDate >= startDate && (!endDate || txDate <= endDate);
+
+    if (!inRange) return false;
+
+    if (budget.type === "expense") {
+      // We only care about "Expense" transactions with matching category
+      return (tx.type === "Expense") && budget.categories.includes(tx.category);
+    } else {
+      // We only care about "Income" transactions with matching category (like tx.source)
+      return (tx.type === "Income") && budget.categories.includes(tx.source);
+    }
+  });
+
+  // Sum up the amounts
+  relevantTx.forEach(tx => {
+    currentAmount += parseFloat(tx.amount);
+  });
+
+  // 2) Display the budget title & goal
+  bdpTitle.textContent = budget.name || "Untitled Budget";
+  bdpGoal.textContent = `Goal: $${(budget.goal || 0).toFixed(2)}`;
+
+  // 3) Update the progress bar & text
+  let spentOrSavedLabel = (budget.type === "expense") ? "Spent" : "Saved";
+  let progress = 0;
+  if (budget.goal && budget.goal > 0) {
+    progress = Math.min((currentAmount / budget.goal) * 100, 100);
+  }
+  bdpProgressText.textContent = `${progress.toFixed(1)}% of goal ${spentOrSavedLabel}`;
+
+  // If you added <div id="bdp-progress-fill">:
+  const bdpProgressFill = document.getElementById("bdp-progress-fill");
+  if (bdpProgressFill) {
+    bdpProgressFill.style.width = progress.toFixed(1) + "%";
+  }
+
+  // 4) Render the chart (Spent vs. Remaining), using ApexCharts
+  //    Destroy any previous chart instance if it exists (avoid duplicates).
+  if (bdpChartInstance) {
+    bdpChartInstance.destroy();
+  }
+
+  const spent = currentAmount;
+  const remaining = Math.max(budget.goal - spent, 0);
+
+  const chartOptions = {
+    chart: {
+      type: 'donut',
+      height: 220
+    },
+    labels: [spentOrSavedLabel, 'Remaining'],
+    series: [spent, remaining],
+    colors: [(budget.type === 'expense') ? '#f44336' : '#4caf50', '#9e9e9e'], // Just an example
+    legend: {
+      position: 'bottom'
+    }
+  };
+
+  bdpChartInstance = new ApexCharts(bdpChartEl, chartOptions);
+  await bdpChartInstance.render();
+
+  // 5) Build the transaction list
+  bdpTransactionsList.innerHTML = ""; // clear old data
+
+  relevantTx.forEach(tx => {
+    // Create a container div
+    const card = document.createElement("div");
+    card.classList.add("bdp-transaction-card");
+
+    // Icon circle
+    const iconCircle = document.createElement("div");
+    iconCircle.classList.add("bdp-icon-circle");
+    // If your transaction objects have tx.icon, use that. 
+    // Otherwise you might store category icons in a lookup.
+    // 1) If this tx.type === "Expense", look in expenseCategories
+//    if it's Income, look in incomeCategories
+let matchedCat;
+if (tx.type === "Expense") {
+  matchedCat = expenseCategories.find(c => c.name === tx.category);
+} else {
+  matchedCat = incomeCategories.find(c => c.name === tx.source);
+}
+
+// 2) matchedCat will be undefined if not found, so fallback to 'default.png'
+const iconFile = matchedCat?.icon || "default.png";
+
+iconCircle.innerHTML = `<img src="./icons/${iconFile}" alt="${tx.category}">`;
+
+    // Transaction details
+    const detailsDiv = document.createElement("div");
+    detailsDiv.classList.add("bdp-transaction-details");
+
+    const titleEl = document.createElement("div");
+    titleEl.classList.add("bdp-transaction-title");
+    titleEl.textContent = tx.title || "Untitled";
+
+    const catEl = document.createElement("div");
+    catEl.classList.add("bdp-transaction-category");
+    catEl.textContent = tx.category || tx.source || "No category";
+
+    detailsDiv.appendChild(titleEl);
+    detailsDiv.appendChild(catEl);
+
+    // Amount
+    const amountEl = document.createElement("div");
+    amountEl.classList.add("bdp-transaction-amount");
+    const amt = parseFloat(tx.amount) || 0;
+    amountEl.textContent = `$${amt.toFixed(2)}`;
+    if (tx.type === "Expense") {
+      amountEl.classList.add("negative");
+    } else {
+      amountEl.classList.add("positive");
+    }
+
+    // Append all to card
+    card.appendChild(iconCircle);
+    card.appendChild(detailsDiv);
+    card.appendChild(amountEl);
+
+    // Finally, append card to the container list
+    bdpTransactionsList.appendChild(card);
+  });
+}
+/***************************************************
+  BUDGET POPUP BUTTON HANDLERS
+****************************************************/
+bdpBackButton.addEventListener("click", () => {
+  // Simply hide the budget details popup
+  budgetDetailsPopup.classList.add("hidden");
+});
+
+bdpDeleteButton.addEventListener("click", () => {
+  // Show the delete confirmation popup
+  deleteBudgetPopup.classList.remove("hidden");
+});
+
+cancelDeleteBudget.addEventListener("click", () => {
+  // Hide the delete confirmation
+  deleteBudgetPopup.classList.add("hidden");
+});
+
+confirmDeleteBudget.addEventListener("click", async () => {
+  if (!currentOpenBudget) {
+    alert("No budget is currently open.");
+    return;
+  }
+
+  try {
+    // Actually delete the budget from Firestore or wherever you store it
+    await deleteBudget(currentOpenBudget.id); 
+    // ^ You need to implement this function or adapt it to your data structure
+    alert("Budget deleted successfully.");
+  } catch (error) {
+    console.error("Error deleting budget:", error);
+    alert("Something went wrong while deleting the budget.");
+  }
+
+  // Hide both popups
+  deleteBudgetPopup.classList.add("hidden");
+  budgetDetailsPopup.classList.add("hidden");
+});
+
+
+function listenToBudgets() {
+  const user = auth.currentUser;
+  if (!user) return; // or wait until onAuthStateChanged says we have a user
+
+  const userDocRef = doc(db, "users", user.uid);
+
+  // Attach real-time listener
+  onSnapshot(userDocRef, (snapshot) => {
+    if (!snapshot.exists()) {
+      console.log("No user doc yet.");
+      return;
+    }
+
+    const userDocData = snapshot.data();
+    // Re-render the budgets in real time
+    renderBudgets(userDocData);
+  }, (error) => {
+    console.error("Error with onSnapshot for budgets:", error);
   });
 }
 
@@ -733,11 +985,6 @@ function loadUserCategoriesForBudget() {
     container.appendChild(chip);
   });
 
-  // Divider
-  const divider = document.createElement('hr');
-  divider.classList.add('cat-divider');
-  container.appendChild(divider);
-
   // Income header
   const incomeHeader = document.createElement('div');
   incomeHeader.classList.add('cat-section-header');
@@ -763,34 +1010,33 @@ function loadUserCategoriesForBudget() {
 document.getElementById('add-budget-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
 
+  // Gather form field values
   const name = document.getElementById('budget-name').value.trim();
-  const isExpenseTabActive =
-    document.getElementById('budget-expense-tab').classList.contains('active');
+  const isExpenseTabActive = document.getElementById('budget-expense-tab').classList.contains('active');
   const type = isExpenseTabActive ? 'expense' : 'savings';
-
   const goal = parseFloat(document.getElementById('budget-goal').value);
   const color = document.getElementById('budget-color').value;
-
-  // Start date: if blank => "today"
+  
+  // Start date: if blank, default to today
   const startInputVal = document.getElementById('budget-start').value;
-  const start = startInputVal
-    ? new Date(startInputVal).toISOString()
-    : new Date().toISOString();
-
-  // If user checked "Set a Deadline?" & picked a date => store it
+  const start = startInputVal ? new Date(startInputVal).toISOString() : new Date().toISOString();
+  
+  // Deadline, if "Set a Deadline?" is checked
   const budgetEndInput = document.getElementById('budget-end');
   let deadline = '';
   if (enableDeadlineCheckbox.checked && budgetEndInput.value) {
     deadline = new Date(budgetEndInput.value).toISOString();
   }
-
+  
   const description = document.getElementById('budget-description').value.trim();
-
+  
   // Gather selected category chips
   const selectedChips = document.querySelectorAll('#budget-categories .cat-chip.selected');
   const categories = Array.from(selectedChips).map((chip) => chip.textContent);
-
+  
+  // Create a unique ID for the new budget
   const newBudget = {
+    id: `${Date.now()}`,
     name,
     type,
     goal,
@@ -799,14 +1045,20 @@ document.getElementById('add-budget-form')?.addEventListener('submit', async (e)
     deadline,
     description,
     categories,
-    spent: 0, // re-computed on loadBudgets
+    spent: 0,
     createdAt: new Date().toISOString()
   };
-
-  // Save to Firestore
+  
+  // Show the loading overlay
+  const loadingOverlay = document.getElementById("loading-overlay");
+  if (loadingOverlay) {
+    loadingOverlay.classList.remove("hidden");
+  }
+  
+  // Save the new budget to Firestore
   const user = auth.currentUser;
   if (!user) return;
-
+  
   const userDocRef = doc(db, 'users', user.uid);
   const userDoc = await getDoc(userDocRef);
   let budgets = [];
@@ -814,16 +1066,30 @@ document.getElementById('add-budget-form')?.addEventListener('submit', async (e)
     budgets = userDoc.data().budgets || [];
   }
   budgets.push(newBudget);
-
+  
   await setDoc(userDocRef, { budgets }, { merge: true });
-
-  // Reload, reset, close
-  loadBudgets();
+  
+  // Hide the loading overlay after save completes
+  if (loadingOverlay) {
+    loadingOverlay.classList.add("hidden");
+  }
+  
+  // (Optional) Reload budgets if you don't rely solely on real-time listeners:
+  if (typeof loadBudgets === "function") {
+    loadBudgets();
+  }
+  
+  // Clear the form fields and selections
   document.getElementById('add-budget-form').reset();
   document.querySelectorAll('.color-swatch').forEach((s) => s.classList.remove('selected'));
   document.querySelector('.color-swatch[data-color="#4caf50"]')?.classList.add('selected');
+  document.querySelectorAll('#budget-categories .cat-chip.selected')
+    .forEach((chip) => chip.classList.remove('selected'));
+  
+  // Close the budget modal popup
   document.getElementById('add-budget-modal').classList.add('hidden');
 });
+
 
 /************************************************************
  * ==========  BUDGET TYPE TAB SWITCHING   =================
@@ -3039,51 +3305,3 @@ document.getElementById('view-all-transactions').addEventListener('click', (e) =
   
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  
-  
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
