@@ -669,7 +669,7 @@ function renderBudgets(userDocData) {
   
     const card = document.createElement("div");
     card.className = "budget-card";
-    card.style.borderLeft = `5px solid ${budget.color || '#4caf50'}`;
+    card.style.borderLeft = `5px solid ${budget.color || "var(--primary-color)"}`;
   
     const labelText = (budget.type === "expense") ? "Spent" : "Saved";
   
@@ -2019,6 +2019,29 @@ discardConfirmBtn.addEventListener("click", () => {
       }
     });
     
+    document.addEventListener("DOMContentLoaded", () => {
+      const themeToggle = document.getElementById("theme-toggle");
+    
+      document.getElementById("theme-toggle").addEventListener("change", function() {
+        if (this.checked) {
+          document.body.classList.add("dark-mode");
+        } else {
+          document.body.classList.remove("dark-mode");
+        }
+      });
+      
+    
+      // Listen for changes on the toggle switch.
+      themeToggle.addEventListener("change", () => {
+        if (themeToggle.checked) {
+          document.body.classList.add("dark-mode");
+          localStorage.setItem("theme", "dark");
+        } else {
+          document.body.classList.remove("dark-mode");
+          localStorage.setItem("theme", "light");
+        }
+      });
+    });
     
   // BEGGING OF THE TRANSACTION LISTING CODE
   /***************************************************
@@ -3302,6 +3325,3 @@ document.getElementById('view-all-transactions').addEventListener('click', (e) =
     }
   // Function to Load and Render the Line Chart
  
-  
-  
-  
