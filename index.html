@@ -43,7 +43,6 @@
   </form>
   
  
-  
   <p>
     <button type="button" id="forgot-password-button" class="link-button">Forgot Password?</button>
   </p>
@@ -765,7 +764,7 @@
   <div class="modal-content">
     <!-- Close button -->
     <button id="close-settings-icon" class="close-button">&times;</button>
-    <h2>Settings</h2>
+    <h2 id="settingsh2">Settings</h2>
 
     <!-- Profile Section -->
     <div class="settings-section">
@@ -783,11 +782,12 @@
     <!-- Appearance Section -->
     <div class="settings-section">
       <h3>Appearance</h3>
-      <label>
+      <label class="switch">
         <input type="checkbox" id="theme-toggle" />
-        Enable Dark Mode
+        <span class="slider round"></span>
       </label>
     </div>
+    
 
     <!-- Notification Preferences Section -->
     <div class="settings-section">
