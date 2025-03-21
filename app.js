@@ -141,10 +141,11 @@ let storage; // Declare storage here as a global variable
     const series = dayEntries.map(entry => {
       runningTotal += entry.totalChange;
       return {
-        x: entry.date, // ApexCharts will treat this as the date on the x-axis
-        y: runningTotal
+        x: entry.date,
+        y: parseFloat(runningTotal.toFixed(2))  // This rounds the running total to two decimals
       };
     });
+    
   
     return series;
   }
@@ -911,7 +912,7 @@ confirmDeleteBudget.addEventListener("click", async () => {
     // Actually delete the budget from Firestore or wherever you store it
     await deleteBudget(currentOpenBudget.id); 
     // ^ You need to implement this function or adapt it to your data structure
-    alert("Budget deleted successfully.");
+   
   } catch (error) {
     console.error("Error deleting budget:", error);
     alert("Something went wrong while deleting the budget.");
@@ -1321,7 +1322,7 @@ document.getElementById('profile-card-logout').addEventListener('click', async f
   e.preventDefault();
   try {
     await signOut(auth);
-    alert("Logged out successfully!");
+   
     // Optionally, reload the page or redirect to the login screen:
     window.location.reload();
   } catch (error) {
@@ -1408,7 +1409,7 @@ async function openSettingsModal() {
       profilePicPreview.src = data.photoUrl ? data.photoUrl : "default-avatar.png";
       displayNameInput.value = data.displayName ? data.displayName : "";
       if (data.preferences) {
-        themeToggle.checked = data.preferences.theme === "dark";
+        
         emailNotificationsCheckbox.checked = data.preferences.emailNotifications || false;
         pushNotificationsCheckbox.checked = data.preferences.pushNotifications || false;
         if (data.preferences.currency) {
@@ -1586,6 +1587,29 @@ saveSettingsButton.addEventListener("click", async () => {
   }
 });
 
+// Save the theme preference only when Save Settings is clicked
+const saveSettingsBtn = document.getElementById("save-settings");
+if (saveSettingsBtn) {
+  saveSettingsBtn.addEventListener("click", async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("No user is logged in.");
+      return;
+    }
+    // Build the settings object
+    const userSettings = {
+      darkMode: themeToggle.checked
+    };
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      await setDoc(userDocRef, { settings: userSettings }, { merge: true });
+      
+    } catch (err) {
+      console.error("Error saving settings:", err);
+      alert("Failed to save settings. Please try again.");
+    }
+  });
+}
 
   
   
@@ -1978,57 +2002,79 @@ discardConfirmBtn.addEventListener("click", () => {
   
   
      // Monitor Authentication State
-     onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userDocRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userDocRef);
-    
-        if (!userSnap.exists()) {
-          // This user doc doesn't exist yet -> create it with default categories
-          await setDoc(userDocRef, {
-            expenseCategories: DEFAULT_EXPENSE_CATEGORIES,
-            incomeCategories: DEFAULT_INCOME_CATEGORIES,
-            // add any other defaults you want, e.g. balance: 0
-            balance: 0,
-            incomes: [],
-            expenses: [],
-          }, { merge: true });
-        } else {
-          // The user doc exists, but let's confirm categories are there.
-          // If they're missing or empty, we can set them:
-          const data = userSnap.data();
-          if (!Array.isArray(data.expenseCategories) || data.expenseCategories.length === 0) {
-            await setDoc(userDocRef, { expenseCategories: DEFAULT_EXPENSE_CATEGORIES }, { merge: true });
-          }
-          if (!Array.isArray(data.incomeCategories) || data.incomeCategories.length === 0) {
-            await setDoc(userDocRef, { incomeCategories: DEFAULT_INCOME_CATEGORIES }, { merge: true });
-          }
-        }
-    
-        // Now we definitely have categories in the doc
-        await loadCategoriesFromFirestore(user);
-    
-        // Then show the dashboard
-        authContainer.style.display = "none";
-        dashboardContainer.style.display = "block";
-        loadDashboard(user);
-    
-      } else {
-        authContainer.style.display = "block";
-        dashboardContainer.style.display = "none";
+// Monitor Authentication State
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const userDocRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userDocRef);
+
+    if (!userSnap.exists()) {
+      // This user doc doesn't exist yet -> create it with default categories and (optionally) default settings.
+      await setDoc(
+        userDocRef,
+        {
+          expenseCategories: DEFAULT_EXPENSE_CATEGORIES,
+          incomeCategories: DEFAULT_INCOME_CATEGORIES,
+          balance: 0,
+          incomes: [],
+          expenses: [],
+          // Optionally, you can initialize default settings (default to light mode):
+          // settings: { darkMode: false }
+        },
+        { merge: true }
+      );
+    } else {
+      // The user doc exists, but let's confirm categories are there.
+      const data = userSnap.data();
+      if (!Array.isArray(data.expenseCategories) || data.expenseCategories.length === 0) {
+        await setDoc(userDocRef, { expenseCategories: DEFAULT_EXPENSE_CATEGORIES }, { merge: true });
       }
-    });
+      if (!Array.isArray(data.incomeCategories) || data.incomeCategories.length === 0) {
+        await setDoc(userDocRef, { incomeCategories: DEFAULT_INCOME_CATEGORIES }, { merge: true });
+      }
+    }
+
+    // Load dark mode preference from the user's settings
+    const themeToggle = document.getElementById("theme-toggle");
+    // Re-fetch the user document to ensure we have the latest data
+    const updatedUserSnap = await getDoc(userDocRef);
+    const userData = updatedUserSnap.data();
+    const darkModeEnabled = userData.settings?.darkMode;
+    if (darkModeEnabled) {
+      document.body.classList.add("dark-mode");
+      if (themeToggle) themeToggle.checked = true;
+    } else {
+      document.body.classList.remove("dark-mode");
+      if (themeToggle) themeToggle.checked = false;
+    }
+
+    // Now we definitely have categories in the doc
+    await loadCategoriesFromFirestore(user);
+
+    // Then show the dashboard
+    authContainer.style.display = "none";
+    dashboardContainer.style.display = "block";
+    loadDashboard(user);
+  } else {
+    authContainer.style.display = "block";
+    dashboardContainer.style.display = "none";
+  }
+});
+
     
     document.addEventListener("DOMContentLoaded", () => {
-      const themeToggle = document.getElementById("theme-toggle");
-    
-      document.getElementById("theme-toggle").addEventListener("change", function() {
-        if (this.checked) {
-          document.body.classList.add("dark-mode");
-        } else {
-          document.body.classList.remove("dark-mode");
-        }
-      });
+    // Immediate update: only toggle the dark-mode class on change
+const themeToggle = document.getElementById("theme-toggle");
+if (themeToggle) {
+  themeToggle.addEventListener("change", () => {
+    if (themeToggle.checked) {
+      document.body.classList.add("dark-mode");
+    } else {
+      document.body.classList.remove("dark-mode");
+    }
+  });
+}
+
       
     
       // Listen for changes on the toggle switch.
@@ -2711,24 +2757,59 @@ incomeTab.addEventListener("click", () => {
       if (data.photoUrl) {
         userProfilePic.src = data.photoUrl;
       }
+    
+    
       updateSummaryBoxes(data);
-  // 1) Build your daily net balance series (already done in your code)
+  // =====================
+// 1) Common Updates Based on Mode
+// =====================
+function getCommonChartUpdates(mode) {
+  const dark = mode === 'dark';
+  return {
+    chart: {
+      background: dark ? '#1e1e1e' : '#ffffff'
+    },
+    xaxis: {
+      labels: {
+        style: { colors: [dark ? '#ffffff' : '#000000'] }
+      }
+    },
+    yaxis: {
+      labels: {
+        style: { colors: [dark ? '#ffffff' : '#000000'] }
+      }
+    },
+    tooltip: {
+      theme: dark ? 'dark' : 'light'
+    },
+    grid: {
+      borderColor: dark ? '#444' : '#ddd'
+    }
+  };
+}
+
+// =====================
+// 2) Determine Dark Mode & Build Net Balance Chart
+// =====================
+const isDark = document.body.classList.contains("dark-mode");
+
+// Build your net balance series
 const netBalanceSeries = buildDailyNetBalanceSeries(
   data.incomes || [],
   data.expenses || []
 );
 
-// 2) Define the chart options
 const chartOptions = {
-  series: [{
-    name: "Net Balance",
-    data: netBalanceSeries
-  }],
+  series: [
+    {
+      name: "Net Balance",
+      data: netBalanceSeries,
+    },
+  ],
   chart: {
-    type: 'area',
+    type: "area",
     height: 350,
-    // If you want a light background color directly on the chart:
-    background: '#fff',
+    background: isDark ? "#1e1e1e" : "#ffffff",
     toolbar: { show: false },
     zoom: { enabled: false },
     dropShadow: {
@@ -2736,92 +2817,101 @@ const chartOptions = {
       top: 4,
       left: 0,
       blur: 6,
-      opacity: 0.15,
-      color: '#000'
+      opacity: isDark ? 0.3 : 0.15,
+      color: "#000",
     },
   },
   stroke: {
-    curve: 'smooth',
+    curve: "smooth",
     width: 3,
-    colors: ['#4285F4'] // The line color
+    colors: ["#4285F4"],
   },
   fill: {
-    type: 'gradient',
+    type: "gradient",
     gradient: {
       shadeIntensity: 1,
-      // The fill below the line transitions from a semi-opaque color
-      // near the line to fully transparent near the bottom
-      gradientToColors: ['#4285F4'],
+      gradientToColors: ["#4285F4"],
       opacityFrom: 0.3,
       opacityTo: 0.0,
       stops: [0, 90, 100],
-      inverseColors: false
-    }
+      inverseColors: false,
+    },
   },
   dataLabels: { enabled: false },
   markers: {
-    size: 0, // Hide by default
+    size: 0,
     hover: { size: 6 },
     strokeWidth: 2,
-    strokeColors: '#fff'
+    strokeColors: "#fff",
   },
   xaxis: {
-    type: 'datetime',
+    type: "datetime",
     labels: {
-      // e.g. "Feb 9", "Mar 1" 
-      // The actual ticks depend on your data’s date range
-      format: 'MMM d',
+      format: "MMM d",
       style: {
-        fontSize: '13px',
-        colors: ['#666']
-      }
+        fontSize: "13px",
+        colors: [isDark ? "#ffffff" : "#000000"],
+      },
     },
     axisBorder: { show: false },
-    axisTicks: { show: false }
+    axisTicks: { show: false },
   },
   yaxis: {
     labels: {
       style: {
-        fontSize: '13px',
-        colors: ['#666']
+        fontSize: "13px",
+        colors: [isDark ? "#ffffff" : "#000000"],
       },
-      formatter: val => `$${val.toFixed(2)}`
+      // Remove decimals entirely using Math.floor
+      formatter: (val) => "$" + Math.floor(val)
     },
     axisBorder: { show: false },
-    axisTicks: { show: false }
+    axisTicks: { show: false },
   },
   tooltip: {
-    theme: 'light',
-    x: { format: 'MMM dd, yyyy' },
+    theme: isDark ? "dark" : "light",
+    x: { format: "MMM dd, yyyy" },
     y: {
-      formatter: val => `$${val.toFixed(2)}`,
-      title: { formatter: () => 'Balance:' }
+      // Tooltip still shows cents
+      formatter: (val) => "$" + val.toFixed(2),
+      title: { formatter: () => "Balance:" },
     },
-    style: { fontSize: '14px' }
+    style: { fontSize: "14px" },
   },
   grid: {
-    borderColor: '#ddd',
-    strokeDashArray: 4, // Dotted/dashed grid
-    padding: { left: 15, right: 15 }
+    borderColor: isDark ? "#444" : "#ddd",
+    strokeDashArray: 4,
+    padding: { left: 15, right: 15 },
   },
   legend: { show: false },
-  // Responsive rules for mobile
-  responsive: [{
-    breakpoint: 768,
-    options: {
-      chart: { height: 250 },
-      stroke: { width: 2 },
-      xaxis: {
-        labels: { style: { fontSize: '12px' } }
+  responsive: [
+    {
+      breakpoint: 768,
+      options: {
+        chart: { height: 250 },
+        stroke: { width: 2 },
+        xaxis: {
+          labels: {
+            style: {
+              fontSize: "12px",
+              colors: [isDark ? "#ffffff" : "#000000"],
+            },
+          },
+        },
+        yaxis: {
+          labels: {
+            style: {
+              fontSize: "12px",
+              colors: [isDark ? "#ffffff" : "#000000"],
+            },
+          },
+        },
       },
-      yaxis: {
-        labels: { style: { fontSize: '12px' } }
-      }
-    }
-  }]
+    },
+  ],
 };
 
-// 3) Destroy old chart if it exists, then render the new one
+// Destroy old chart if needed, then render
 if (window.balanceChart) {
   window.balanceChart.destroy();
 }
@@ -2832,10 +2922,11 @@ window.balanceChart = new ApexCharts(
 window.balanceChart.render();
 
 
-
-
+// =====================
+// 3) Spending Donut Chart
+// =====================
 (function renderSpendingChart() {
-  // Build category totals
+  // Build category totals from expenses
   const catMap = {};
   (data.expenses || []).forEach(exp => {
     if (!catMap[exp.category]) catMap[exp.category] = 0;
@@ -2845,7 +2936,7 @@ window.balanceChart.render();
   const spendingCategories = Object.keys(catMap);
   const spendingAmounts = Object.values(catMap);
 
-  // If no expenses, show a single slice
+  // If there are no expenses, show a default slice
   if (spendingCategories.length === 0) {
     spendingCategories.push("No Expenses");
     spendingAmounts.push(0);
@@ -2855,6 +2946,7 @@ window.balanceChart.render();
     chart: {
       type: 'donut',
       height: 350,
+      background: isDark ? '#1e1e1e' : '#ffffff',
       toolbar: { show: false },
       dropShadow: {
         enabled: true,
@@ -2862,13 +2954,8 @@ window.balanceChart.render();
         left: 2,
         blur: 4,
         color: '#000',
-        opacity: 0.1
+        opacity: isDark ? 0.3 : 0.1
       },
-      /*
-        Offset to shift the donut chart to the right
-        so the legend on the left doesn't overlap it.
-        Adjust as needed for your design.
-      */
       offsetX: 70
     },
     plotOptions: {
@@ -2877,18 +2964,21 @@ window.balanceChart.render();
           size: '60%',
           labels: {
             show: true,
-            name: { fontSize: '14px' },
+            name: {
+              fontSize: '14px',
+              color: isDark ? '#ffffff' : '#000000'
+            },
             value: {
               fontSize: '18px',
+              color: isDark ? '#ffffff' : '#000000',
               formatter: val => val
             },
             total: {
               show: true,
               label: 'Total',
               fontSize: '16px',
-              color: '#333',
+              color: isDark ? '#ffffff' : '#000000',
               formatter: function (w) {
-                // Sum all slices
                 return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
               }
             }
@@ -2904,50 +2994,91 @@ window.balanceChart.render();
     stroke: {
       show: true,
       width: 2,
-      colors: ['#fff'] // white stroke separating slices
+      colors: ['#fff']
     },
-    /*
-      Keep legend on the left for all screens.
-      Adjust offsetY if you want it aligned differently vertically.
-    */
     legend: {
       position: 'left',
       horizontalAlign: 'center',
       offsetY: 0,
       fontSize: '14px',
+      labels: {
+        colors: isDark ? '#ffffff' : '#000000'
+      },
       markers: {
         width: 14,
         height: 14,
         radius: 7
       }
     },
-    /*
-      You can still use responsive if you want to tweak
-      height or offset on smaller screens, but keep position: 'left'.
-    */
-      responsive: [{
-        breakpoint: 768,
-        options: {
-          chart: {
-            height: 300,
-            // offsetX: 40 // optional: reduce offset on mobile if needed
-          },
-          legend: {
-            fontSize: '12px',
-            position: 'left',
-            horizontalAlign: 'center'
-          }
+    responsive: [{
+      breakpoint: 768,
+      options: {
+        chart: { height: 300 },
+        legend: {
+          fontSize: '12px',
+          position: 'left',
+          horizontalAlign: 'center'
         }
-      }]
-      
+      }
+    }]
   };
 
-  const spendingChart = new ApexCharts(
+  window.spendingChart = new ApexCharts(
     document.querySelector("#spending-chart"),
     donutOptions
   );
-  spendingChart.render();
+  window.spendingChart.render();
 })();
+
+
+// =====================
+// 4) Update Charts on Dark Mode Toggle
+// =====================
+const themeToggle = document.getElementById("theme-toggle");
+if (themeToggle) {
+  themeToggle.addEventListener("change", () => {
+    const newMode = document.body.classList.contains("dark-mode") ? 'dark' : 'light';
+    const updates = getCommonChartUpdates(newMode);
+    if (window.balanceChart) {
+      window.balanceChart.updateOptions({
+        ...updates,
+        yaxis: {
+          labels: {
+            style: { colors: [newMode === 'dark' ? '#ffffff' : '#000000'] },
+            formatter: (val) => "$" + Math.floor(val)
+          }
+        }
+      });
+    }
+
+    // ----- Update the spending donut chart -----
+    if (window.spendingChart) {
+      window.spendingChart.updateOptions({
+        chart: { background: updates.chart.background },
+        tooltip: { theme: updates.tooltip.theme },
+        grid: { borderColor: updates.grid.borderColor },
+        xaxis: {
+          labels: { style: { colors: [ newMode === 'dark' ? '#ffffff' : '#000000' ] } }
+        },
+        yaxis: {
+          labels: { style: { colors: [ newMode === 'dark' ? '#ffffff' : '#000000' ] } }
+        },
+        legend: { labels: { colors: [ newMode === 'dark' ? '#ffffff' : '#000000' ] } },
+        plotOptions: {
+          pie: {
+            donut: {
+              labels: {
+                name:  { color: newMode === 'dark' ? '#ffffff' : '#000000' },
+                value: { color: newMode === 'dark' ? '#ffffff' : '#000000' },
+                total: { color: newMode === 'dark' ? '#ffffff' : '#000000' }
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+}
 
 
       
