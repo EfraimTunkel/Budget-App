@@ -665,17 +665,19 @@
     </div>
   </div>
 </div>
-
 <!-- CATEGORY SELECTION POPUP -->
 <div id="cr-category-overlay" class="overlay hidden">
   <div class="thispopup">
     <button class="thisclose-btn" id="cr-close-category-popup">&times;</button>
+
     <div class="category-tabs">
       <div id="cr-cat-income-tab" class="category-tab income-tab">Income</div>
       <div id="cr-cat-expense-tab" class="category-tab active">Expense</div>
     </div>
-    <button id="cr-show-add-cat-form" class="add-cat-button">+</button>
+
+    <!-- Place the plus button inside #cr-category-list -->
     <div id="cr-category-list" class="category-list">
+      <button id="cr-show-add-cat-form" class="add-cat-button">+</button>
       <!-- Categories will be injected here -->
     </div>
   </div>
@@ -710,6 +712,7 @@
   </div>
   <button id="cr-save-new-cat-btn" class="save-cat-btn">Save</button>
 </div>
+
 
 <div id="discard-popup" class="popup hidden">
   <div class="popup-content discard-popup-content">
