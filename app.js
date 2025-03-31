@@ -1,6 +1,7 @@
 
 
 
+
   
   import { 
     initializeApp 
@@ -352,62 +353,47 @@ let selectedIcon = "";
   
   
   
+  function renderCategoryList() {
+    // 1) Which list to show?
+    const list = (currentCategoryType === "expense") ? expenseCategories : incomeCategories;
   
-  /**
-   * Render the category list in the overlay popup based on currentCategoryType.
-   */
- /**
- * Render the category list in the overlay popup based on currentCategoryType.
- */
- function renderCategoryList() {
-  console.log("Rendering categories for type:", currentCategoryType);
-  crCategoryList.innerHTML = "";
-
-  // Decide which list (income or expense) to show
-  const list = (currentCategoryType === "expense") ? expenseCategories : incomeCategories;
-
-  list.forEach(cat => {
-    const card = document.createElement("div");
-    card.className = "category-card";
-
-    // Build the icon circle + name
-    card.innerHTML = `
-    <div class="icon-circle"
-         style="background-color: ${cat.bgColor || '#eee'};">
-       <img src="./icons/${cat.icon}" alt="${cat.name}">
-    </div>
-    <div>${cat.name}</div>
-  `;
+    // 2) Grab a reference to the plus button before clearing
+    const plusBtn = document.getElementById("cr-show-add-cat-form");
   
-
-    // On click, highlight the chosen category
-    card.addEventListener("click", () => {
-      // Remove 'selected' class from all category cards
-      crCategoryList.querySelectorAll(".category-card")
-        .forEach(c => c.classList.remove("selected"));
-
-      // Highlight this card
-      card.classList.add("selected");
-
-      // Update hidden input / text (income or expense)
-      if (currentCategoryType === "income") {
-        crChosenIncomeCategory.value = cat.name;
-        crChosenIncomeCategoryText.textContent = cat.name;
-      } else {
-        crChosenExpenseCategory.value = cat.name;
-        crChosenExpenseCategoryText.textContent = cat.name;
-      }
-      console.log(`Selected ${currentCategoryType} category: "${cat.name}"`);
-
-      // Automatically close the overlay
-      crCategoryOverlay.classList.add("hidden");
+    // 3) Clear category-list but then re-inject the plus button
+    const crCategoryList = document.getElementById("cr-category-list");
+    crCategoryList.innerHTML = "";
+    crCategoryList.appendChild(plusBtn);
+  
+    // 4) Render each category card
+    list.forEach((cat) => {
+      const card = document.createElement("div");
+      card.classList.add("category-card");
+  
+      card.innerHTML = `
+        <div class="icon-circle" style="background-color: ${cat.bgColor || '#eee'};">
+          <img src="./icons/${cat.icon}" alt="${cat.name}" />
+        </div>
+        <div>${cat.name}</div>
+      `;
+  
+      card.addEventListener("click", () => {
+        // handle selecting this category, e.g.:
+        if (currentCategoryType === "expense") {
+          crChosenExpenseCategory.value = cat.name;
+          crChosenExpenseCategoryText.textContent = cat.name;
+        } else {
+          crChosenIncomeCategory.value = cat.name;
+          crChosenIncomeCategoryText.textContent = cat.name;
+        }
+        // close overlay, etc.
+        document.getElementById("cr-category-overlay").classList.add("hidden");
+      });
+  
+      crCategoryList.appendChild(card);
     });
-
-    // Add the card to the category list container
-    crCategoryList.appendChild(card);
-  });
-}
-
+  }
+  
     
  // Show the full-screen form when user clicks "+"
 crShowAddCatForm.addEventListener("click", () => {
