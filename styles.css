@@ -3554,9 +3554,11 @@ color: var(--text-color);
     margin: 15px 0;
   }
   .summary-box {
-    width: 48%;  /* roughly two per row */
-    padding: 1.2rem;
-    font-size: 16px;
+    flex: 0 0 calc(50% - 0.75rem); 
+    /* or 48%, 49%, etc. 
+       The small subtracted amount helps account for gap. */
+    margin: 0;
+    padding: 1.5rem;
   }
   
   /* Profile Cards: show two per row */
