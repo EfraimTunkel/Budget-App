@@ -2,6 +2,7 @@
 
 
 
+
   
   import { 
     initializeApp 
@@ -21,7 +22,9 @@
     sendEmailVerification,
     EmailAuthProvider,
     reauthenticateWithCredential,
-    deleteUser
+    deleteUser,
+    setPersistence,
+    browserLocalPersistence
   } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
   
   import { 
@@ -67,6 +70,13 @@ let storage; // Declare storage here as a global variable
       const app = initializeApp(firebaseConfig);
       auth = getAuth(app);
       db = getFirestore(app);
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+        console.log("Local persistence set.");
+      } catch (error) {
+        console.error("Error setting persistence:", error);
+      }
+      
       document.getElementById("forgot-password-button").addEventListener("click", async () => {
         const email = document.getElementById("auth-email").value;
       
@@ -578,6 +588,68 @@ document.getElementById('transactions-button').addEventListener('click', (e) => 
 document.getElementById('mobile-profile-icon').addEventListener('click', function(e) {
   e.preventDefault();
   showSection('profile-section');
+});
+document.addEventListener('DOMContentLoaded', function() {
+  // 1) Collapse toggle
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('sidebar-toggle');
+  
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+  });
+
+  // 2) Mark active nav item
+  function setActiveNavItem(itemId) {
+    document.querySelectorAll('.sidebar .nav-item').forEach(el => {
+      el.classList.remove('active');
+    });
+    const clicked = document.getElementById(itemId);
+    if (clicked) clicked.classList.add('active');
+  }
+
+  // 3) Desktop nav links -> showSection(...) or open popup
+  document.getElementById('home-button-desktop').addEventListener('click', () => {
+    showSection('dashboard-section');
+    setActiveNavItem('home-button-desktop');
+  });
+
+  document.getElementById('budgets-button-desktop').addEventListener('click', () => {
+    showSection('budgets-page');
+    setActiveNavItem('budgets-button-desktop');
+  });
+
+  document.getElementById('transactions-button-desktop').addEventListener('click', () => {
+    showSection('transactions-section');
+    setActiveNavItem('transactions-button-desktop');
+  });
+
+  document.getElementById('settings-button-desktop').addEventListener('click', () => {
+    openSettingsModal(); // same function as profile gear
+  });
+  
+
+  document.getElementById('profile-button-desktop').addEventListener('click', () => {
+    showSection('profile-section');
+    setActiveNavItem('profile-button-desktop');
+  });
+
+  // 4) Desktop Logout
+  document.getElementById('logout-button-desktop').addEventListener('click', async () => {
+    console.log("Desktop logout clicked.");
+    if (!auth) {
+      console.error("Auth is not defined or user not logged in.");
+      return;
+    }
+    try {
+      await signOut(auth);
+     
+      // Possibly show the login screen or reload:
+      window.location.reload();
+    } catch (err) {
+      console.error("Logout error:", err);
+      alert("Error logging out. Check console for details.");
+    }
+  });
 });
 
 /************************************************************
@@ -1987,64 +2059,67 @@ discardConfirmBtn.addEventListener("click", () => {
   });
   
   
-     // Monitor Authentication State
 // Monitor Authentication State
 onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    const userDocRef = doc(db, "users", user.uid);
-    const userSnap = await getDoc(userDocRef);
+  // Grab references to your containers
+  const authContainer = document.getElementById("auth-container");
+  const dashboardContainer = document.getElementById("dashboard-container");
 
-    if (!userSnap.exists()) {
-      // This user doc doesn't exist yet -> create it with default categories and (optionally) default settings.
-      await setDoc(
-        userDocRef,
-        {
-          expenseCategories: DEFAULT_EXPENSE_CATEGORIES,
-          incomeCategories: DEFAULT_INCOME_CATEGORIES,
-          balance: 0,
-          incomes: [],
-          expenses: [],
-          // Optionally, you can initialize default settings (default to light mode):
-          // settings: { darkMode: false }
-        },
-        { merge: true }
-      );
-    } else {
-      // The user doc exists, but let's confirm categories are there.
-      const data = userSnap.data();
-      if (!Array.isArray(data.expenseCategories) || data.expenseCategories.length === 0) {
-        await setDoc(userDocRef, { expenseCategories: DEFAULT_EXPENSE_CATEGORIES }, { merge: true });
-      }
-      if (!Array.isArray(data.incomeCategories) || data.incomeCategories.length === 0) {
-        await setDoc(userDocRef, { incomeCategories: DEFAULT_INCOME_CATEGORIES }, { merge: true });
-      }
-    }
-
-    // Load dark mode preference from the user's settings
-    const themeToggle = document.getElementById("theme-toggle");
-    // Re-fetch the user document to ensure we have the latest data
-    const updatedUserSnap = await getDoc(userDocRef);
-    const userData = updatedUserSnap.data();
-    const darkModeEnabled = userData.settings?.darkMode;
-    if (darkModeEnabled) {
-      document.body.classList.add("dark-mode");
-      if (themeToggle) themeToggle.checked = true;
-    } else {
-      document.body.classList.remove("dark-mode");
-      if (themeToggle) themeToggle.checked = false;
-    }
-
-    // Now we definitely have categories in the doc
-    await loadCategoriesFromFirestore(user);
-
-    // Then show the dashboard
-    authContainer.style.display = "none";
-    dashboardContainer.style.display = "block";
-    loadDashboard(user);
-  } else {
+  // If no user is logged in:
+  if (!user) {
     authContainer.style.display = "block";
     dashboardContainer.style.display = "none";
+    return; // stop here, don't do Firestore calls below
   }
+
+  // Otherwise, user is signed in -> hide auth, show dashboard
+  authContainer.style.display = "none";
+  dashboardContainer.style.display = "block";
+
+  // 1) Reference the user doc
+  const userDocRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userDocRef);
+
+  // 2) If no doc, create one with default categories
+  if (!userSnap.exists()) {
+    await setDoc(userDocRef, {
+      expenseCategories: DEFAULT_EXPENSE_CATEGORIES,
+      incomeCategories: DEFAULT_INCOME_CATEGORIES,
+      balance: 0,
+      incomes: [],
+      expenses: [],
+      // Optionally default user settings:
+      // settings: { darkMode: false }
+    }, { merge: true });
+  } else {
+    // The doc exists -> confirm expense/income categories exist
+    const data = userSnap.data();
+    if (!Array.isArray(data.expenseCategories) || data.expenseCategories.length === 0) {
+      await setDoc(userDocRef, { expenseCategories: DEFAULT_EXPENSE_CATEGORIES }, { merge: true });
+    }
+    if (!Array.isArray(data.incomeCategories) || data.incomeCategories.length === 0) {
+      await setDoc(userDocRef, { incomeCategories: DEFAULT_INCOME_CATEGORIES }, { merge: true });
+    }
+  }
+
+  // 3) Load dark mode preference
+  const themeToggle = document.getElementById("theme-toggle");
+  const updatedUserSnap = await getDoc(userDocRef);
+  const userData = updatedUserSnap.data();
+  const darkModeEnabled = userData.settings?.darkMode;
+
+  if (darkModeEnabled) {
+    document.body.classList.add("dark-mode");
+    if (themeToggle) themeToggle.checked = true;
+  } else {
+    document.body.classList.remove("dark-mode");
+    if (themeToggle) themeToggle.checked = false;
+  }
+
+  // 4) Load categories and show the dashboard
+  await loadCategoriesFromFirestore(user);
+  loadDashboard(user);
+
 });
 
     
