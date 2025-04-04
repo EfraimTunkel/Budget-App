@@ -48,7 +48,7 @@
   </p>
   
   <p class="toggle-auth">
-    Already have an account? <a href="#" id="toggle-link">Login</a>
+    Already have an account? <a style="cursor: pointer;" id="toggle-link">Login</a>
   </p>
   
   <p id="verification-message" class="hidden">
@@ -114,10 +114,44 @@
         
       </nav>
       
-   
+      <nav class="sidebar collapsed" id="sidebar">  <!-- add "collapsed" right here -->
+        <div class="sidebar-toggle" id="sidebar-toggle">
+          <i class="fa-solid fa-chevron-left"></i>
+        </div>
+      
+        <!-- Scrollable links -->
+        <div class="sidebar-scroll">
+          <a class="nav-item" id="home-button-desktop">
+            <i class="fa-solid fa-house"></i><span>Home</span>
+          </a>
+          <a class="nav-item" id="budgets-button-desktop">
+            <i class="fa-solid fa-wallet"></i><span>Budgets</span>
+          </a>
+          <a class="nav-item" id="transactions-button-desktop">
+            <i class="fa-solid fa-list"></i><span>Transactions</span>
+          </a>
+          <a class="nav-item" id="settings-button-desktop">
+            <i class="fa-solid fa-gear"></i><span>Settings</span>
+          </a>
+          <a class="nav-item" id="profile-button-desktop">
+            <i class="fa-solid fa-user"></i><span>Profile</span>
+          </a>
+        </div>
+      
+        <!-- Footer with logout -->
+        <div class="sidebar-footer">
+          <button id="logout-button-desktop">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Log Out</span>
+          </button>
+        </div>
+      </nav>
+      
+
       
       
-      <main id="main-content">
+      
+      <main class="main-content" id="main-content">
         <!-- Dashboard Section -->
         <section id="dashboard-section" class="dashboard-section">
           <!-- Header / Greeting -->
