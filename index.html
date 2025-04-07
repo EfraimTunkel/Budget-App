@@ -81,10 +81,7 @@
           <i class="fa-solid fa-house"></i><span>Home</span>
         </a>
       
-        <!-- The floating add transaction button (shown on all) -->
-        <button id="add-transaction-button" class="floating-button show-on-all">
-          <i class="fa fa-plus"></i>
-        </button>
+ 
       
         <!-- Budgets (shown on all) -->
         <a  class="nav-item show-on-all" id="budgets-button">
@@ -97,7 +94,7 @@
         </a>
       
         <!-- Settings (hidden on mobile, shown on desktop) -->
-        <a href="" class="nav-item hide-on-mobile" id="settings-button">
+        <a  class="nav-item hide-on-mobile" id="settings-button">
           <i class="fa-solid fa-gear"></i><span>Settings</span>
         </a>
       
@@ -105,7 +102,10 @@
         <button id="logout-button" class="hide-on-mobile">
           Log Out
         </button>
-      
+             <!-- The floating add transaction button (shown on all) -->
+             <button id="add-transaction-button" class="floating-button show-on-all">
+              <i class="fa fa-plus"></i>
+            </button>
         <!-- Profile icon (hidden on desktop, shown on mobile) -->
         <div class="profile-icon-container hide-on-desktop">
           <img src="default-avatar.png" alt="Profile Icon" id="mobile-profile-icon">
@@ -147,8 +147,11 @@
         </div>
       </nav>
       
+<!-- place it just after the sidebar markup -->
+<button id="add-transaction-button" class="floating-button hide-on-mobile">
+  <i class="fa fa-plus"></i>
+</button>
 
-      
       
       
       <main class="main-content" id="main-content">
@@ -532,15 +535,27 @@
 </div>
 
 <!-- Delete Budget Confirmation Popup -->
-<div id="delete-budget-popup" class="hidden">
-  <div class="delete-budget-content">
-    <p id="delete-budget-message">Are you sure you want to delete this budget?</p>
-    <div class="delete-budget-buttons">
-      <button id="cancel-delete-budget" class="db-btn db-cancel">Cancel</button>
-      <button id="confirm-delete-budget" class="db-btn db-confirm">Delete</button>
+<div id="delete-budget-popup" class="delete-confirmation-overlay hidden">
+  <div class="delete-popup-content">
+    <!-- Icon -->
+    <div class="delete-popup-icon">
+      <i class="fa fa-trash"></i>
+    </div>
+
+    <!-- Heading -->
+    <h2>Delete Budget?</h2>
+
+    <!-- Dynamic budget title -->
+    <p id="delete-budget-message"></p>
+
+    <!-- Buttons -->
+    <div class="delete-popup-buttons">
+      <button id="cancel-delete-budget" class="cancel-btn">Cancel</button>
+      <button id="confirm-delete-budget" class="delete-btn">Delete</button>
     </div>
   </div>
 </div>
+
 
 
 
@@ -551,8 +566,8 @@
   <div class="profile-page-content">
     <div class="profile-header">
       <!-- Left icon or placeholder (if you want something else here) -->
-      <button id="profile-extra-button" class="profile-icon-button">
-        <i class="fa-solid fa-user-plus"></i>
+      <button id="profile-settings-button" class="profile-icon-button">
+        <i class="fa-solid fa-gear"></i>
       </button>
 
    <!-- Centered avatar + info -->
@@ -566,10 +581,10 @@
 </div>
 
 
-      <!-- Right icon for settings -->
-      <button id="profile-settings-button" class="profile-icon-button">
-        <i class="fa-solid fa-gear"></i>
-      </button>
+     
+<button id="profile-logout-button" class="profile-icon-button">
+  <i class="fa-solid fa-right-from-bracket"></i>
+</button>
     </div>
     
     <!-- Profile grid of cards -->
@@ -610,11 +625,7 @@
     <span class="card-title">Activity</span>
     <p class="card-subtitle">Review your logs</p>
   </div>
-  <div class="profile-card" id="profile-card-logout">
-    <i class="fas fa-sign-out-alt"></i>
-    <span class="card-title">Log Out</span>
-    <p class="card-subtitle">Exit your account</p>
-  </div>
+
 </div>
 
 
@@ -783,18 +794,50 @@
 
 
 
+<!-- Categories Full Page (initially hidden) -->
+<div id="categories-full-page" class="full-page">
+  <header class="full-page-header">
+    <button id="back-from-categories" class="back-button"><i class="fa-solid fa-arrow-left"></i></button>
+    <h2>Categories</h2>
+  </header>
+  
+  <div id="categories-content">
+    <!-- Loaded dynamically -->
+  </div>
+</div>
+
+<!-- Export data page-->
+<section id="export-data-page" class="full-page hidden">
+  <div class="full-page-header">
+    <button class="back-button" id="back-from-export"><i class="fa-solid fa-arrow-left"></i></button>
+    <h2>Export Your Data</h2>
+  </div>
+  <div id="export-data-content">
+    <p>You can download all your transactions below.</p>
+    <button id="download-all-data" class="btn-profile">
+      <i class="fas fa-file-download"></i> Download CSV
+    </button>
+  </div>
+</section>
+
 
 
 <!-- LOGS POPUP -->
 <div id="logs-popup" class="popup hidden">
   <div class="popup-content logs-popup-content">
-    <button id="close-logs-popup" class="close-button">&times;</button>
+    <button id="close-logs-popup" class="cclose-button">&times;</button>
     <h2>Activity Logs</h2>
     <div id="logs-container">
-      <!-- Logs will be injected here -->
+      <!-- Example log item structure -->
+      <div class="log-item">
+        <span class="timestamp">Apr 6, 2025 - 3:45 PM</span>
+        <span class="log-message">User logged in from Chrome (Windows)</span>
+      </div>
     </div>
   </div>
 </div>
+
+
 
 <!-- SETTINGS MODAL -->
 <div id="settings-modal" class="modal hidden">
