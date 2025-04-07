@@ -1,41 +1,66 @@
 
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  OAuthProvider, 
+  signInWithPopup,
+  signOut,
+  sendPasswordResetEmail,
+  sendEmailVerification,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  deleteUser,
+  setPersistence,
+  browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  getDocs,
+  arrayUnion,         // keep this
+  onSnapshot          // and keep this
+} from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+function deviceHashASCII(str) {
+  // 1) remove all characters above ASCII 127
+  const asciiOnly = str.replace(/[^\x00-\x7F]/g, "");
+  // 2) btoa the sanitized string
+  return btoa(asciiOnly);
+}
+
+async function addLog(type) {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const ua = navigator.userAgent;
+  const dev = navigator.platform + " - " + ua.split(") ")[0].split("(").pop();
+  const hash = deviceHashASCII(dev);
+  localStorage.setItem("deviceHash", hash);
+
+  const log = {
+    type,
+    device: dev,
+    timestamp: Date.now()
+  };
+
+  // Ensure array is initialized safely
+  const userDocRef = doc(db, "users", user.uid);
+  await setDoc(userDocRef, { logs: arrayUnion(log) }, { merge: true });
+}
 
 
 
 
-  
-  import { 
-    initializeApp 
-  } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-  import { OAuthProvider } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
-  import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
-
-  import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword, 
-    onAuthStateChanged, 
-    GoogleAuthProvider, 
-    signInWithPopup, 
-    signOut, 
-    sendPasswordResetEmail, 
-    sendEmailVerification,
-    EmailAuthProvider,
-    reauthenticateWithCredential,
-    deleteUser,
-    setPersistence,
-    browserLocalPersistence
-  } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
-  
-  import { 
-    getFirestore, 
-    doc, 
-    setDoc, 
-    getDoc, 
-    collection,
-    getDocs
-  } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
-  
   // Fetch the API key securely from the Firebase Cloud Function
   const fetchApiKey = async () => {
     try {
@@ -160,6 +185,8 @@ let storage; // Declare storage here as a global variable
   
     return series;
   }
+
+
   
   ///////////////////////////////////////////////////
   // BEGIN: New Category Selection Code (with Firestore)
@@ -541,7 +568,7 @@ crSaveNewCatBtn.addEventListener("click", async () => {
   crAddCatForm.classList.add("hidden");
   crCategoryOverlay.classList.remove("hidden");
 
-  alert("Category saved!");
+
 });
 
 
@@ -595,8 +622,20 @@ document.addEventListener('DOMContentLoaded', function() {
   const toggleBtn = document.getElementById('sidebar-toggle');
   
   toggleBtn.addEventListener('click', () => {
-    sidebar.classList.toggle('collapsed');
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    document.body.classList.remove('nav-expanded', 'nav-collapsed');
+    document.body.classList.add(isCollapsed ? 'nav-collapsed' : 'nav-expanded');
   });
+  window.addEventListener('DOMContentLoaded', () => {
+    const isCollapsed = sidebar.classList.contains('collapsed');
+    document.body.classList.add(isCollapsed ? 'nav-collapsed' : 'nav-expanded');
+  });
+  
+  function updateNavState(isExpanded) {
+    document.body.classList.remove('nav-expanded', 'nav-collapsed');
+    document.body.classList.add(isExpanded ? 'nav-expanded' : 'nav-collapsed');
+  }
+  
 
   // 2) Mark active nav item
   function setActiveNavItem(itemId) {
@@ -616,11 +655,14 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('budgets-button-desktop').addEventListener('click', () => {
     showSection('budgets-page');
     setActiveNavItem('budgets-button-desktop');
+    listenToBudgets();                    // <‑‑ add this line
   });
-
+  
+  /* Transactions (desktop) */
   document.getElementById('transactions-button-desktop').addEventListener('click', () => {
-    showSection('transactions-section');
+    showSection('transactions-section');  // make sure this ID matches your HTML
     setActiveNavItem('transactions-button-desktop');
+    setActiveTransactionTab('all');       // <‑‑ add this line
   });
 
   document.getElementById('settings-button-desktop').addEventListener('click', () => {
@@ -651,6 +693,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+document.getElementById('add-transaction-button')
+        .addEventListener('click', () => {
+          // existing code that opens the transaction popup
+          addTransactionButton.click();  // or call the same function directly
+        });
 
 /************************************************************
  * ==========  BUDGETS PAGE & MODAL LOGIC  ===============
@@ -980,7 +1027,10 @@ confirmDeleteBudget.addEventListener("click", async () => {
   deleteBudgetPopup.classList.add("hidden");
   budgetDetailsPopup.classList.add("hidden");
 });
-
+bdpDeleteButton.addEventListener('click', () => {
+  deleteBudgetMessage.textContent = currentOpenBudget?.name || "";
+  deleteBudgetPopup.classList.remove('hidden');
+});
 
 function listenToBudgets() {
   const user = auth.currentUser;
@@ -1354,15 +1404,124 @@ document.getElementById('profile-card-wallets').addEventListener('click', (e) =>
   alert("Wallets functionality coming soon!");
 });
 
-document.getElementById('profile-card-categories').addEventListener('click', (e) => {
-  e.preventDefault();
-  alert("Categories functionality coming soon!");
+// Open Categories Full Page
+document.getElementById('profile-card-categories').addEventListener('click', () => {
+  document.getElementById('categories-full-page').classList.add('open');
+  loadFullCategoriesPage();
 });
+
+// Back button to Profile Page
+document.getElementById('back-from-categories').addEventListener('click', () => {
+  document.getElementById('categories-full-page').classList.remove('open');
+});
+
+async function loadFullCategoriesPage() {
+  const container = document.getElementById('categories-content');
+  container.innerHTML = "<p>Loading...</p>";
+
+  const user = auth.currentUser;
+  if (!user) {
+    container.innerHTML = "<p>Please log in to view categories.</p>";
+    return;
+  }
+
+  try {
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    const data = userDoc.exists() ? userDoc.data() : {};
+
+    const incomeCategories = data.incomeCategories || [];
+    const expenseCategories = data.expenseCategories || [];
+
+    container.innerHTML = `
+      <section class="category-section">
+        <h3>Income Categories</h3>
+        <div class="category-list">
+          ${incomeCategories.map(cat => `
+            <div class="category-item" style="background-color: ${cat.bgColor || '#4CAF50'};">
+              <img src="./icons/${cat.icon}" alt="${cat.name}" class="category-icon">
+              <span>${cat.name}</span>
+            </div>`).join('')}
+        </div>
+      </section>
+
+      <section class="category-section">
+        <h3>Expense Categories</h3>
+        <div class="category-list">
+          ${expenseCategories.map(cat => `
+            <div class="category-item" style="background-color: ${cat.bgColor || '#f44336'};">
+              <img src="./icons/${cat.icon}" alt="${cat.name}" class="category-icon">
+              <span>${cat.name}</span>
+            </div>`).join('')}
+        </div>
+      </section>
+    `;
+
+  } catch (error) {
+    container.innerHTML = `<p>Error loading categories: ${error.message}</p>`;
+  }
+}
+
+
+
+
+
 
 document.getElementById('profile-card-export-data').addEventListener('click', (e) => {
   e.preventDefault();
-  alert("Export Data functionality coming soon!");
+  const page = document.getElementById('export-data-page');
+  page.classList.remove('hidden');
+  page.classList.add('open');
 });
+
+document.getElementById("back-from-export").addEventListener("click", () => {
+  const page = document.getElementById('export-data-page');
+  page.classList.remove('open');
+  page.classList.add('hidden');
+
+  showSection("profile-section"); // if needed
+});
+
+document.getElementById("download-all-data").addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) return alert("You must be logged in.");
+
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+
+  if (userDoc.exists()) {
+    let data = userDoc.data();
+    let incomes = (data.incomes || []).map(tx => ({ ...tx, type: "Income" }));
+    let expenses = (data.expenses || []).map(tx => ({ ...tx, type: "Expense" }));
+    let allTx = [...incomes, ...expenses].sort((a, b) => b.timestamp - a.timestamp);
+    downloadTransactionsCSV(allTx);
+  } else {
+    alert("No data found.");
+  }
+});
+function downloadTransactionsCSV(transactions) {
+  if (!transactions || transactions.length === 0) {
+    alert("No transactions to download.");
+    return;
+  }
+
+  let csv = "Type,Category/Source,Amount,Time\n";
+  transactions.forEach(tx => {
+    const type = tx.type || "Unknown";
+    const categorySource = type === "Income" ? (tx.source || "") : (tx.category || "");
+    const amount = parseFloat(tx.amount).toFixed(2);
+    const time = tx.timestamp ? new Date(tx.timestamp).toLocaleString() : "";
+    csv += `"${type}","${categorySource}",${amount},"${time}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "transactions.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 
 document.getElementById('profile-card-passcode').addEventListener('click', (e) => {
   e.preventDefault();
@@ -1372,80 +1531,102 @@ document.getElementById('profile-card-passcode').addEventListener('click', (e) =
 // Logs Card
 document.getElementById('profile-card-logs').addEventListener('click', (e) => {
   e.preventDefault();
-  openLogsPopup();  // Existing function to open logs popup
+  openLogsPopup();
 });
-
-// Logout Card
-document.getElementById('profile-card-logout').addEventListener('click', async function (e) {
+// Logs Card Click Event
+document.getElementById('profile-card-logs').addEventListener('click', async (e) => {
   e.preventDefault();
-  try {
-    await signOut(auth);
-   
-    // Optionally, reload the page or redirect to the login screen:
-    window.location.reload();
-  } catch (error) {
-    console.error("Error signing out:", error);
-    alert("Error logging out. Please try again.");
-  }
+  await openLogsPopup();
 });
 
-/************************************************
-  Logs Popup Functions
-************************************************/
+// Open Logs Popup Function
 async function openLogsPopup() {
   const logsPopup = document.getElementById("logs-popup");
   const logsContainer = document.getElementById("logs-container");
-  logsContainer.innerHTML = "<p>Loading logs...</p>";
   
+  logsContainer.innerHTML = "<p>Loading logs...</p>";
+
   const user = auth.currentUser;
-  if (user) {
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      const logs = data.logs || [];
+  if (!user) {
+    logsContainer.innerHTML = "<p>Please log in to view logs.</p>";
+    showPopup(logsPopup);
+    return;
+  }
+
+  try {
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+
+    if (!userDoc.exists()) {
+      logsContainer.innerHTML = "<p>No logs available.</p>";
+    } else {
+      const logs = Array.isArray(userDoc.data().logs) ? userDoc.data().logs : [];
+
       if (logs.length === 0) {
         logsContainer.innerHTML = "<p>No logs available.</p>";
       } else {
-        // Sort logs by timestamp descending
-        logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        logsContainer.innerHTML = "";
-        logs.forEach(log => {
-          const logDiv = document.createElement("div");
-          logDiv.classList.add("log-item");
-          // Format the timestamp
-          const time = new Date(log.timestamp).toLocaleString();
-          logDiv.textContent = `${time} – ${log.message}`;
-          logsContainer.appendChild(logDiv);
-        });
+        renderLogs(logs, logsContainer);
       }
-    } else {
-      logsContainer.innerHTML = "<p>No logs available.</p>";
     }
-  } else {
-    logsContainer.innerHTML = "<p>Please log in to view logs.</p>";
+  } catch (error) {
+    logsContainer.innerHTML = `<p>Error fetching logs: ${error.message}</p>`;
   }
-  logsPopup.classList.remove("hidden");
-  logsPopup.classList.add("show");
+
+  showPopup(logsPopup);
 }
 
-// Close the logs popup when the close button is clicked
+// Render logs function (separation of concerns)
+function renderLogs(logs, container) {
+  container.innerHTML = ""; // Clear previous logs
+  logs.sort((a, b) => b.timestamp - a.timestamp);
+  
+  logs.forEach(log => {
+    const logDiv = document.createElement("div");
+    logDiv.classList.add("log-item");
+    
+    const timestampSpan = document.createElement("span");
+    timestampSpan.classList.add("timestamp");
+    timestampSpan.textContent = new Date(log.timestamp).toLocaleString();
+
+    const messageSpan = document.createElement("span");
+    messageSpan.classList.add("log-message");
+    messageSpan.textContent = `[${log.type}] - ${log.device}`;
+
+    logDiv.appendChild(timestampSpan);
+    logDiv.appendChild(messageSpan);
+    
+    container.appendChild(logDiv);
+  });
+}
+
+// Helper to show popup smoothly
+function showPopup(popup) {
+  popup.classList.remove("hidden");
+  setTimeout(() => popup.classList.add("show"), 10);
+}
+
+// Close popup event
 document.getElementById("close-logs-popup").addEventListener("click", () => {
   const logsPopup = document.getElementById("logs-popup");
   logsPopup.classList.remove("show");
-  logsPopup.classList.add("hidden");
+  setTimeout(() => logsPopup.classList.add("hidden"), 300); // Allow smooth closing animation
 });
+
 // Instead, call openSettingsModal() so user info is fetched:
 document.getElementById('profile-settings-button').addEventListener('click', (e) => {
   e.preventDefault();
   openSettingsModal();
 });
 
-// Also update the "profile-extra-button" if you want it to open settings:
-document.getElementById('profile-extra-button').addEventListener('click', (e) => {
-  e.preventDefault();
-  openSettingsModal();
+document.getElementById('profile-logout-button').addEventListener('click', async () => {
+  try {
+    await signOut(auth);          // uses the same Firebase auth instance
+    window.location.reload();
+  } catch (err) {
+    console.error('Logout error:', err);
+    alert('Error logging out.');
+  }
 });
+
 
 // The function that actually loads user data from Firestore and shows the modal
 async function openSettingsModal() {
@@ -1522,6 +1703,7 @@ window.addEventListener("resize", function () {
   
   // --- Settings Modal Enhancements ---
   // DOM elements for the Settings modal
+ 
 
   const settingsButton = document.getElementById("settings-button");
   const settingsModal = document.getElementById("settings-modal");
@@ -1973,6 +2155,7 @@ discardConfirmBtn.addEventListener("click", () => {
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
           
+
           // Send the verification email
           await sendEmailVerification(user);
           
@@ -2023,7 +2206,8 @@ discardConfirmBtn.addEventListener("click", () => {
         // Firestore logic to create user document
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
-    
+       
+
         if (!userDoc.exists()) {
           // Make sure to include categories: [] if you want new docs to have them
           await setDoc(userDocRef, {
@@ -2049,7 +2233,8 @@ discardConfirmBtn.addEventListener("click", () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-  
+   
+
       console.log(`Welcome ${user.displayName}`);
       
     } catch (error) {
@@ -2061,26 +2246,40 @@ discardConfirmBtn.addEventListener("click", () => {
   
 // Monitor Authentication State
 onAuthStateChanged(auth, async (user) => {
-  // Grab references to your containers
+  if (user) {
+    const prevLogin = sessionStorage.getItem("loginLogged");
+    if (!prevLogin) {
+      await addLog("login");
+      sessionStorage.setItem("loginLogged", "true");
+    }
+
+    const ua  = navigator.userAgent;
+    const dev = `${navigator.platform} - ${ua.split(") ")[0].split("(").pop()}`;
+    const hash = deviceHashASCII(dev);
+
+    if (localStorage.getItem("deviceHash") !== hash) {
+      await addLog("new_device");
+      localStorage.setItem("deviceHash", hash);
+    }
+  } else {
+    sessionStorage.removeItem("loginLogged");
+  }
+
   const authContainer = document.getElementById("auth-container");
   const dashboardContainer = document.getElementById("dashboard-container");
 
-  // If no user is logged in:
   if (!user) {
     authContainer.style.display = "block";
     dashboardContainer.style.display = "none";
-    return; // stop here, don't do Firestore calls below
+    return;
   }
 
-  // Otherwise, user is signed in -> hide auth, show dashboard
   authContainer.style.display = "none";
   dashboardContainer.style.display = "block";
 
-  // 1) Reference the user doc
   const userDocRef = doc(db, "users", user.uid);
   const userSnap = await getDoc(userDocRef);
 
-  // 2) If no doc, create one with default categories
   if (!userSnap.exists()) {
     await setDoc(userDocRef, {
       expenseCategories: DEFAULT_EXPENSE_CATEGORIES,
@@ -2088,8 +2287,7 @@ onAuthStateChanged(auth, async (user) => {
       balance: 0,
       incomes: [],
       expenses: [],
-      // Optionally default user settings:
-      // settings: { darkMode: false }
+      logs: []  // initialize logs here
     }, { merge: true });
   } else {
     // The doc exists -> confirm expense/income categories exist
@@ -2325,20 +2523,38 @@ if (themeToggle) {
 
   
   // CSV download remains unchanged
-  document.getElementById("download-transactions").addEventListener("click", () => {
-    const transactions = window.transactionsData || [];
-    if (transactions.length === 0) {
+  document.getElementById("download-transactions").addEventListener("click", async () => {
+    const user = auth.currentUser;
+    if (!user) return alert("You must be logged in to download transactions.");
+  
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+  
+    if (!userDoc.exists()) {
+      return alert("No transaction data found.");
+    }
+  
+    const userData = userDoc.data();
+    const incomes = (userData.incomes || []).map(tx => ({ ...tx, type: "Income" }));
+    const expenses = (userData.expenses || []).map(tx => ({ ...tx, type: "Expense" }));
+  
+    const allTransactions = [...incomes, ...expenses];
+    allTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+    if (allTransactions.length === 0) {
       alert("No transactions to download.");
       return;
     }
+  
     let csv = "Type,Category/Source,Amount,Time\n";
-    transactions.forEach(tx => {
+    allTransactions.forEach(tx => {
       const type = tx.type;
       const categorySource = tx.type === "Income" ? tx.source : tx.category;
       const amount = parseFloat(tx.amount).toFixed(2);
       const time = tx.timestamp ? new Date(tx.timestamp).toLocaleString() : "";
       csv += `"${type}","${categorySource}",${amount},"${time}"\n`;
     });
+  
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -2347,6 +2563,7 @@ if (themeToggle) {
     a.click();
     URL.revokeObjectURL(url);
   });
+  
   // END OF THE TRANSACTION LISTING CODE
 let editingTransactionId = null;
 let editingTransactionType = null; // "Income" or "Expense"
@@ -2828,7 +3045,7 @@ function getCommonChartUpdates(mode) {
   const dark = mode === 'dark';
   return {
     chart: {
-      background: dark ? '#1e1e1e' : '#ffffff'
+      background: dark ? '#1e1e1e' : '#f0f0f0'
     },
     xaxis: {
       labels: {
