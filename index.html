@@ -9,6 +9,11 @@
     <script src="https://kit.fontawesome.com/2b0e4418c9.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.js"></script>
 
     <title>Cash Rocket</title>
     <!-- Make sure your script is deferred so it runs after DOM is parsed -->
@@ -147,10 +152,12 @@
         </div>
       </nav>
       
-<!-- place it just after the sidebar markup -->
-<button id="add-transaction-button" class="floating-button hide-on-mobile">
+<!-- Desktop Button (updated id) -->
+<button id="add-transaction-button-desktop" class="floating-button hide-on-mobile">
   <i class="fa fa-plus"></i>
 </button>
+
+
 
       
       
@@ -192,7 +199,7 @@
             </section>
       
             <!-- Right column: recent transactions list -->
-            <section id="transactions-section" class="transactions-section">
+            <section id="transactions-sectionn"  class="transactions-section">
               <h2>Recent Transactions</h2>
               <div class="recent-transactions-tabs">
                 <button id="recent-all-tab" class="recent-tab active">All</button>
@@ -241,33 +248,54 @@
               <i class="fa fa-times"></i>
             </button>
           </div>
-        <!-- Filter Popup Card (hidden by default) -->
-        <div id="filter-popup" class="filter-popup hidden">
-          <div class="filter-popup-header">
-            <h3>Filters</h3>
-            <button id="close-filter-popup" class="close-filter-popup">
-              <i class="fa fa-times"></i>
-            </button>
+
+          <div id="filter-popup" class="filter-popup hidden">
+            <div class="filter-popup-header">
+              <h3>Filters</h3>
+              <button id="close-filter-popup" class="close-filter-popup">&times;</button>
+            </div>
+          
+            <div class="filter-content">
+              <!-- Category Icons -->
+              <div class="category-icons" id="filter-category-icons">
+                <!-- Dynamically injected category icons -->
+              </div>
+          
+              <div id="amount-slider" class="amount-slider"></div>
+              <div class="range-values">
+                <span id="amount-min-label">$0</span>
+                <span id="amount-max-label">$1000</span>
+              </div>
+              
+              <input type="hidden" id="filter-amount-min">
+              <input type="hidden" id="filter-amount-max">
+              
+              <!-- Type Buttons -->
+              <div class="type-chips">
+                <button class="type-chip" data-type="Income">Income</button>
+                <button class="type-chip" data-type="Expense">Expense</button>
+              </div>
+          
+              <!-- Date Range -->
+              <div class="date-range">
+                <label>Date From</label>
+                <input type="text" id="filter-date-from" class="custom-datepicker" readonly />
+                <label>To</label>
+                <input type="text" id="filter-date-to" class="custom-datepicker" readonly />
+              </div>
+          
+              <!-- Title / Notes -->
+              <input type="text" id="filter-title" placeholder="Title contains..." />
+              <input type="text" id="filter-notes" placeholder="Notes contain..." />
+          
+              <!-- Footer Buttons -->
+              <div class="filter-buttons">
+                <button id="reset-filter" class="reset-button">Reset</button>
+                <button id="apply-filter" class="apply-button">Apply</button>
+              </div>
+            </div>
           </div>
-          <div class="filter-content">
-  <label for="filter-date">Date:</label>
-  <input type="date" id="filter-date" />
-
-  <label for="filter-amount">Amount:</label>
-  <input type="number" id="filter-amount" placeholder="Enter amount" />
-
-  <label for="filter-title">Title:</label>
-  <input type="text" id="filter-title" placeholder="Enter title" />
-
-  <label for="filter-category">Category:</label>
-  <input type="text" id="filter-category" placeholder="Enter category" />
-
-  <div class="filter-buttons">
-    <button id="reset-filter" class="reset-button">Reset</button>
-    <button id="apply-filter" class="apply-button">Apply</button>
-  </div>
-</div>
-</div>
+          
         
           <!-- Tabs for Transactions -->
           <div class="transactions-tabs">
