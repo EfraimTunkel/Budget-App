@@ -1,4 +1,3 @@
-
 import {
   initializeApp
 } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
@@ -582,6 +581,14 @@ crSaveNewCatBtn.addEventListener("click", async () => {
   /************************************************
   Show / Hide Sections
 ************************************************/
+// Global utility to highlight the active sidebar nav item
+function setActiveNavItem(itemId) {
+  document.querySelectorAll('.sidebar .nav-item').forEach(el => {
+    el.classList.remove('active');
+  });
+  const clicked = document.getElementById(itemId);
+  if (clicked) clicked.classList.add('active');
+}
 
 function showSection(sectionId) {
   const sections = document.querySelectorAll('#main-content > section');
@@ -592,8 +599,18 @@ function showSection(sectionId) {
       section.classList.add('hidden');
     }
   });
+
+ 
+  const isProfile = sectionId === 'profile-section';
+  const addBtnMobile = document.getElementById('add-transaction-button');
+  const addBtnDesktop = document.getElementById('add-transaction-button-desktop');
+  if (addBtnMobile) addBtnMobile.style.display = isProfile ? 'none' : 'block';
+  if (addBtnDesktop) addBtnDesktop.style.display = isProfile ? 'none' : 'block';
+
   window.scrollTo(0, 0);
 }
+
+
 
 
 /************************************************
@@ -637,14 +654,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
 
-  // 2) Mark active nav item
-  function setActiveNavItem(itemId) {
-    document.querySelectorAll('.sidebar .nav-item').forEach(el => {
-      el.classList.remove('active');
-    });
-    const clicked = document.getElementById(itemId);
-    if (clicked) clicked.classList.add('active');
-  }
 
   // 3) Desktop nav links -> showSection(...) or open popup
   document.getElementById('home-button-desktop').addEventListener('click', () => {
@@ -693,11 +702,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
-document.getElementById('add-transaction-button')
-        .addEventListener('click', () => {
-          // existing code that opens the transaction popup
-          addTransactionButton.click();  // or call the same function directly
-        });
+// Shared logic to open the transaction popup
+function openTransactionPopup() {
+  const popup = document.getElementById('cr-transaction-popup');
+  if (popup) popup.classList.remove('hidden');
+}
+
+// Mobile button
+document.getElementById('add-transaction-button')?.addEventListener('click', openTransactionPopup);
+
+// Desktop button
+document.getElementById('add-transaction-button-desktop')?.addEventListener('click', openTransactionPopup);
+
+
 
 /************************************************************
  * ==========  BUDGETS PAGE & MODAL LOGIC  ===============
@@ -914,7 +931,9 @@ async function openBudgetDetailsPopup(budget, allTx) {
   const chartOptions = {
     chart: {
       type: 'donut',
-      height: 220
+      height: 300,
+      width: '100%',
+      parentHeightOffset: 0
     },
     labels: [spentOrSavedLabel, 'Remaining'],
     series: [spent, remaining],
@@ -1680,6 +1699,8 @@ window.addEventListener("resize", function () {
   if (window.innerWidth >= 769) {
     if (!document.getElementById("profile-section").classList.contains("hidden")) {
       showSection("dashboard-section"); // Return to home page on desktop resize
+    
+
     }
   }
 });
@@ -1927,8 +1948,7 @@ if (saveSettingsBtn) {
   themeToggle.addEventListener("change", () => {
     document.body.classList.toggle("dark-mode", themeToggle.checked);
   });
-  
-// Toggle the search bar when the search icon is clicked
+  // Toggle the search bar when the search icon is clicked
 document.getElementById('search-icon').addEventListener('click', () => {
   const searchBarContainer = document.getElementById('search-bar-container');
   searchBarContainer.classList.toggle('hidden');
@@ -1944,19 +1964,23 @@ document.getElementById('clear-search').addEventListener('click', () => {
 
 // Toggle the filter popup when the filter icon is clicked
 document.getElementById('filter-icon').addEventListener('click', () => {
-  const filterPopup = document.getElementById('filter-popup');
-  filterPopup.classList.toggle('hidden');
+  document.getElementById('filter-popup').classList.toggle('hidden');
+  populateCategoryIcons();
 });
+
 
 // Close the filter popup and clear all filter fields when the "X" button is clicked
 document.getElementById('close-filter-popup').addEventListener('click', () => {
-  document.getElementById('filter-date').value = "";
-  document.getElementById('filter-amount').value = "";
+  document.getElementById('filter-date-from').value = "";
+  document.getElementById('filter-date-to').value = "";
+  document.getElementById('filter-amount-min').value = "";
+  document.getElementById('filter-amount-max').value = "";
   document.getElementById('filter-title').value = "";
-  document.getElementById('filter-category').value = "";
+  document.getElementById('filter-notes').value = "";
+  document.querySelectorAll('.category-icon.active').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.type-chip.active').forEach(el => el.classList.remove('active'));
   document.getElementById('filter-popup').classList.add('hidden');
 });
-
 
 // Search functionality: filter transactions as the user types
 document.getElementById('search-bar').addEventListener('keyup', (e) => {
@@ -1970,52 +1994,145 @@ document.getElementById('search-bar').addEventListener('keyup', (e) => {
   renderFilteredTransactions(filteredTransactions);
 });
 
+// Apply filter button
+
+// Apply filter functionality
+
 // Apply filter functionality when the "Apply" button is clicked
 document.getElementById('apply-filter').addEventListener('click', () => {
-  const dateFilter = document.getElementById('filter-date').value;
-  const amountFilter = document.getElementById('filter-amount').value;
+  const dateFrom = document.getElementById('filter-date-from').value;
+  const dateTo = document.getElementById('filter-date-to').value;
+  const amountMin = parseFloat(document.getElementById('filter-amount-min').value);
+  const amountMax = parseFloat(document.getElementById('filter-amount-max').value);
   const titleFilter = document.getElementById('filter-title').value.toLowerCase();
-  const categoryFilter = document.getElementById('filter-category').value.toLowerCase();
+  const notesFilter = document.getElementById('filter-notes').value.toLowerCase();
+
+  const selectedCategories = Array.from(document.querySelectorAll('.category-icon.active'))
+                                  .map(el => el.dataset.category);
+  const selectedTypes = Array.from(document.querySelectorAll('.type-chip.active'))
+                             .map(el => el.dataset.type);
 
   const filteredTransactions = window.transactionsData.filter(tx => {
     let match = true;
-    if (dateFilter) {
-      const txDate = new Date(tx.timestamp).toISOString().split('T')[0];
-      if (txDate !== dateFilter) match = false;
+
+    const txDate = new Date(tx.timestamp).toISOString().split('T')[0];
+    if (dateFrom && txDate < dateFrom) match = false;
+    if (dateTo && txDate > dateTo) match = false;
+
+    const amt = parseFloat(tx.amount);
+    if (!isNaN(amountMin) && amt < amountMin) match = false;
+    if (!isNaN(amountMax) && amt > amountMax) match = false;
+
+    if (titleFilter && !(tx.title && tx.title.toLowerCase().includes(titleFilter))) match = false;
+    if (notesFilter && !(tx.notes && tx.notes.toLowerCase().includes(notesFilter))) match = false;
+
+    const cat = tx.type === "Income" ? tx.source : tx.category;
+    if (selectedCategories.length > 0 && (!cat || !selectedCategories.includes(cat.toLowerCase()))) {
+      match = false;
     }
-    if (amountFilter) {
-      if (parseFloat(tx.amount) !== parseFloat(amountFilter)) match = false;
+
+    if (selectedTypes.length > 0 && !selectedTypes.includes(tx.type)) {
+      match = false;
     }
-    if (titleFilter) {
-      if (!(tx.title && tx.title.toLowerCase().includes(titleFilter))) match = false;
-    }
-    if (categoryFilter) {
-      let cat = tx.type === "Income" ? tx.source : tx.category;
-      if (!(cat && cat.toLowerCase().includes(categoryFilter))) match = false;
-    }
+
     return match;
   });
-  
+
   renderFilteredTransactions(filteredTransactions);
-  // Hide filter popup after applying
   document.getElementById('filter-popup').classList.add('hidden');
 });
 
-// Function to render filtered transactions; similar to your loadTransactions logic
+function populateCategoryIcons() {
+  const container = document.getElementById("filter-category-icons");
+  container.innerHTML = "";
+
+  const categories = new Set();
+  window.transactionsData.forEach(tx => {
+    const cat = tx.type === "Income" ? tx.source : tx.category;
+    if (cat) categories.add(cat);
+  });
+
+  categories.forEach(cat => {
+    const iconSrc = getCategoryIcon(cat); // <-- this function should map category to image URL
+    const div = document.createElement("div");
+    div.className = "category-icon";
+    div.dataset.category = cat;
+    div.innerHTML = `
+      <img src="${iconSrc}" alt="${cat}" />
+      <span>${cat}</span>
+    `;
+    div.addEventListener("click", () => {
+      div.classList.toggle("active");
+    });
+    container.appendChild(div);
+  });
+}
+document.querySelectorAll('.type-chip').forEach(chip => {
+  chip.addEventListener("click", () => {
+    chip.classList.toggle("active");
+  });
+});
+
+// 🔧 Add this helper:
+function getCategoryIcon(cat) {
+  // Customize your category-icon mappings here
+  const lower = cat.toLowerCase();
+  if (lower.includes("food")) return "icons/food.png";
+  if (lower.includes("car")) return "icons/car.png";
+  if (lower.includes("rent")) return "icons/house.png";
+  if (lower.includes("salary")) return "icons/salary.png";
+  return "icons/default.png";
+}
+
+
+// ✅ Function to render filtered transactions
 function renderFilteredTransactions(transactions) {
   const transactionsListContent = document.getElementById("transactions-list-content");
   transactionsListContent.innerHTML = "";
-  if (transactions.length === 0) {
+
+  if (!transactions.length) {
     transactionsListContent.innerHTML = "<p>No transactions found.</p>";
     return;
   }
+
   transactions.forEach((tx, index) => {
     const card = renderTransactionCard(tx, index);
     transactionsListContent.appendChild(card);
   });
 }
 
-  
+// ✅ Initialize noUiSlider for amount filtering
+const slider = document.getElementById('amount-slider');
+
+noUiSlider.create(slider, {
+  start: [50, 500], // Default range
+  connect: true,
+  step: 1,
+  tooltips: [true, true], // Show tooltips on drag
+  range: {
+    min: 0,
+    max: 1000
+  },
+  format: {
+    to: value => `$${Math.round(value)}`,
+    from: value => Number(value.replace('$', ''))
+  }
+});
+
+const minLabel = document.getElementById("amount-min-label");
+const maxLabel = document.getElementById("amount-max-label");
+
+// ✅ Sync slider with hidden min/max inputs and visual labels
+slider.noUiSlider.on('update', (values, handle) => {
+  const rounded = values.map(v => Math.round(v));
+
+  minLabel.textContent = `$${rounded[0]}`;
+  maxLabel.textContent = `$${rounded[1]}`;
+
+  document.getElementById("filter-amount-min").value = rounded[0];
+  document.getElementById("filter-amount-max").value = rounded[1];
+});
+
     // DOM Elements
     const addBudgetForm = document.getElementById("add-budget-form");
     const transactionForm = document.getElementById("transaction-form");
@@ -2028,6 +2145,7 @@ function renderFilteredTransactions(transactions) {
     const logoutButton = document.getElementById("logout-button");
     const balanceDisplay = document.getElementById("balance");
     const addTransactionButton = document.getElementById("add-transaction-button");
+  
    // References
 const transactionPopup = document.getElementById("cr-transaction-popup");
 const closePopupButton = document.getElementById("cr-close-transaction-popup");
@@ -2138,7 +2256,9 @@ discardConfirmBtn.addEventListener("click", () => {
     const isLogin = (authBtnText === "Log In");
     forgotPasswordBtn.style.display = isLogin ? "block" : "none";
   });
-  
+  flatpickr("#filter-date-from", { dateFormat: "Y-m-d" });
+flatpickr("#filter-date-to", { dateFormat: "Y-m-d" });
+
     // Handle Email/Password Authentication
     authForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -2299,7 +2419,9 @@ onAuthStateChanged(auth, async (user) => {
       await setDoc(userDocRef, { incomeCategories: DEFAULT_INCOME_CATEGORIES }, { merge: true });
     }
   }
-
+  showSection("dashboard-section");
+  setActiveNavItem("home-button-desktop");
+  
   // 3) Load dark mode preference
   const themeToggle = document.getElementById("theme-toggle");
   const updatedUserSnap = await getDoc(userDocRef);
@@ -2439,15 +2561,22 @@ if (themeToggle) {
   
   document.querySelector('.income-box').addEventListener('click', async (e) => {
     e.preventDefault();
-    showSection('transactions-section'); // Ensure this is the correct container ID
+    showSection('transactions-section');
+    setActiveNavItem("transactions-button-desktop"); // ✅ update green line
     await setActiveTransactionTab("income");
   });
   
+
   document.querySelector('.expense-box').addEventListener('click', async (e) => {
     e.preventDefault();
     showSection('transactions-section');
+    setActiveNavItem("transactions-button-desktop"); // ✅ corrected
     await setActiveTransactionTab("expense");
   });
+  
+  
+
+  
   
   // Function to load transactions from Firestore and render them as cards
   async function loadTransactions(filter) {
@@ -3234,7 +3363,7 @@ window.balanceChart.render();
         color: '#000',
         opacity: isDark ? 0.3 : 0.1
       },
-      offsetX: 70
+      offsetX: 0
     },
     plotOptions: {
       pie: {
@@ -3478,10 +3607,16 @@ document.getElementById("recent-expense-tab").addEventListener("click", () => {
 renderRecentTransactions("all");
 
 // Event listener for the "View All Transactions" button
-document.getElementById('view-all-transactions').addEventListener('click', (e) => {
-  e.preventDefault();
-  showSection('transactions-section'); // This matches the ID in your HTML
-  setActiveTransactionTab("all");      // Automatically load the "All" tab content
+document.getElementById('view-all-transactions')?.addEventListener('click', () => {
+  showSection('transactions-section');
+  setActiveNavItem("transactions-button-desktop"); // ✅ update sidebar green line
+  setActiveTransactionTab("all"); // if this is how you show all tabs
+});
+
+document.getElementById("view-all-transactions")?.addEventListener("click", () => {
+  showSection("transactions-section");
+  setActiveNavItem("transactions-button-desktop");
+  setActiveTransactionTab("all");
 });
 
 
@@ -3732,5 +3867,24 @@ document.getElementById('view-all-transactions').addEventListener('click', (e) =
     if (window.spendingChart) {
       window.spendingChart.destroy();
     }
-  // Function to Load and Render the Line Chart
- 
+    window.addEventListener("DOMContentLoaded", () => {
+      // Find the section that is currently visible
+      const visibleSection = document.querySelector("section:not(.hidden)");
+      
+      if (visibleSection) {
+        const sectionId = visibleSection.id;
+    
+        // Map visible sections to their corresponding nav button IDs
+        const sectionToNavMap = {
+          "dashboard-section": "home-button-desktop",
+          "transactions-section": "transactions-button-desktop",
+          "profile-section": "profile-button-desktop",
+          // Add more if you have more sections & buttons
+        };
+    
+        const navButtonId = sectionToNavMap[sectionId];
+        if (navButtonId) {
+          setActiveNavItem(navButtonId);
+        }
+      }
+    });
