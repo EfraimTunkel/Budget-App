@@ -79,7 +79,7 @@
 
     <!-- DASHBOARD CONTAINER -->
     <div id="dashboard-container" style="display: none;">
-      
+    
       <nav class="bottom-nav">
         <!-- Home (shown on all) -->
         <a  class="nav-item show-on-all" id="home-button">
@@ -163,64 +163,63 @@
       
       <main class="main-content" id="main-content">
         <!-- Dashboard Section -->
-        <section id="dashboard-section" class="dashboard-section">
-          <!-- Header / Greeting -->
-          <header class="dashboard-header">
-            <div class="user-info">
-              <img id="user-profile-pic" src="default-avatar.png" alt="Profile Pic" />
-              <div class="greeting-text">
-                <h1 id="greeting"><span id="username-display">User</span></h1>
-                <p>Your current balance: <span id="balance">$0.00</span></p>
-              </div>
-            </div>
-          </header>
-      
-   <!-- Summary Boxes (Expense & Income) -->
-   <section class="summary-boxes-section">
+     <!-- Dashboard Section -->
+<section id="dashboard-section" class="dashboard-section">
+  <!-- Header / Greeting -->
+  <header class="dashboard-header">
+    <div class="user-info">
+      <img id="user-profile-pic" src="default-avatar.png" alt="Profile Pic" />
+      <div class="greeting-text">
+        <h1 id="greeting"><span id="username-display">User</span></h1>
+        <p>Your current balance: <span id="balance">$0.00</span></p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Weekly Insights Card -->
+  <div id="weekly-summary-card" ></div>
+
+  <!-- Summary Boxes (Expense & Income) -->
+  <section class="summary-boxes-section">
     <div class="summary-box expense-box">
-      <h3>Expense</h3>
-      <div class="amount negative">$0.00</div>
-      <div class="transactions-count">0 transactions</div>
+      <h3>Expenses</h3>
+      <div class="amount negative">$777.30</div>
+      <div class="transactions-count">8 transactions</div>
     </div>
     <div class="summary-box income-box">
       <h3>Income</h3>
-      <div class="amount positive">$0.00</div>
-      <div class="transactions-count">0 transactions</div>
+      <div class="amount positive">$265.00</div>
+      <div class="transactions-count">2 transactions</div>
     </div>
-    
   </section>
-  
-      
-          <!-- Main 2-column layout for line chart + recent transactions -->
-          <div class="dashboard-grid">
-            <!-- Left column: net balance line chart -->
-            <section class="line-chart-section">
-              <div id="balance-chart" class="chart-canvas"></div>
-            </section>
-      
-            <!-- Right column: recent transactions list -->
-            <section id="transactions-sectionn"  class="transactions-section">
-              <h2>Recent Transactions</h2>
-              <div class="recent-transactions-tabs">
-                <button id="recent-all-tab" class="recent-tab active">All</button>
-                <button id="recent-income-tab" class="recent-tab">Income</button>
-                <button id="recent-expense-tab" class="recent-tab">Expense</button>
-              </div>
-              <div id="recent-transactions-list">
-                <!-- Last 6 transactions injected here -->
-              </div>
-              <button id="view-all-transactions" class="view-all-btn">
-                View All Transactions
-              </button>
-            </section>
-          </div> <!-- end .dashboard-grid -->
-      
-          <!-- Donut Chart: Spending Overview -->
-          <section class="donut-chart-section">
-            <h2>Spending Overview</h2>
-            <div id="spending-chart" class="chart-canvas"></div>
-          </section>
-        </section>
+
+  <!-- Spending Overview (Moved Up) -->
+  <section class="donut-chart-section">
+    <h2>Spending Overview</h2>
+    <div id="spending-chart" class="chart-canvas"></div>
+  </section>
+
+  <!-- Recent Transactions (Moved Up) -->
+  <section id="transactions-sectionn" class="transactions-section">
+    <h2>Recent Transactions</h2>
+    <div class="recent-transactions-tabs">
+      <button id="recent-all-tab" class="recent-tab active">All</button>
+      <button id="recent-income-tab" class="recent-tab">Income</button>
+      <button id="recent-expense-tab" class="recent-tab">Expense</button>
+    </div>
+    <div id="recent-transactions-list">
+      <!-- Last 6 transactions injected here -->
+    </div>
+    <button id="view-all-transactions" class="view-all-btn">
+      View All Transactions
+    </button>
+  </section>
+
+  <!-- Line Chart (Moved Down) -->
+  <section class="line-chart-section">
+    <div id="balance-chart" class="chart-canvas"></div>
+  </section>
+</section>
 
         <section id="transactions-section" class="transactions-section hidden">
           <!-- Header: Title on left, icons on right -->
@@ -668,7 +667,67 @@
       
 
     </div>
+<!-- Weekly Insights Popup -->
+<div id="insights-popup" class="insights-popup hidden" role="dialog" aria-labelledby="insights-title" aria-modal="true">
+  <div class="popup-content">
+    <button id="close-insights-popup" class="ffloating-close-btn" aria-label="Close Weekly Insights Popup">
+      <span>&times;</span>
+    </button>
+    <!-- Loading Spinner -->
+    <div id="insights-loading" class="loading-spinner hidden">
+      <div class="spinner"></div>
+      <p>Loading Insights...</p>
+    </div>
 
+    <!-- Header -->
+    <header class="insights-header">
+      <h2 id="insights-title" class="popup-title">📈 Your Weekly Financial Insights</h2>
+      <p class="popup-subtitle">A summary of your financial activity for the past 7 days</p>
+      
+    </header>
+
+    <!-- Textual Stats -->
+    <section class="insights-text" aria-label="Weekly Financial Statistics">
+      <h3 class="section-title">Key Statistics</h3>
+      <div id="textual-insights"></div>
+    </section>
+
+    <!-- Quick Metrics Boxes -->
+    <section class="extra-stats" aria-label="Quick Metrics">
+      <h3 class="section-title">Quick Metrics</h3>
+      <div class="stat-item">
+        <i class="fas fa-fire stat-icon" aria-hidden="true"></i>
+        <div class="stat-label">Spending Streak</div>
+        <div class="stat-value" id="spending-streak">0 days</div>
+      </div>
+      <div class="stat-item">
+        <i class="fas fa-piggy-bank stat-icon" aria-hidden="true"></i>
+        <div class="stat-label">Savings Rate</div>
+        <div class="stat-value" id="savings-rate">0%</div>
+      </div>
+    </section>
+
+    <!-- Chart Comparison -->
+    <section class="chart-box" aria-label="Income vs Expenses Chart">
+      <h3 class="section-title">Income vs Expenses</h3>
+      <p class="chart-description">Compare your income and expenses over the past week.</p>
+      <canvas id="comparisonChart" height="160"></canvas>
+    </section>
+
+    <!-- Illustration or Branding -->
+    <div class="graphic-area">
+      <img src="assets/insight-illustration.svg" alt="Illustration of financial growth" class="insight-graphic" />
+    </div>
+
+    <!-- Footer with CTA -->
+    <footer class="insights-footer">
+      <button id="set-budget-btn" class="cta-btn">Set a Budget</button>
+      <button id="share-insights-btn" class="share-btn" aria-label="Share Weekly Insights">
+        <i class="fas fa-share-alt" aria-hidden="true"></i> Share Insights
+      </button>
+    </footer>
+  </div>
+</div>
 
  <!-- TRANSACTION POPUP -->
 <div id="cr-transaction-popup" class="popup hidden">
@@ -679,11 +738,17 @@
       <p>Saving...</p>
     </div>
 
-    <!-- Close (×) and Delete Buttons -->
-    <button id="cr-close-transaction-popup" class="close-button">&times;</button>
-    <button id="delete-transaction-btn" class="delete-transaction-btn hidden">
-      <i class="fa fa-trash"></i>
-    </button>
+<!-- New Button Header Section -->
+<div class="button-header">
+  <!-- Back Button (replacing Close Button) -->
+  <button id="cr-close-transaction-popup" class="back-button">
+    <i class="fa fa-arrow-left"></i>
+  </button>
+  <!-- Delete Button -->
+  <button id="delete-transaction-btn" class="delete-transaction-btn hidden">
+    <i class="fa fa-trash"></i>
+  </button>
+</div>
 
     <!-- Header Section -->
     <div class="transaction-header">
@@ -950,8 +1015,6 @@
     <button id="confirm-delete-button">Confirm Delete</button>
   </div>
 </div>
-
-
 
 
 
