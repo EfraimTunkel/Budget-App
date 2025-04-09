@@ -2367,6 +2367,7 @@ flatpickr("#filter-date-to", { dateFormat: "Y-m-d" });
 // Monitor Authentication State
 onAuthStateChanged(auth, async (user) => {
   if (user) {
+    
     const prevLogin = sessionStorage.getItem("loginLogged");
     if (!prevLogin) {
       await addLog("login");
@@ -2393,7 +2394,7 @@ onAuthStateChanged(auth, async (user) => {
     dashboardContainer.style.display = "none";
     return;
   }
-
+ 
   authContainer.style.display = "none";
   dashboardContainer.style.display = "block";
 
@@ -2421,7 +2422,7 @@ onAuthStateChanged(auth, async (user) => {
   }
   showSection("dashboard-section");
   setActiveNavItem("home-button-desktop");
-  
+ 
   // 3) Load dark mode preference
   const themeToggle = document.getElementById("theme-toggle");
   const updatedUserSnap = await getDoc(userDocRef);
@@ -2439,6 +2440,14 @@ onAuthStateChanged(auth, async (user) => {
   // 4) Load categories and show the dashboard
   await loadCategoriesFromFirestore(user);
   loadDashboard(user);
+
+  // ✅ Show the Weekly Summary Card if today is Wednesday
+  if (true) {
+    console.log("It's Wednesday - showing Weekly Summary Card");
+    setTimeout(() => {
+      renderWeeklySummaryCard();
+    }, 300);
+  }
 
 });
 
@@ -3888,3 +3897,621 @@ document.getElementById("view-all-transactions")?.addEventListener("click", () =
         }
       }
     });
+
+/*************************************************************
+ * 1) INLINE CSS FOR WEEKLY SUMMARY CARD & POPUP
+ *************************************************************/
+(function injectWeeklySummaryStyles() {
+  const styleTag = document.createElement("style");
+  styleTag.textContent = `
+    #weekly-summary-card {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 400px;
+      margin: 1rem auto;
+      display: none;
+      position: relative;
+    }
+    #weekly-summary-card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+    }
+    #weekly-summary-card p {
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 1rem;
+    }
+    #weekly-summary-card button {
+      background-color: #4caf50;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    #weekly-summary-popup {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .weekly-popup-content {
+      position: relative;
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .popup-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #555;
+    }
+    .popup-close:hover {
+      color: #000;
+    }
+    .weekly-popup-content h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 1.4rem;
+    }
+    #weekly-insights-container p {
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+  `;
+  document.head.appendChild(styleTag);
+})();
+
+
+/*************************************************************
+ * 2) CREATE DOM ELEMENTS FOR THE CARD & POPUP (ONCE)
+ *************************************************************/
+(function createWeeklySummaryElements() {
+  // Inject the Weekly Summary Card into the DOM
+  const dashboardSection = document.getElementById("dashboard-section")
+    || document.body; 
+    // Fallback: insert into body if no #dashboard-section
+
+  // Only create them if they don't already exist
+  if (!document.getElementById("weekly-summary-card")) {
+    const cardDiv = document.createElement("div");
+    cardDiv.id = "weekly-summary-card";
+    cardDiv.innerHTML = `
+      <h3>Weekly Summary</h3>
+      <p>Get a personalized snapshot of your week's finances</p>
+      <button id="weekly-summary-view-btn">View</button>
+    `;
+    dashboardSection.appendChild(cardDiv);
+  }
+
+  // Inject the Popup overlay
+  if (!document.getElementById("weekly-summary-popup")) {
+    const popupDiv = document.createElement("div");
+    popupDiv.id = "weekly-summary-popup";
+    popupDiv.innerHTML = `
+      <div class="weekly-popup-content">
+        <button class="popup-close" id="weekly-popup-close-btn">&times;</button>
+        <h2>Weekly Insights</h2>
+        <div id="weekly-insights-container"></div>
+      </div>
+    `;
+    document.body.appendChild(popupDiv);
+  }
+})();
+
+/*************************************************************
+ * 3) ADVANCED INSIGHT ALGORITHM (compare last week vs prior)
+ *************************************************************/
+async function generateAdvancedInsights(uid) {
+  // 3A) Load user doc from Firestore
+  const userDocRef = doc(db, "users", uid);
+  const snapshot = await getDoc(userDocRef);
+  if (!snapshot.exists()) return [];
+
+  const userData = snapshot.data() || {};
+  const incomes = userData.incomes || [];
+  const expenses = userData.expenses || [];
+
+  const now = new Date();
+  const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+  const lastWeekStart = new Date(now - oneWeekMs);
+  const twoWeeksAgoStart = new Date(now - 2 * oneWeekMs);
+
+  // Separate last-week vs prior-week transactions
+  const lastWeekTx = [];
+  const priorWeekTx = [];
+
+  incomes.forEach(tx => {
+    const d = new Date(tx.timestamp);
+    if (d >= lastWeekStart && d <= now) {
+      lastWeekTx.push({ ...tx, type: 'Income' });
+    } else if (d >= twoWeeksAgoStart && d < lastWeekStart) {
+      priorWeekTx.push({ ...tx, type: 'Income' });
+    }
+  });
+  expenses.forEach(tx => {
+    const d = new Date(tx.timestamp);
+    if (d >= lastWeekStart && d <= now) {
+      lastWeekTx.push({ ...tx, type: 'Expense' });
+    } else if (d >= twoWeeksAgoStart && d < lastWeekStart) {
+      priorWeekTx.push({ ...tx, type: 'Expense' });
+    }
+  });
+
+  // Sums for last week
+  const sumLastWeekIncome = lastWeekTx
+    .filter(tx => tx.type === 'Income')
+    .reduce((a, b) => a + parseFloat(b.amount), 0);
+  const sumLastWeekExpense = lastWeekTx
+    .filter(tx => tx.type === 'Expense')
+    .reduce((a, b) => a + parseFloat(b.amount), 0);
+
+  // Sums for prior week
+  const sumPriorWeekIncome = priorWeekTx
+    .filter(tx => tx.type === 'Income')
+    .reduce((a, b) => a + parseFloat(b.amount), 0);
+  const sumPriorWeekExpense = priorWeekTx
+    .filter(tx => tx.type === 'Expense')
+    .reduce((a, b) => a + parseFloat(b.amount), 0);
+
+  const incomeChange = sumPriorWeekIncome === 0
+    ? 0
+    : ((sumLastWeekIncome - sumPriorWeekIncome) / sumPriorWeekIncome) * 100;
+  const expenseChange = sumPriorWeekExpense === 0
+    ? 0
+    : ((sumLastWeekExpense - sumPriorWeekExpense) / sumPriorWeekExpense) * 100;
+
+  // Category analysis (last week vs prior)
+  const catMapLast = {};
+  const catMapPrior = {};
+
+  lastWeekTx.forEach(tx => {
+    if (tx.type === 'Expense') {
+      const cat = tx.category || 'Other';
+      catMapLast[cat] = (catMapLast[cat] || 0) + parseFloat(tx.amount);
+    }
+  });
+  priorWeekTx.forEach(tx => {
+    if (tx.type === 'Expense') {
+      const cat = tx.category || 'Other';
+      catMapPrior[cat] = (catMapPrior[cat] || 0) + parseFloat(tx.amount);
+    }
+  });
+
+  // Largest spending category
+  const sortedLastCats = Object.entries(catMapLast).sort((a,b) => b[1] - a[1]);
+  let topCategory = null;
+  if (sortedLastCats.length) {
+    topCategory = sortedLastCats[0]; // e.g. ["Food", 150]
+  }
+
+  // Biggest jump in category spending
+  let biggestJumpCategory = null;
+  let biggestJumpPercent = 0;
+  Object.keys(catMapLast).forEach(cat => {
+    const lastAmt = catMapLast[cat];
+    const priorAmt = catMapPrior[cat] || 0;
+    if (priorAmt === 0 && lastAmt > 0) {
+      // from 0 to something
+      if (lastAmt > biggestJumpPercent) {
+        biggestJumpCategory = cat;
+        biggestJumpPercent = 999; // arbitrary big
+      }
+    } else if (priorAmt > 0) {
+      const pct = ((lastAmt - priorAmt) / priorAmt) * 100;
+      if (Math.abs(pct) > Math.abs(biggestJumpPercent)) {
+        biggestJumpCategory = cat;
+        biggestJumpPercent = pct;
+      }
+    }
+  });
+
+  // dailyBalances approach
+  let highestDay = null, highestBalance = -Infinity;
+  let lowestDay = null, lowestBalance = Infinity;
+  if (userData.dailyBalances) {
+    Object.entries(userData.dailyBalances).forEach(([dayStr, bal]) => {
+      const d = new Date(dayStr);
+      if (d >= lastWeekStart && d <= now) {
+        if (bal > highestBalance) {
+          highestBalance = bal;
+          highestDay = dayStr;
+        }
+        if (bal < lowestBalance) {
+          lowestBalance = bal;
+          lowestDay = dayStr;
+        }
+      }
+    });
+  }
+
+  // Possibly check debts, goals
+  let debtInsight = null;
+  if (userData.debts?.paidThisWeek && userData.debts.paidThisWeek > 0) {
+    debtInsight = `You paid off $${userData.debts.paidThisWeek} in debt this week. Great job!`;
+  }
+
+  // Fun message if user spent money on coffee
+  const coffeeSpent = lastWeekTx
+    .filter(tx => (tx.category || '').toLowerCase().includes('coffee'))
+    .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+  let coffeeMsg = null;
+  if (coffeeSpent > 0) {
+    const lattePrice = 4.5;
+    const lattesCount = Math.floor(coffeeSpent / lattePrice);
+    coffeeMsg = `You spent enough on coffee to buy ${lattesCount} lattes!`;
+  }
+
+  // Build a big list of potential insights
+  const potential = [];
+  if (Math.abs(incomeChange) > 5) {
+    potential.push({
+      key: 'incomeChange',
+      text: incomeChange > 0
+        ? `Your income rose by ${incomeChange.toFixed(1)}% vs. last week.`
+        : `Your income fell by ${Math.abs(incomeChange).toFixed(1)}% from last week.`,
+      impact: 8
+    });
+  }
+  if (Math.abs(expenseChange) > 5) {
+    potential.push({
+      key: 'expenseChange',
+      text: expenseChange > 0
+        ? `Your expenses increased by ${expenseChange.toFixed(1)}% compared to the previous week.`
+        : `Your expenses decreased by ${Math.abs(expenseChange).toFixed(1)}% compared to last week.`,
+      impact: 9
+    });
+  }
+  if (topCategory) {
+    potential.push({
+      key: 'topCategory',
+      text: `Your largest expense category was "${topCategory[0]}" ($${topCategory[1].toFixed(2)}) this week.`,
+      impact: 9
+    });
+  }
+  if (biggestJumpCategory && Math.abs(biggestJumpPercent) > 30) {
+    potential.push({
+      key: 'jumpCategory',
+      text: biggestJumpPercent > 0
+        ? `Spending on "${biggestJumpCategory}" jumped by ${biggestJumpPercent.toFixed(1)}%!`
+        : `Spending on "${biggestJumpCategory}" fell by ${Math.abs(biggestJumpPercent).toFixed(1)}%!`,
+      impact: 7
+    });
+  }
+  if (highestDay && lowestDay) {
+    potential.push({
+      key: 'balanceHighLow',
+      text: `Your balance peaked on ${highestDay} at $${highestBalance.toFixed(2)} and dipped to $${lowestBalance.toFixed(2)} on ${lowestDay}.`,
+      impact: 6
+    });
+  }
+  if (debtInsight) {
+    potential.push({ key: 'debt', text: debtInsight, impact: 8 });
+  }
+  if (coffeeMsg) {
+    potential.push({ key: 'coffee', text: coffeeMsg, impact: 3 });
+  }
+
+  // Grab insightsHistory to avoid repeating
+  const insightsHistory = userData.insightsHistory || {};
+  const fourWeeksAgo = new Date(now - 4 * oneWeekMs);
+
+  // Filter out items used recently
+  const finalCandidates = potential.filter(ins => {
+    const lastUsedStr = insightsHistory[ins.key];
+    if (!lastUsedStr) return true;
+    const lastUsed = new Date(lastUsedStr);
+    // If older than 4 weeks, we can reuse
+    return lastUsed < fourWeeksAgo;
+  });
+
+  // Sort by impact desc
+  finalCandidates.sort((a,b) => b.impact - a.impact);
+
+  // Take top 5
+  const chosen = finalCandidates.slice(0, 5);
+
+  // Mark them as used
+  const todayStr = now.toISOString().split('T')[0];
+  chosen.forEach(c => {
+    insightsHistory[c.key] = todayStr;
+  });
+
+  // Save updated history
+  await setDoc(userDocRef, { insightsHistory }, { merge: true });
+
+  return chosen.map(c => c.text);
+}
+
+/*************************************************************
+ * 4) MAIN FUNCTION: initWeeklySummaryFeature(user)
+ *************************************************************/
+async function initWeeklySummaryFeature(user) {
+  if (!user) return;
+
+  // 4A) Check if today is Sunday
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // Sunday=0
+  if (dayOfWeek !== 3) {
+
+    // Hide card if not Sunday
+    const cardEl = document.getElementById("weekly-summary-card");
+    if (cardEl) cardEl.style.display = "none";
+    return;
+  }
+
+  // 4B) Check Firestore if we already showed it
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${yyyy}-${mm}-${dd}`;
+
+  const userDocRef = doc(db, "users", user.uid);
+  const snap = await getDoc(userDocRef);
+
+  if (!snap.exists()) {
+    // no user doc => show card, store the date
+    await setDoc(userDocRef, { weeklySummaryLastShown: todayStr }, { merge: true });
+    showWeeklySummaryCard();
+  } else {
+    const data = snap.data();
+    const lastShown = data.weeklySummaryLastShown || null;
+    if (lastShown !== todayStr) {
+      await setDoc(userDocRef, { weeklySummaryLastShown: todayStr }, { merge: true });
+      showWeeklySummaryCard();
+    } else {
+      // hide card if already shown
+      const cardEl = document.getElementById("weekly-summary-card");
+      if (cardEl) cardEl.style.display = "none";
+    }
+  }
+
+  // 4C) Attach event listeners for "View" button & popup
+  const viewBtn = document.getElementById("weekly-summary-view-btn");
+  const popupEl = document.getElementById("weekly-summary-popup");
+  const closeBtn = document.getElementById("weekly-popup-close-btn");
+  if (viewBtn) {
+    viewBtn.addEventListener("click", async () => {
+      // Generate advanced insights
+      const lines = await generateAdvancedInsights(user.uid);
+      const container = document.getElementById("weekly-insights-container");
+      container.innerHTML = "";
+      if (lines.length === 0) {
+        container.innerHTML = "<p>No major insights found this week.</p>";
+      } else {
+        lines.forEach(text => {
+          const p = document.createElement("p");
+          p.textContent = text;
+          container.appendChild(p);
+        });
+      }
+      // Show popup
+      if (popupEl) popupEl.style.display = "flex";
+    });
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      if (popupEl) popupEl.style.display = "none";
+    });
+  }
+}
+
+/*************************************************************
+ * 5) Helper to show the card
+ *************************************************************/
+function showWeeklySummaryCard() {
+  const cardEl = document.getElementById("weekly-summary-card");
+  if (cardEl) {
+    cardEl.style.display = "block"; // or "flex", etc.
+  }
+}
+/* 
+   ======================
+   HOW TO USE:
+   1) Ensure you call initWeeklySummaryFeature(user) after user logs in.
+      e.g. after onAuthStateChanged says user != null, do:
+         initWeeklySummaryFeature(user);
+   2) The card will appear on Sundays, once. 
+   3) Clicking "View" runs the advanced insights logic, 
+      populates the popup, and displays it.
+*/
+
+function renderWeeklySummaryCard() {
+  const container = document.getElementById("weekly-summary-card");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const card = document.createElement("div");
+  card.className = "weekly-summary-card";
+  card.innerHTML = `
+    <h2>📊 Weekly Insights</h2>
+    <p>Uncover your financial highlights</p>
+    <button id="view-insights-btn" class="view-insights-button">View Insights</button>
+  `;
+
+  container.appendChild(card);
+
+
+
+  // Wait for DOM to render, then attach click listener
+  setTimeout(() => {
+    const viewBtn = document.getElementById("view-insights-btn");
+    if (viewBtn) {
+      viewBtn.addEventListener("click", () => {
+        showInsightsPopup();
+      });
+    }
+  }, 50);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function showInsightsPopup() {
+  const popup = document.getElementById("insights-popup");
+  const closeBtn = document.getElementById("close-insights-popup");
+  const textContainer = document.getElementById("textual-insights");
+  const streakBox = document.getElementById("spending-streak");
+  const savingsBox = document.getElementById("savings-rate");
+  const compCanvas = document.getElementById("comparisonChart");
+
+  if (!popup || !closeBtn || !textContainer || !streakBox || !savingsBox || !compCanvas) {
+    console.warn("Missing elements in Weekly Insights popup.");
+    return;
+  }
+
+  popup.classList.remove("hidden");
+  popup.style.display = "flex";
+  popup.scrollTop = 0;
+
+  closeBtn.onclick = () => {
+    popup.classList.add("hidden");
+    popup.style.display = "none";
+  };
+
+  const user = auth.currentUser;
+  if (!user) return;
+
+  try {
+    const [insights, userDocSnap] = await Promise.all([
+      generateAdvancedInsights(user.uid),
+      getDoc(doc(db, "users", user.uid))
+    ]);
+
+    const userData = userDocSnap.data() || {};
+    const incomes = userData.incomes || [];
+    const expenses = userData.expenses || [];
+
+    const incomeTotal = incomes.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+    const expenseTotal = expenses.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+    const netBalance = incomeTotal - expenseTotal;
+    const avgIncome = incomeTotal / 7;
+    const avgExpense = expenseTotal / 7;
+    const savingsRate = incomeTotal ? `${((netBalance / incomeTotal) * 100).toFixed(1)}%` : "0%";
+    const streak = `${userData.streak || 0} days`;
+
+    const catTotals = {};
+    expenses.forEach(tx => {
+      const cat = tx.category || "Other";
+      catTotals[cat] = (catTotals[cat] || 0) + parseFloat(tx.amount);
+    });
+    const topCategory = Object.entries(catTotals).sort((a,b) => b[1] - a[1])[0];
+    const topCategoryText = topCategory ? `${topCategory[0]} ($${topCategory[1].toFixed(2)})` : "None";
+
+    const dayCount = {};
+    expenses.forEach(tx => {
+      const d = new Date(tx.timestamp).toLocaleDateString();
+      dayCount[d] = (dayCount[d] || 0) + 1;
+    });
+    const frequentDay = Object.entries(dayCount).sort((a,b) => b[1] - a[1])[0]?.[0] || "N/A";
+
+    const coffeeSpent = expenses
+      .filter(tx => (tx.category || "").toLowerCase().includes("coffee"))
+      .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+    const lattes = Math.floor(coffeeSpent / 4.5);
+
+    const baseStats = [
+      { label: "Top Spending Category", value: topCategoryText },
+      { label: "Total Income", value: `$${incomeTotal.toFixed(2)}` },
+      { label: "Total Expenses", value: `$${expenseTotal.toFixed(2)}` },
+      { label: "Net Balance", value: `$${netBalance.toFixed(2)}` },
+      { label: "Avg Daily Income", value: `$${avgIncome.toFixed(2)}` },
+      { label: "Avg Daily Expense", value: `$${avgExpense.toFixed(2)}` },
+      { label: "Most Frequent Spending Day", value: frequentDay },
+    ];
+
+    const statHTML = baseStats.map(stat => `
+      <p><strong>${stat.label}:</strong> ${stat.value}</p>
+    `).join("");
+
+    const coffeeHTML = lattes > 0
+      ? `<p><strong>Coffee Alert:</strong> You could've had ${lattes} lattes ☕</p>`
+      : "";
+
+    const insightHTML = insights.map(text => `<p>${text}</p>`).join("");
+
+    textContainer.innerHTML = `
+      ${statHTML}
+      <p><strong>Spending Streak:</strong> ${streak}</p>
+      <p><strong>Savings Rate:</strong> ${savingsRate}</p>
+      ${coffeeHTML}
+      ${insightHTML}
+    `;
+
+    streakBox.textContent = streak;
+    savingsBox.textContent = savingsRate;
+
+    const ctx = compCanvas.getContext("2d");
+    if (window.comparisonChart instanceof Chart) window.comparisonChart.destroy();
+
+    window.comparisonChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Income", "Expenses"],
+        datasets: [{
+          label: "Last 7 Days",
+          data: [incomeTotal, expenseTotal],
+          backgroundColor: ["#4caf50", "#f44336"]
+        }]
+      },
+      options: {
+        plugins: {
+          title: {
+            display: true,
+            text: "Income vs Expenses",
+            color: getComputedStyle(document.body).getPropertyValue('--text-color'),
+            font: { size: 18 }
+          },
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: getComputedStyle(document.body).getPropertyValue('--text-color')
+            }
+          },
+          x: {
+            ticks: {
+              color: getComputedStyle(document.body).getPropertyValue('--text-color')
+            }
+          }
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Insights failed:", error);
+    textContainer.innerHTML = "<p>Error loading insights. Please try again later.</p>";
+  }
+}
+
