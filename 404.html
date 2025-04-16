@@ -3,39 +3,115 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Page Not Found</title>
+  <title>Page Not Found - Budget App</title>
   <style>
+    /* Base styles */
     body {
       margin: 0;
       padding: 0;
       font-family: Inter, sans-serif;
-      background-color: #0a0a23;
-      color: white;
+      background-color: #fff; /* Light mode background */
+      color: #666; /* Light mode text */
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
       text-align: center;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
+
+    /* Dark mode styles */
+    .dark-mode body {
+      background-color: #1e1e1e; /* Dark mode background */
+      color: #b0b0b0; /* Dark mode text */
+    }
+
+    /* Container for the 404 content */
+    .container {
+      padding: 20px;
+      border-radius: 16px;
+      background-color: #f5f5f5; /* Light mode container background */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    .dark-mode .container {
+      background-color: #2a2a2a; /* Dark mode container background */
+    }
+
+    /* 404 Heading */
     h1 {
-      font-size: 4rem;
-      color: #00d4a5;
+      font-size: 6rem; /* Larger for emphasis */
+      font-weight: bold;
+      color: #4caf50; /* Green accent for light mode */
+      margin: 0;
+      animation: fadeIn 0.5s ease-in-out;
     }
+
+    .dark-mode h1 {
+      color: #66bb6a; /* Green accent for dark mode */
+    }
+
+    /* Error message */
     p {
       font-size: 1.2rem;
       margin: 1rem 0;
+      animation: fadeIn 0.7s ease-in-out;
     }
+
+    /* Return to Home button */
     a {
-      color: #00d4a5;
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #4caf50; /* Green accent for light mode */
+      color: #fff;
       text-decoration: none;
-      font-weight: bold;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      animation: fadeIn 0.9s ease-in-out;
+    }
+
+    .dark-mode a {
+      background-color: #66bb6a; /* Green accent for dark mode */
+    }
+
+    a:hover {
+      background-color: #43a047; /* Slightly darker green on hover (light mode) */
+      transform: scale(1.05);
+    }
+
+    .dark-mode a:hover {
+      background-color: #5da962; /* Slightly darker green on hover (dark mode) */
+    }
+
+    /* Fade-in animation for elements */
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Optional: Add a subtle app name or logo placeholder */
+    .app-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #4caf50; /* Green accent for light mode */
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .dark-mode .app-name {
+      color: #66bb6a; /* Green accent for dark mode */
     }
   </style>
 </head>
 <body>
-  <h1>404</h1>
-  <p>Oops, the page you're looking for doesn't exist.</p>
-  <a href="index.html">Return to Home</a>
+  <div class="app-name">Budget App</div>
+  <div class="container">
+    <h1>404</h1>
+    <p>Oops, the page you're looking for doesn't exist.</p>
+    <a href="index.html">Return to Home</a>
+  </div>
 </body>
 </html>
