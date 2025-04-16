@@ -6,7 +6,7 @@
     <link rel="icon" href="logo.png" type="image/png">
    
     <!-- Icons and Chart.js -->
-    <script src="https://kit.fontawesome.com/2b0e4418c9.js" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/66e3b24af0.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
@@ -21,61 +21,67 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- AUTH CONTAINER -->
-  <!-- AUTH CONTAINER -->
-<div id="auth-container">
-  <div class="logo">
-    <img src="logo.png" alt="Budget App Logo" />
-  </div>
-  <h1 class="app-title" id="form-title">Welcome to Budget App</h1>
-  <p class="app-tagline">Manage your finances effortlessly.</p>
-  
-  <form id="auth-form">
-    <div class="input-group">
-      <label for="auth-email">Email address*</label>
-      <input type="email" id="auth-email" placeholder="Enter your email address" required />
-    </div>
-    <div class="input-group">
-      <label for="auth-password">Password*</label>
-      <div class="password-wrapper">
-        <input type="password" id="auth-password" placeholder="Create a strong password" required />
-        <button type="button" id="toggle-password-visibility" class="toggle-password">
-          <i class="fa fa-eye" aria-hidden="true"></i>
-        </button>
+    <!-- AUTH WRAPPER -->
+    <div id="auth-wrapper" class="auth-screen">
+      <!-- Logo -->
+      <div class="top-logo">
+        <i class="fa-solid fa-rocket"></i>
       </div>
-    </div>
-    <button type="submit" id="auth-button" class="btn-auth">Continue</button>
-  </form>
   
- 
-  <p>
-    <button type="button" id="forgot-password-button" class="link-button">Forgot Password?</button>
-  </p>
+      <!-- Headline -->
+      <span id="dynamic-text">Cash Rocket</span>
+      <!-- Auth Card -->
+      <div id="auth-container">
+        <button id="google-signin-button" class="social-btn" aria-label="Sign in with Google">
+          <i class="fa-brands fa-google google-icon"></i>
+          <span>Sign in with Google</span>
+        </button>
+        <button id="microsoft-signin-button" class="social-btn" aria-label="Sign in with Microsoft">
+          <i class="fa-brands fa-microsoft microsoft-icon"></i>
+          <span>Sign in with Microsoft</span>
+        </button>
+        <button id="signup-button" class="btn-auth">Sign Up</button>
+        <button id="login-button" class="btn-auth">Log In</button>
+      </div>
   
-  <p class="toggle-auth">
-    Already have an account? <a style="cursor: pointer;" id="toggle-link">Login</a>
-  </p>
+      <!-- Bottom Curve -->
+      <div class="bottom-curve"></div>
   
-  <p id="verification-message" class="hidden">
-    A verification email was sent to your inbox. Please verify your email before logging in.
-  </p>
-  
-  <div class="divider"><span>OR</span></div>
-  
-  <button id="google-signin-button" class="btn-auth social-btn">
-    <i class="fab fa-google google-icon"></i> Continue with Google
-  </button>
-  <button id="microsoft-signin-button" class="btn-auth social-btn">
-    <i class="fab fa-microsoft microsoft-icon"></i> Continue with Microsoft
-  </button>
-  <p class="tos-text">
-    By continuing, you agree to the 
-    <a href="terms.html">Terms of Service</a> and 
-    <a href="privacy.html">Privacy Policy</a>.
-  </p>
+     <!-- Email/Password Modal -->
+<div id="auth-modal" class="auth-modal hidden" role="dialog" aria-labelledby="form-title">
+  <div class="modal-content">
+    <button id="close-modal" class="close-btn" aria-label="Close modal">×</button>
+    <h1 id="form-title" class="app-title"></h1>
+    <p class="app-tagline">Take control of your finances.</p>
+    <form id="auth-form">
+      <div class="input-group">
+        <label for="auth-email">Email Address*</label>
+        <input id="auth-email" type="email" placeholder="Enter your email" required />
+      </div>
+      <div class="input-group">
+        <label for="auth-password">Password*</label>
+        <div class="password-wrapper">
+          <input id="auth-password" type="password" placeholder="Enter your password" required />
+          <button id="toggle-password-visibility" type="button" class="toggle-password">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <button id="auth-button" type="submit" class="btn-auth"></button>
+    </form>
+    <p id="forgot-password-container">
+      <button id="forgot-password-button" type="button" class="link-button">Forgot Password?</button>
+    </p>
+    <p class="tos-text">
+      By proceeding you agree to our
+      <a href="terms.html">Terms of Service</a> and
+      <a href="privacy.html">Privacy Policy</a>.
+    </p>
+  </div>
 </div>
+    </div>
 
-    
+
 
     <!-- DASHBOARD CONTAINER -->
     <div id="dashboard-container" style="display: none;">
@@ -1022,25 +1028,5 @@
 
 
 
-    <!-- SMALL SCRIPT FOR TOGGLING PASSWORD VISIBILITY -->
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const toggleButton = document.getElementById("toggle-password-visibility");
-        const passwordInput = document.getElementById("auth-password");
-
-        toggleButton.addEventListener("click", () => {
-          const icon = toggleButton.querySelector("i");
-          if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            icon.classList.remove("fa-eye");
-            icon.classList.add("fa-eye-slash");
-          } else {
-            passwordInput.type = "password";
-            icon.classList.remove("fa-eye-slash");
-            icon.classList.add("fa-eye");
-          }
-        });
-      });
-    </script>
   </body>
 </html>
