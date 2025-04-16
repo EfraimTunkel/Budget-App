@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="logo.png" type="image/png">
-   
+  
     <!-- Icons and Chart.js -->
     <script src="https://kit.fontawesome.com/66e3b24af0.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -33,12 +33,22 @@
       <!-- Auth Card -->
       <div id="auth-container">
         <button id="google-signin-button" class="social-btn" aria-label="Sign in with Google">
-          <i class="fa-brands fa-google google-icon"></i>
-          <span>Sign in with Google</span>
+          <div class="social-btn-icon">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: block;">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+              <path fill="none" d="M0 0h48v48H0z"></path>
+            </svg>
+          </div>
+          <span>Continue with Google</span>
         </button>
         <button id="microsoft-signin-button" class="social-btn" aria-label="Sign in with Microsoft">
-          <i class="fa-brands fa-microsoft microsoft-icon"></i>
-          <span>Sign in with Microsoft</span>
+          <div class="social-btn-icon">
+            <img src="assets/microsoft-logo-light.png" alt="Microsoft Logo">
+          </div>
+          <span>Continue with Microsoft</span>
         </button>
         <button id="signup-button" class="btn-auth">Sign Up</button>
         <button id="login-button" class="btn-auth">Log In</button>
@@ -84,53 +94,58 @@
 
 
     <!-- DASHBOARD CONTAINER -->
-    <div id="dashboard-container" style="display: none;">
-    
+    <div id="dashboard-container" >
       <nav class="bottom-nav">
         <!-- Home (shown on all) -->
-        <a  class="nav-item show-on-all" id="home-button">
-          <i class="fa-solid fa-house"></i><span>Home</span>
+        <a class="nav-item show-on-all" id="home-button">
+          <div class="nav-icon-wrapper">
+            <i class="fa-solid fa-house"></i>
+          </div>
+          <span>Home</span>
         </a>
-      
- 
-      
+      <!-- Settings (hidden on mobile, shown on desktop) -->
+      <a  class="nav-item hide-on-mobile" id="settings-button">
+        <i class="fa-solid fa-gear"></i><span>Settings</span>
+      </a>
+    
+      <!-- Log Out (hidden on mobile, shown on desktop) -->
+      <button id="logout-button" class="hide-on-mobile">
+        Log Out
+      </button>
         <!-- Budgets (shown on all) -->
-        <a  class="nav-item show-on-all" id="budgets-button">
-          <i class="fa-solid fa-wallet"></i><span>Budgets</span>
+        <a class="nav-item show-on-all" id="budgets-button">
+          <div class="nav-icon-wrapper">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+          <span>Budgets</span>
         </a>
       
         <!-- Transactions (shown on all) -->
         <a class="nav-item show-on-all" id="transactions-button">
-          <i class="fa-solid fa-list"></i><span>Transactions</span>
+          <div class="nav-icon-wrapper">
+            <i class="fa-solid fa-list"></i>
+          </div>
+          <span>Transactions</span>
         </a>
       
-        <!-- Settings (hidden on mobile, shown on desktop) -->
-        <a  class="nav-item hide-on-mobile" id="settings-button">
-          <i class="fa-solid fa-gear"></i><span>Settings</span>
-        </a>
-      
-        <!-- Log Out (hidden on mobile, shown on desktop) -->
-        <button id="logout-button" class="hide-on-mobile">
-          Log Out
+        <!-- The floating add transaction button (shown on all) -->
+        <button id="add-transaction-button" class="floating-button show-on-all">
+          <i class="fa fa-plus"></i>
         </button>
-             <!-- The floating add transaction button (shown on all) -->
-             <button id="add-transaction-button" class="floating-button show-on-all">
-              <i class="fa fa-plus"></i>
-            </button>
+      
         <!-- Profile icon (hidden on desktop, shown on mobile) -->
-        <div class="profile-icon-container hide-on-desktop">
-          <img src="default-avatar.png" alt="Profile Icon" id="mobile-profile-icon">
+        <div class="profile-icon-container hide-on-desktop" id="mobile-profile-container">
+          <div class="nav-icon-wrapper">
+            <img src="default-avatar.png" alt="Profile Icon" id="mobile-profile-icon">
+          </div>
+          <span>You</span>
         </div>
-        
-        
       </nav>
       
-      <nav class="sidebar collapsed" id="sidebar">  <!-- add "collapsed" right here -->
+      <nav class="sidebar collapsed" id="sidebar">
         <div class="sidebar-toggle" id="sidebar-toggle">
           <i class="fa-solid fa-chevron-left"></i>
         </div>
-      
-        <!-- Scrollable links -->
         <div class="sidebar-scroll">
           <a class="nav-item" id="home-button-desktop">
             <i class="fa-solid fa-house"></i><span>Home</span>
@@ -148,8 +163,6 @@
             <i class="fa-solid fa-user"></i><span>Profile</span>
           </a>
         </div>
-      
-        <!-- Footer with logout -->
         <div class="sidebar-footer">
           <button id="logout-button-desktop">
             <i class="fa-solid fa-right-from-bracket"></i>
@@ -170,7 +183,7 @@
       <main class="main-content" id="main-content">
         <!-- Dashboard Section -->
      <!-- Dashboard Section -->
-<section id="dashboard-section" class="dashboard-section">
+     <section id="dashboard-section" class="section dashboard-section">
   <!-- Header / Greeting -->
   <header class="dashboard-header">
     <div class="user-info">
@@ -227,7 +240,7 @@
   </section>
 </section>
 
-        <section id="transactions-section" class="transactions-section hidden">
+<section id="transactions-section" class="section transactions-section hidden">
           <!-- Header: Title on left, icons on right -->
           <div class="transactions-header">
             <div class="transactions-title">
@@ -318,7 +331,7 @@
 
 
 <!-- ================== BUDGETS PAGE ================== -->
-<section id="budgets-page" class="budgets-page hidden">
+<section id="budgets-page" class="section budgets-page hidden">
   <header class="budgets-header">
     <h2>My Budgets</h2>
     <button id="add-budget-button" class="btn add-budget-button">
@@ -595,7 +608,7 @@
 
 
     <!-- Profile Section (Full Page View) -->
-<section id="profile-section" class="profile-section hidden">
+    <section id="profile-section" class="section profile-section hidden">
   <div class="profile-page-content">
     <div class="profile-header">
       <!-- Left icon or placeholder (if you want something else here) -->
