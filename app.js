@@ -582,110 +582,128 @@ crSaveNewCatBtn.addEventListener("click", async () => {
   Show / Hide Sections
 ************************************************/
 // Global utility to highlight the active sidebar nav item
-function setActiveNavItem(itemId) {
-  document.querySelectorAll('.sidebar .nav-item').forEach(el => {
-    el.classList.remove('active');
+// Modified showSection to handle active state on mobile
+// Modified showSection to handle active state on mobile
+function showSection(sectionId) {
+  const sections = document.querySelectorAll('.section');
+  sections.forEach(section => {
+    section.classList.add('hidden');
   });
-  const clicked = document.getElementById(itemId);
-  if (clicked) clicked.classList.add('active');
+
+  const targetSection = document.getElementById(sectionId);
+  if (targetSection) {
+    targetSection.classList.remove('hidden');
+  } else {
+    console.error(`Section with ID ${sectionId} not found`);
+  }
 }
 
-function showSection(sectionId) {
-  const sections = document.querySelectorAll('#main-content > section');
-  sections.forEach(section => {
-    if (section.id === sectionId) {
-      section.classList.remove('hidden');
-    } else {
-      section.classList.add('hidden');
+function setMobileNavActiveState(sectionId) {
+  const mobileNavItems = document.querySelectorAll('.bottom-nav .nav-item, .bottom-nav .profile-icon-container');
+  mobileNavItems.forEach(item => {
+    // Skip the "Add Transaction" button to prevent it from being marked as active
+    if (item.id !== 'add-transaction-button') {
+      item.classList.remove('active');
     }
   });
 
- 
-  const isProfile = sectionId === 'profile-section';
-  const addBtnMobile = document.getElementById('add-transaction-button');
-  const addBtnDesktop = document.getElementById('add-transaction-button-desktop');
-  if (addBtnMobile) addBtnMobile.style.display = isProfile ? 'none' : 'block';
-  if (addBtnDesktop) addBtnDesktop.style.display = isProfile ? 'none' : 'block';
+  const sectionToNavMap = {
+    'dashboard-section': 'home-button',
+    'budgets-page': 'budgets-button',
+    'transactions-section': 'transactions-button',
+    'profile-section': 'mobile-profile-container'
+  };
 
-  window.scrollTo(0, 0);
+  const activeNavId = sectionToNavMap[sectionId];
+  if (activeNavId) {
+    const activeNavItem = document.getElementById(activeNavId);
+    if (activeNavItem) {
+      // Add a slight delay to make the transition feel smoother
+      setTimeout(() => {
+        activeNavItem.classList.add('active');
+      }, 50);
+    }
+  }
 }
 
-
-
-
-/************************************************
-  Navigation: Home & Transactions
-************************************************/
-document.getElementById('home-button').addEventListener('click', (e) => {
-  e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
   showSection('dashboard-section');
-});
+  setMobileNavActiveState('dashboard-section');
 
-document.getElementById('transactions-button').addEventListener('click', (e) => {
-  e.preventDefault();
-  showSection('transactions-full');
-  // Call your function to load full transactions:
-  setActiveTransactionTab('all'); // This function should update the transaction list as needed
-});
+  // Mobile event listeners
+  document.getElementById('home-button')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    console.log('Home button clicked');
+    showSection('dashboard-section');
+    setMobileNavActiveState('dashboard-section');
+  });
 
-// When the mobile profile icon is clicked, show the profile section
-document.getElementById('mobile-profile-icon').addEventListener('click', function(e) {
-  e.preventDefault();
-  showSection('profile-section');
-});
-document.addEventListener('DOMContentLoaded', function() {
-  // 1) Collapse toggle
+  document.getElementById('budgets-button')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    console.log('Budgets button clicked');
+    showSection('budgets-page');
+    setMobileNavActiveState('budgets-page');
+    listenToBudgets();
+  });
+
+
+  document.getElementById('transactions-button')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    console.log('Transactions button clicked');
+    showSection('transactions-section'); // Note: This line is correct in the updated code
+    setMobileNavActiveState('transactions-section');
+    setActiveTransactionTab('all');
+  });
+  document.getElementById('mobile-profile-icon')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    console.log('Profile icon clicked');
+    showSection('profile-section');
+    setMobileNavActiveState('profile-section');
+  });
+
+  document.getElementById('add-transaction-button')?.addEventListener('click', openTransactionPopup);
+  document.getElementById('add-transaction-button-desktop')?.addEventListener('click', openTransactionPopup);
+
+  // Desktop event listeners
   const sidebar = document.getElementById('sidebar');
   const toggleBtn = document.getElementById('sidebar-toggle');
-  
-  toggleBtn.addEventListener('click', () => {
-    const isCollapsed = sidebar.classList.toggle('collapsed');
-    document.body.classList.remove('nav-expanded', 'nav-collapsed');
-    document.body.classList.add(isCollapsed ? 'nav-collapsed' : 'nav-expanded');
-  });
-  window.addEventListener('DOMContentLoaded', () => {
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const isCollapsed = sidebar.classList.toggle('collapsed');
+      document.body.classList.remove('nav-expanded', 'nav-collapsed');
+      document.body.classList.add(isCollapsed ? 'nav-collapsed' : 'nav-expanded');
+    });
+  }
+
+  if (sidebar) {
     const isCollapsed = sidebar.classList.contains('collapsed');
     document.body.classList.add(isCollapsed ? 'nav-collapsed' : 'nav-expanded');
-  });
-  
-  function updateNavState(isExpanded) {
-    document.body.classList.remove('nav-expanded', 'nav-collapsed');
-    document.body.classList.add(isExpanded ? 'nav-expanded' : 'nav-collapsed');
   }
-  
 
-
-  // 3) Desktop nav links -> showSection(...) or open popup
-  document.getElementById('home-button-desktop').addEventListener('click', () => {
+  document.getElementById('home-button-desktop')?.addEventListener('click', () => {
     showSection('dashboard-section');
     setActiveNavItem('home-button-desktop');
   });
-
-  document.getElementById('budgets-button-desktop').addEventListener('click', () => {
+  
+  document.getElementById('budgets-button-desktop')?.addEventListener('click', () => {
     showSection('budgets-page');
     setActiveNavItem('budgets-button-desktop');
-    listenToBudgets();                    // <‑‑ add this line
+    listenToBudgets();
   });
   
-  /* Transactions (desktop) */
-  document.getElementById('transactions-button-desktop').addEventListener('click', () => {
-    showSection('transactions-section');  // make sure this ID matches your HTML
+  document.getElementById('transactions-button-desktop')?.addEventListener('click', () => {
+    showSection('transactions-section');
     setActiveNavItem('transactions-button-desktop');
-    setActiveTransactionTab('all');       // <‑‑ add this line
-  });
-
-  document.getElementById('settings-button-desktop').addEventListener('click', () => {
-    openSettingsModal(); // same function as profile gear
+    setActiveTransactionTab('all');
   });
   
-
-  document.getElementById('profile-button-desktop').addEventListener('click', () => {
+  document.getElementById('profile-button-desktop')?.addEventListener('click', () => {
     showSection('profile-section');
     setActiveNavItem('profile-button-desktop');
   });
 
-  // 4) Desktop Logout
-  document.getElementById('logout-button-desktop').addEventListener('click', async () => {
+  document.getElementById('logout-button-desktop')?.addEventListener('click', async () => {
     console.log("Desktop logout clicked.");
     if (!auth) {
       console.error("Auth is not defined or user not logged in.");
@@ -693,8 +711,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     try {
       await signOut(auth);
-     
-      // Possibly show the login screen or reload:
       window.location.reload();
     } catch (err) {
       console.error("Logout error:", err);
@@ -715,7 +731,21 @@ document.getElementById('add-transaction-button')?.addEventListener('click', ope
 document.getElementById('add-transaction-button-desktop')?.addEventListener('click', openTransactionPopup);
 
 
+function setActiveNavItem(navItemId) {
+  // Remove 'active' class from all desktop nav items
+  const desktopNavItems = document.querySelectorAll('.sidebar .nav-item');
+  desktopNavItems.forEach(item => {
+    item.classList.remove('active');
+  });
 
+  // Add 'active' class to the clicked nav item
+  const activeNavItem = document.getElementById(navItemId);
+  if (activeNavItem) {
+    activeNavItem.classList.add('active');
+  } else {
+    console.error(`Nav item with ID ${navItemId} not found`);
+  }
+}
 /************************************************************
  * ==========  BUDGETS PAGE & MODAL LOGIC  ===============
  ************************************************************/
@@ -2484,8 +2514,7 @@ discardConfirmBtn.addEventListener("click", () => {
       }
   
       showSection("dashboard-section");
-      setActiveNavItem("home-button-desktop");
-  
+      
       const themeToggle = document.getElementById("theme-toggle");
       try {
         const updatedUserSnap = await getDoc(userDocRef);
@@ -2618,7 +2647,15 @@ discardConfirmBtn.addEventListener("click", () => {
   
   
   async function setActiveTransactionTab(filter) {
-    // Remove active class from all tabs
+    const allTab = document.getElementById('all-tab');
+    const incomeTabList = document.getElementById('income-tab-list');
+    const expenseTabList = document.getElementById('expense-tab-list');
+  
+    if (!allTab || !incomeTabList || !expenseTabList) {
+      console.error('One or more transaction tab elements not found:', { allTab, incomeTabList, expenseTabList });
+      return;
+    }
+  
     allTab.classList.remove("active");
     incomeTabList.classList.remove("active");
     expenseTabList.classList.remove("active");
@@ -2633,7 +2670,6 @@ discardConfirmBtn.addEventListener("click", () => {
   
     await loadTransactions(filter);
   }
-  
   document.querySelector('.income-box').addEventListener('click', async (e) => {
     e.preventDefault();
     showSection('transactions-section');
@@ -3873,10 +3909,7 @@ document.getElementById("view-all-transactions")?.addEventListener("click", () =
           // Add more if you have more sections & buttons
         };
     
-        const navButtonId = sectionToNavMap[sectionId];
-        if (navButtonId) {
-          setActiveNavItem(navButtonId);
-        }
+  
       }
     });
 
