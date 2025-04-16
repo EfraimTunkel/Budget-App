@@ -2138,9 +2138,7 @@ slider.noUiSlider.on('update', (values, handle) => {
     const transactionForm = document.getElementById("transaction-form");
     const authContainer = document.getElementById("auth-container");
     const dashboardContainer = document.getElementById("dashboard-container");
-    const authForm = document.getElementById("auth-form");
-    const authButton = document.getElementById("auth-button");
-    const toggleLink = document.getElementById("toggle-link");
+    
     const googleSignInButton = document.getElementById("google-signin-button");
     const logoutButton = document.getElementById("logout-button");
     const balanceDisplay = document.getElementById("balance");
@@ -2228,246 +2226,313 @@ discardConfirmBtn.addEventListener("click", () => {
   const incomeFields = document.getElementById("income-fields");
   const expenseFields = document.getElementById("expense-fields");
   // Grab the forgot-password-button element once at the top:
-  const forgotPasswordBtn = document.getElementById("forgot-password-button");
+ 
   const transactionsButton = document.getElementById("transactions-button");
   
   const allTab = document.getElementById("all-tab");
   const incomeTabList = document.getElementById("income-tab-list");
   const expenseTabList = document.getElementById("expense-tab-list");
   const transactionsListContent = document.getElementById("transactions-list-content");
+
+
+
+
+
+
+ 
+/* =========================================================
+   LOGIN ⇄ SIGN-UP LOGIC
+   ========================================================= */
+
+  /* =========================================================
+     1. DOM Handles
+     ========================================================= */
+  const formTitle = document.getElementById("form-title");
+  const authButton = document.getElementById("auth-button");
+  const forgotPasswordBtn = document.getElementById("forgot-password-button");
+  const authForm = document.getElementById("auth-form");
+  const googleBtn = document.getElementById("google-signin-button");
+  const microsoftBtn = document.getElementById("microsoft-signin-button");
+  const signupBtn = document.getElementById("signup-button");
+  const loginBtn = document.getElementById("login-button");
+  const authModal = document.getElementById("auth-modal");
+  const closeModalBtn = document.getElementById("close-modal");
+  const dynamicText = document.getElementById("dynamic-text");
+  const pwdInput = document.getElementById("auth-password");
+  const togglePwd = document.getElementById("toggle-password-visibility");
+  const authWrapper = document.getElementById("auth-wrapper");
   
-    // Toggle Login/Sign-Up
-    toggleLink.addEventListener("click", () => {
-      const isLogin = authButton.textContent === "Log In";
-      document.getElementById("form-title").textContent = isLogin
-        ? "Sign Up to Budget App"
-        : "Welcome Back!";
-      authButton.textContent = isLogin ? "Sign Up" : "Log In";
-      toggleLink.textContent = isLogin
-        ? "Log in"
-        : "Sign up";
+  // Initialize dynamic text
+  dynamicText.textContent = "Cash Rocket"; // Set static text
   
-        const isNowLogin = (authButton.textContent === "Log In");
-        forgotPasswordBtn.style.display = isNowLogin ? "block" : "none";
-    });
-  // On page load, if the auth button says "Log In" or "Sign Up", set forgot password accordingly:
-  document.addEventListener("DOMContentLoaded", () => {
-    const authBtnText = authButton.textContent; // e.g. "Continue" or "Sign Up" or "Log In"
-    const isLogin = (authBtnText === "Log In");
-    forgotPasswordBtn.style.display = isLogin ? "block" : "none";
+  /* =========================================================
+     2. UI State
+     ========================================================= */
+  let loginMode = true; // true = Log In, false = Sign Up
+  
+  /* =========================================================
+     3. Modal helpers
+     ========================================================= */
+  function paintAuthView() {
+    if (loginMode) {
+      formTitle.textContent = "Sign In to Cash Rocket";
+      authButton.textContent = "Sign In";
+      forgotPasswordBtn.parentElement.style.display = "block";
+    } else {
+      formTitle.textContent = "Create Your Account";
+      authButton.textContent = "Sign Up";
+      forgotPasswordBtn.parentElement.style.display = "none";
+    }
+  }
+  
+  function showModal(isLogin) {
+    loginMode = isLogin;
+    paintAuthView();
+    authModal.classList.remove("hidden");
+    document.getElementById("auth-email").focus();
+  }
+  
+  function hideModal() {
+    authModal.classList.add("hidden");
+  }
+  
+  /* =========================================================
+     4. View toggle helpers
+     ========================================================= */
+  function showDashboard() {
+    authWrapper.style.display = "none";
+    dashboardContainer.style.display = "block";
+  }
+  
+  function showAuthScreen() {
+    authWrapper.style.display = "flex";
+    dashboardContainer.style.display = "none";
+  }
+  
+  /* =========================================================
+     5. Event wiring
+     ========================================================= */
+  signupBtn.addEventListener("click", () => showModal(false));
+  loginBtn.addEventListener("click", () => showModal(true));
+  closeModalBtn.addEventListener("click", hideModal);
+  
+  // Password visibility toggle
+  togglePwd.addEventListener("click", () => {
+    const isPwd = pwdInput.type === "password";
+    pwdInput.type = isPwd ? "text" : "password";
+    const icon = togglePwd.querySelector("i");
+    if (isPwd) {
+      icon.classList.remove("fa-eye");
+      icon.classList.add("fa-eye-slash");
+    } else {
+      icon.classList.remove("fa-eye-slash");
+      icon.classList.add("fa-eye");
+    }
   });
-  flatpickr("#filter-date-from", { dateFormat: "Y-m-d" });
-flatpickr("#filter-date-to", { dateFormat: "Y-m-d" });
-
-    // Handle Email/Password Authentication
-    authForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("auth-email").value;
-      const password = document.getElementById("auth-password").value;
-    
-      try {
-        if (authButton.textContent === "Log In") {
-          // Existing login flow (we’ll adjust the login function separately)
-          await signInWithEmailAndPassword(auth, email, password);
-          alert("Logged in successfully!");
-        } else {
-          // Sign-Up flow:
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          const user = userCredential.user;
-          
-
-          // Send the verification email
-          await sendEmailVerification(user);
-          
-          await user.reload();
-          if (!user.emailVerified) {
-              alert("Please verify your email before logging in.");
-              await signOut(auth); // Log them out
-              return;
-          }
-          
-          alert("A verification email has been sent. Please check your inbox and verify your email before logging in.");
-        }
-      } catch (error) {
-        console.error("Authentication Error:", error.message);
-        alert(error.message);
-      }
-    });
-    
-    
-    const signInWithEmail = async (email, password) => {
-        try {
-          const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          const user = userCredential.user;
-          
-      -    // Check if email is verified
-      -    await user.reload();
-      if (!user.emailVerified) {
-        alert("Please verify your email before logging in.");
-        await signOut(auth);
-        return;
-      }
-        } catch (error) {
-          console.error("Login Error:", error.message);
-          alert(error.message);
-        }
-      };
-      
-    
-    // Handle Google Sign-In
-    const provider = new GoogleAuthProvider();
   
-    googleSignInButton.addEventListener("click", async () => {
-      try {
-        const provider = new GoogleAuthProvider(); 
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-    
-        // Firestore logic to create user document
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-       
-
-        if (!userDoc.exists()) {
-          // Make sure to include categories: [] if you want new docs to have them
-          await setDoc(userDocRef, {
-            balance: 0,
-            budgets: [],
-            expenses: [],
-            categories: []
-          }, { merge: true });
-        }
-    
-      } catch (error) {
-        console.error("Google Sign-In Error:", error.message);
-        alert("Error signing in with Google.");
-      }
-    });
-    
-  
-  const microsoftButton = document.getElementById("microsoft-signin-button");
-  
-  microsoftButton.addEventListener("click", async () => {
-    const provider = new OAuthProvider('microsoft.com');
+  /* =========================================================
+     6. Email / Password ⇄ Sign-up / Log-in
+     ========================================================= */
+  authForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("auth-email").value.trim();
+    const password = pwdInput.value.trim();
   
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-   
-
-      console.log(`Welcome ${user.displayName}`);
-      
-    } catch (error) {
-      console.error("Microsoft Sign-In Error:", error);
-      alert(`Failed to sign in with Microsoft. ${error.message}`);
+      if (loginMode) {
+        await verifiedSignIn(email, password);
+        hideModal();
+        showDashboard();
+      } else {
+        const { user } = await createUserWithEmailAndPassword(auth, email, password);
+        await sendEmailVerification(user);
+        alert("Verification e-mail sent. Please verify, then sign in.");
+        await signOut(auth);
+        loginMode = true;
+        paintAuthView();
+        hideModal();
+      }
+    } catch (err) {
+      console.error("Auth error:", err.code, err.message);
+      alert(err.message);
     }
   });
   
+  /* Helper – only allow verified users */
+  async function verifiedSignIn(email, password) {
+    const { user } = await signInWithEmailAndPassword(auth, email, password);
+    await user.reload();
+    if (!user.emailVerified) {
+      await signOut(auth);
+      throw new Error("Please verify your e-mail before logging in.");
+    }
+  }
   
-// Monitor Authentication State
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    
-    const prevLogin = sessionStorage.getItem("loginLogged");
-    if (!prevLogin) {
-      await addLog("login");
-      sessionStorage.setItem("loginLogged", "true");
-    }
-
-    const ua  = navigator.userAgent;
-    const dev = `${navigator.platform} - ${ua.split(") ")[0].split("(").pop()}`;
-    const hash = deviceHashASCII(dev);
-
-    if (localStorage.getItem("deviceHash") !== hash) {
-      await addLog("new_device");
-      localStorage.setItem("deviceHash", hash);
-    }
-  } else {
-    sessionStorage.removeItem("loginLogged");
-  }
-
-  const authContainer = document.getElementById("auth-container");
-  const dashboardContainer = document.getElementById("dashboard-container");
-
-  if (!user) {
-    authContainer.style.display = "block";
-    dashboardContainer.style.display = "none";
-    return;
-  }
- 
-  authContainer.style.display = "none";
-  dashboardContainer.style.display = "block";
-
-  const userDocRef = doc(db, "users", user.uid);
-  const userSnap = await getDoc(userDocRef);
-
-  if (!userSnap.exists()) {
-    await setDoc(userDocRef, {
-      expenseCategories: DEFAULT_EXPENSE_CATEGORIES,
-      incomeCategories: DEFAULT_INCOME_CATEGORIES,
-      balance: 0,
-      incomes: [],
-      expenses: [],
-      logs: []  // initialize logs here
-    }, { merge: true });
-  } else {
-    // The doc exists -> confirm expense/income categories exist
-    const data = userSnap.data();
-    if (!Array.isArray(data.expenseCategories) || data.expenseCategories.length === 0) {
-      await setDoc(userDocRef, { expenseCategories: DEFAULT_EXPENSE_CATEGORIES }, { merge: true });
-    }
-    if (!Array.isArray(data.incomeCategories) || data.incomeCategories.length === 0) {
-      await setDoc(userDocRef, { incomeCategories: DEFAULT_INCOME_CATEGORIES }, { merge: true });
+  /* Helper – ensure user document exists */
+  async function ensureUserDoc(user) {
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userDocRef);
+      if (!userSnap.exists()) {
+        await setDoc(userDocRef, {
+          expenseCategories: DEFAULT_EXPENSE_CATEGORIES || [],
+          incomeCategories: DEFAULT_INCOME_CATEGORIES || [],
+          balance: 0,
+          incomes: [],
+          expenses: [],
+          logs: [],
+        }, { merge: true });
+      }
+    } catch (err) {
+      console.error("Error in ensureUserDoc:", err.code, err.message);
+      // Don't throw, as sign-in succeeded
     }
   }
-  showSection("dashboard-section");
-  setActiveNavItem("home-button-desktop");
- 
-  // 3) Load dark mode preference
-  const themeToggle = document.getElementById("theme-toggle");
-  const updatedUserSnap = await getDoc(userDocRef);
-  const userData = updatedUserSnap.data();
-  const darkModeEnabled = userData.settings?.darkMode;
-
-  if (darkModeEnabled) {
-    document.body.classList.add("dark-mode");
-    if (themeToggle) themeToggle.checked = true;
-  } else {
-    document.body.classList.remove("dark-mode");
-    if (themeToggle) themeToggle.checked = false;
-  }
-
-  // 4) Load categories and show the dashboard
-  await loadCategoriesFromFirestore(user);
-  loadDashboard(user);
-
-  // ✅ Show the Weekly Summary Card if today is Wednesday
-  if (true) {
-    console.log("It's Wednesday - showing Weekly Summary Card");
-    setTimeout(() => {
-      renderWeeklySummaryCard();
-    }, 300);
-  }
-
-});
-
-    
-    document.addEventListener("DOMContentLoaded", () => {
-    // Immediate update: only toggle the dark-mode class on change
-const themeToggle = document.getElementById("theme-toggle");
-if (themeToggle) {
-  themeToggle.addEventListener("change", () => {
-    if (themeToggle.checked) {
-      document.body.classList.add("dark-mode");
+  
+  /* =========================================================
+     7. Social OAuth providers
+     ========================================================= */
+  const googleProvider = new GoogleAuthProvider();
+  const microsoftProvider = new OAuthProvider("microsoft.com");
+  
+  /* Google */
+  googleBtn.addEventListener("click", async () => {
+    try {
+      const { user } = await signInWithPopup(auth, googleProvider);
+      await ensureUserDoc(user);
+    } catch (err) {
+      console.error("Google Sign-in error:", err.code, err.message);
+      if (!auth.currentUser) {
+        alert("Error signing in with Google: " + err.message);
+      } else {
+        console.log("Sign-in succeeded despite error, proceeding.");
+      }
+    }
+    // UI updates handled by onAuthStateChanged
+  });
+  
+  /* Microsoft */
+  microsoftBtn.addEventListener("click", async () => {
+    try {
+      const { user } = await signInWithPopup(auth, microsoftProvider);
+      await ensureUserDoc(user);
+    } catch (err) {
+      console.error("Microsoft Sign-in error:", err.code, err.message);
+      if (!auth.currentUser) {
+        alert("Failed to sign in with Microsoft: " + err.message);
+      } else {
+        console.log("Sign-in succeeded despite error, proceeding.");
+      }
+    }
+    // UI updates handled by onAuthStateChanged
+  });
+  
+  /* =========================================================
+     8. Monitor Authentication State
+     ========================================================= */
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const prevLogin = sessionStorage.getItem("loginLogged");
+      if (!prevLogin) {
+        try {
+          await addLog("login");
+          sessionStorage.setItem("loginLogged", "true");
+        } catch (err) {
+          console.error("Error logging login:", err);
+        }
+      }
+  
+      const ua = navigator.userAgent;
+      const dev = `${navigator.platform} - ${ua.split(") ")[0].split("(").pop()}`;
+      const hash = deviceHashASCII(dev);
+  
+      if (localStorage.getItem("deviceHash") !== hash) {
+        try {
+          await addLog("new_device");
+          localStorage.setItem("deviceHash", hash);
+        } catch (err) {
+          console.error("Error logging new device:", err);
+        }
+      }
+  
+      showDashboard();
+  
+      const userDocRef = doc(db, "users", user.uid);
+      try {
+        const userSnap = await getDoc(userDocRef);
+  
+        if (!userSnap.exists()) {
+          await setDoc(userDocRef, {
+            expenseCategories: DEFAULT_EXPENSE_CATEGORIES || [],
+            incomeCategories: DEFAULT_INCOME_CATEGORIES || [],
+            balance: 0,
+            incomes: [],
+            expenses: [],
+            logs: [],
+          }, { merge: true });
+        } else {
+          const data = userSnap.data();
+          if (!Array.isArray(data.expenseCategories) || data.expenseCategories.length === 0) {
+            await setDoc(userDocRef, { expenseCategories: DEFAULT_EXPENSE_CATEGORIES || [] }, { merge: true });
+          }
+          if (!Array.isArray(data.incomeCategories) || data.incomeCategories.length === 0) {
+            await setDoc(userDocRef, { incomeCategories: DEFAULT_INCOME_CATEGORIES || [] }, { merge: true });
+          }
+        }
+      } catch (err) {
+        console.error("Error setting user document:", err);
+      }
+  
+      showSection("dashboard-section");
+      setActiveNavItem("home-button-desktop");
+  
+      const themeToggle = document.getElementById("theme-toggle");
+      try {
+        const updatedUserSnap = await getDoc(userDocRef);
+        const userData = updatedUserSnap.data();
+        const darkModeEnabled = userData.settings?.darkMode;
+  
+        if (darkModeEnabled) {
+          document.body.classList.add("dark-mode");
+          if (themeToggle) themeToggle.checked = true;
+        } else {
+          document.body.classList.remove("dark-mode");
+          if (themeToggle) themeToggle.checked = false;
+        }
+      } catch (err) {
+        console.error("Error loading theme settings:", err);
+      }
+  
+      try {
+        await loadCategoriesFromFirestore(user);
+        loadDashboard(user);
+      } catch (err) {
+        console.error("Error loading dashboard data:", err);
+      }
+  
+      // Weekly summary card (remove hard-coded true for production)
+      if (new Date().getDay() === 3) { // Wednesday
+        console.log("It's Wednesday - showing Weekly Summary Card");
+        setTimeout(() => {
+          try {
+            renderWeeklySummaryCard();
+          } catch (err) {
+            console.error("Error rendering weekly summary:", err);
+          }
+        }, 300);
+      }
     } else {
-      document.body.classList.remove("dark-mode");
+      sessionStorage.removeItem("loginLogged");
+      showAuthScreen();
     }
   });
-}
-
-      
-    
-      // Listen for changes on the toggle switch.
+  
+  /* =========================================================
+     9. Theme Toggle
+     ========================================================= */
+  document.addEventListener("DOMContentLoaded", () => {
+    const themeToggle = document.getElementById("theme-toggle");
+    if (themeToggle) {
       themeToggle.addEventListener("change", () => {
         if (themeToggle.checked) {
           document.body.classList.add("dark-mode");
@@ -2477,7 +2542,8 @@ if (themeToggle) {
           localStorage.setItem("theme", "light");
         }
       });
-    });
+    }
+  });
     
   // BEGGING OF THE TRANSACTION LISTING CODE
   /***************************************************
@@ -3771,90 +3837,6 @@ document.getElementById("view-all-transactions")?.addEventListener("click", () =
     client_id: "31114956560-rmea0jtoq86qie75n0v3e1v06e8tk1e3.apps.googleusercontent.com", // Update with your actual Web Client ID
   });
   
-  // Toggle More Options
-  const moreLink = document.getElementById("more-link");
-  const moreOptions = document.getElementById("more-options");
-  moreLink.addEventListener("click", () => {
-    moreOptions.classList.toggle("hidden");
-  });
-  
-  document.querySelectorAll('.nav-more').forEach((more) => {
-      more.addEventListener('click', (e) => {
-        e.preventDefault();
-        const dropdown = document.createElement('ul');
-        dropdown.classList.add('dropdown-menu');
-        dropdown.innerHTML = `
-          <li><a href="#">Profile</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Logout</a></li>
-        `;
-        more.appendChild(dropdown);
-      });
-    });
-    
-    const showToast = (message) => {
-      const toast = document.getElementById("toast-container");
-      toast.textContent = message;
-      toast.classList.remove("hidden");
-      setTimeout(() => toast.classList.add("hidden"), 3000);
-    };
-    
-    // Example usage
-    showToast("Income added successfully!");
-   
-    // Enhanced Error Handling
-  const showError = (message) => {
-    const errorToast = document.getElementById("toast-container");
-    errorToast.textContent = message;
-    errorToast.style.backgroundColor = "#f44336";
-    errorToast.classList.remove("hidden");
-    setTimeout(() => errorToast.classList.add("hidden"), 3000);
-  };
-  
-  
-  
-  // Sort Budgets
-  const sortBudgets = (budgets, criteria) => {
-    if (criteria === "category") {
-      return budgets.sort((a, b) => a.category.localeCompare(b.category));
-    }
-    if (criteria === "amount") {
-      return budgets.sort((a, b) => b.amount - a.amount);
-    }
-  };
-  
-  // Delete Budget or Expense
-  const deleteItem = async (id, type) => {
-    const user = auth.currentUser;
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-  
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      if (type === "budget") {
-        data.budgets = data.budgets.filter((budget) => budget.id !== id);
-      } else if (type === "expense") {
-        data.expenses = data.expenses.filter((expense) => expense.id !== id);
-      }
-      await setDoc(userDocRef, data);
-      loadDashboard(user);
-      showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!`);
-    }
-  };
-  
-  // Example: Adding delete button for budgets
-  budgetsList.addEventListener("click", (e) => {
-    if (e.target.classList.contains("delete-budget")) {
-      const budgetId = e.target.dataset.id;
-      deleteItem(budgetId, "budget");
-    }
-  });
-  
-  // Add User Preferences Loading
-  document.addEventListener("DOMContentLoaded", () => {
-    loadUserPreferences();
-  });
-  
   
   
   const setActiveTab = (activeTab, activeFields) => {
@@ -4514,4 +4496,3 @@ async function showInsightsPopup() {
     textContainer.innerHTML = "<p>Error loading insights. Please try again later.</p>";
   }
 }
-
