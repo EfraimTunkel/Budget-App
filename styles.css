@@ -1,7 +1,4 @@
-
-
 :root {
-  /* ======== Light Mode Variables (from your snippet) ======== */
   --bg-color: #ffffff;
   --text-color: #333333;
   --primary-color: #4caf50;
@@ -11,47 +8,37 @@
   --link-color: #4caf50;
   --modal-bg: #ffffff;
   --card-bg: #f0f0f0;
-
- 
   --nav-bg: #ffffff;
   --nav-text: #4caf50;
   --shadow-color: rgba(0, 0, 0, 0.1);
-  --accent-color: #4caf50; /* always green */
+  --accent-color: #4caf50;
   --icon: #000;
   --icon-hover: #191919;
-  --logout-button:#333;
-
-  /* Material Date Picker Variables */
+  --logout-button: #333;
   --mdp-dialog-bg: #fff;
   --mdp-header-bg: #1976d2;
   --mdp-text-color: #000;
   --mdp-border-color: #eee;
   --mdp-hover-bg: #e0e0e0;
   --mdp-action-hover-bg: #f1f1f1;
-
-  /* Modal-specific (for forms, etc.) */
   --modal-bg-light: #ffffff;
   --text-color-light: #333333;
   --border-color-light: #cccccc;
   --secondary-bg-light: #f9f9f9;
-
-  /* ======== Additional Light Mode Vars for overlay/popup ======== */
-  --overlay-bg: rgba(0, 0, 0, 0.4); /* dark backdrop behind popups */
+  --overlay-bg: rgba(0, 0, 0, 0.4);
   --button-bg: #fafafa;
   --button-border: #ccc;
   --button-color: #999;
   --item-bg: #f8f8f8;
   --item-hover-bg: #eeeeee;
-  /* For “Expense” vs “Income” tab highlights */
-  --danger-color: #ff5252; /* expense highlight */
-  --income-color: #4caf50; /* income highlight */
+  --danger-color: #ff5252;
+  --income-color: #4caf50;
   --nav-hover-bg: #f0f0f0;
   --nav-active-bg: #e0e0e0;
   --nav-active-text: #000;
 }
 
 .dark-mode {
-  /* ======== Dark Mode Variables (from your snippet) ======== */
   --bg-color: #121212;
   --text-color: #e0e0e0;
   --primary-color: #81c784;
@@ -64,33 +51,26 @@
   --nav-bg: #1e1e1e;
   --nav-text: #81c784;
   --shadow-color: rgba(0, 0, 0, 0.6);
-  --accent-color: #4caf50; /* always green */
+  --accent-color: #4caf50;
   --icon: #e0e0e0;
   --icon-hover: #fff;
   --item-bg: #2a2a2a;
   --item-hover-bg: #333333;
-  /* Material Date Picker Overrides */
   --mdp-dialog-bg: #2c2c2c;
   --mdp-header-bg: #1565c0;
   --mdp-text-color: #e0e0e0;
   --mdp-border-color: #555;
   --mdp-hover-bg: #444;
   --mdp-action-hover-bg: #333;
-
-  /* Modal-specific dark mode */
   --modal-bg-dark: #2c2c2c;
   --text-color-dark: #e0e0e0;
   --border-color-dark: #555555;
   --secondary-bg-dark: #3a3a3a;
-
-  /* ======== Additional Dark Mode Vars for overlay/popup ======== */
   --overlay-bg: rgba(0, 0, 0, 0.6);
   --button-bg: #3a3a3a;
   --button-border: #666;
   --button-color: #aaa;
-  --logout-button:#fff;
-
-  /* For “Expense” vs “Income” tab highlights */
+  --logout-button: #fff;
   --danger-color: #f44336;
   --income-color: #81c784;
   --nav-hover-bg: #282424;
@@ -98,192 +78,217 @@
   --nav-active-text: #fff;
 }
 
-.auth-screen {
-  --bg: var(--bg-color);
-  --sheet-bg: #121212;
-  --sheet-radius: 26px 26px 0 0;
-  --headline: #ffffff;
-  --accent: var(--primary-color);
-  --btn-bg: var(--secondary-bg);
-  --btn-border: var(--border-color);
-  --btn-text: var(--text-color);
-  --btn-hover: var(--item-hover-bg);
-  --primary: var(--primary-color);
+
+
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#auth-wrapper {
+  display: none;
+}
+
+#auth-wrapper.auth-screen.body {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
   width: 100%;
+  position: relative;
+  background: linear-gradient(135deg, #1e1e1e, #121212); /* Dark mode gradient */
+  z-index: 1;
+  overflow: hidden;
 }
 
-/* Hide auth wrapper contents when not active */
-#auth-wrapper[style*="display: none"],
-#auth-wrapper.hidden {
-  display: none !important;
-}
-
-/* =========================================================
-   GLOBAL RESET
-   ========================================================= */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html, body {
-  height: 100%;
-  font-family: 'Roboto', sans-serif;
-  background: var(--bg);
-  color: var(--text-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Override for dashboard */
-#dashboard-container {
-  display: none; /* Hidden by default */
-  flex-direction: column;
-  min-height: 100vh;
+#auth-wrapper.auth-screen.body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  overflow-y: auto; /* Allow scrolling */
-  background: var(--bg-color);
+  height: 100%;
+  background: radial-gradient(circle at 10% 20%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 90% 80%, rgba(76, 175, 80, 0.1) 0%, transparent 50%);
+  z-index: -1;
 }
 
-/* =========================================================
-   AUTH LAYOUT
-   ========================================================= */
-.top-logo {
+#auth-wrapper .rocket-trail {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 2px;
+  height: 200px;
+  background: linear-gradient(to bottom, transparent, rgba(76, 175, 80, 0.5));
+  transform: rotate(45deg);
+  animation: trailFade 3s infinite ease-in-out;
+  z-index: -1;
+}
+
+@keyframes trailFade {
+  0% { opacity: 0; transform: rotate(45deg) translateY(-50px); }
+  50% { opacity: 1; transform: rotate(45deg) translateY(0); }
+  100% { opacity: 0; transform: rotate(45deg) translateY(50px); }
+}
+
+#auth-wrapper .stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="10" cy="10" r="1" fill="rgba(76,175,80,0.5)"/><circle cx="50" cy="50" r="1.5" fill="rgba(76,175,80,0.7)"/><circle cx="90" cy="20" r="1" fill="rgba(76,175,80,0.5)"/></svg>') repeat;
+  animation: twinkle 5s infinite;
+  z-index: -1;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+#auth-wrapper .top-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   position: absolute;
   top: 1.5rem;
   left: 1.5rem;
-  font-size: 1.8rem;
-  color: var(--primary);
-  z-index: 2;
+  font-size: 1.2rem;
+  color: #81c784; /* Dark mode --primary-color */
+  transition: transform 0.3s ease;
 }
-/* =========================================================
-   AUTH LAYOUT
-   ========================================================= */
-   .bottom-curve {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 30vh;
-    background: var(--primary);
-    border-top-left-radius: 50% 40%;
-    border-top-right-radius: 50% 40%;
-    z-index: 0;
-  }
-  
-  /* =========================================================
-     AUTH CARD
-     ========================================================= */
-  #auth-container {
-    z-index: 1;
-    width: min(90%, 400px);
-    background: var(--sheet-bg);
-    padding: 2rem 1.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 8px 24px var(--shadow-color);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-  
-  /* Mobile Adjustments */
-  @media (max-width: 767px) {
-    .bottom-curve {
-      height: 30vh; /* Increased to overlap the bottom of #auth-container */
-    }
-  
 
-  }
-/* =========================================================
-   HEADLINE
-   ========================================================= */
-   #dynamic-text {
-    font-size: clamp(2rem, 6vw, 3rem);
-    font-weight: 600; /* Slightly softer than 700 for elegance */
-    font-family: 'Roboto', Arial, sans-serif; /* Added fallback */
-    background: #4caf50 ; /* Gradient text */
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent; /* Makes the gradient visible */
-    text-align: center;
-    margin-bottom: 2rem; /* Increased spacing */
-    letter-spacing: 0.08em; /* More refined spacing */
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Softer shadow */
-    text-transform: uppercase;
-    line-height: 1.3; /* Better readability */
-    opacity: 0; /* For animation */
-    transform: scale(0.95); /* For animation */
-    animation: fadeInScale 0.8s ease-out forwards; /* Fade-in and scale animation */
-  }
-  
-  /* Animation for fade-in and scale effect */
-  @keyframes fadeInScale {
-    0% {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  
-  /* Mobile Adjustments */
-  @media (max-width: 767px) {
-    #dynamic-text {
-      font-size: clamp(1.8rem, 5vw, 2.5rem); /* Slightly smaller on mobile */
-      margin-bottom: 1.5rem; /* Slightly less spacing to fit better */
-    }
-  }
+#auth-wrapper .top-logo:hover {
+  transform: scale(1.1);
+}
 
-  /* =========================================================
-   BUTTONS
-   ========================================================= */
-.btn-auth,
-.social-btn {
+#auth-wrapper .app-name {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #81c784; /* Dark mode --primary-color */
+}
+
+#auth-wrapper #app-tagline {
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 600;
+  background: linear-gradient(90deg, #81c784, #4caf50); /* Dark mode gradient */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  margin-bottom: 1rem;
+  letter-spacing: 0.08em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); /* Dark mode --shadow-color */
+  text-transform: uppercase;
+  line-height: 1.3;
+  opacity: 0;
+  transform: scale(0.95);
+  animation: fadeInScale 0.8s ease-out forwards;
+}
+
+@keyframes fadeInScale {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 767px) {
+  #auth-wrapper #app-tagline {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    margin-bottom: 0.5rem;
+  }
+}
+
+#auth-wrapper .bottom-curve {
+  position: absolute;
+  bottom: 0;
   width: 100%;
-  padding: 0.85rem 1rem;
+  height: 20vh;
+  background: #81c784; /* Dark mode --primary-color */
+  border-top-left-radius: 50% 40%;
+  border-top-right-radius: 50% 40%;
+  z-index: 0;
+}
+
+@media (max-width: 767px) {
+  #auth-wrapper .bottom-curve {
+    height: 20vh;
+  }
+}
+#auth-wrapper #auth-container {
+  background: #1e1e1e; /* Flat dark mode --modal-bg */
+  padding: 1.5rem; /* Reduced padding for a tighter layout */
+  border-radius: 1rem; /* Less rounded for a sharper, minimalist look */
+  border: 1px solid #2a2a2a; /* Subtle border for definition */
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  #auth-wrapper #auth-container {
+    padding: 1.2rem; /* Even tighter on mobile */
+  }
+}
+
+@media (min-width: 768px) {
+  #auth-wrapper #auth-container {
+    max-width: 450px;
+  }
+}
+
+#auth-wrapper #auth-container .social-btn,
+#auth-wrapper #auth-container .btn-auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.8rem; /* Simplified padding */
+  margin: 0.5rem 0;
+  border-radius: 0.5rem; /* Less rounded for minimalism */
   font-size: 1rem;
   font-weight: 500;
-  border: none;
-  border-radius: 0.75rem;
-  margin-top: 10px;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition: background 0.2s ease, border-color 0.2s ease; /* Minimal transitions */
 }
 
-.btn-auth {
-  background: var(--primary);
+#auth-wrapper #auth-container .btn-auth {
+  background: #81c784; /* Dark mode --primary-color */
   color: #fff;
+  border: none;
 }
 
-.btn-auth:hover {
-  background: var(--hover-link-color);
-  transform: translateY(-2px);
+#auth-wrapper #auth-container .btn-auth:hover {
+  background: #66bb6a; /* Dark mode --hover-link-color */
 }
 
-.social-btn {
-  background: var(--btn-bg);
-  border: 1.5px solid var(--btn-border);
+#auth-wrapper #auth-container .social-btn {
+  background: #2a2a2a; /* Slightly lighter than container for contrast */
+  border: 1px solid #444; /* Thinner border for minimalism */
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  color: var(--btn-text);
+  color: #e0e0e0; /* Dark mode --text-color */
 }
 
-.social-btn:hover {
-  background: var(--btn-hover);
-  border-color: var(--primary);
-  transform: translateY(-2px);
+#auth-wrapper #auth-container .social-btn:hover {
+  background: #333333; /* Dark mode --item-hover-bg */
+  border-color: #81c784; /* Dark mode --primary-color */
 }
 
-.social-btn-icon {
+#auth-wrapper #auth-container .social-btn-icon {
   width: 20px;
   height: 20px;
   display: flex;
@@ -291,39 +296,37 @@ html, body {
   justify-content: center;
 }
 
-.social-btn-icon svg,
-.social-btn-icon img {
+#auth-wrapper #auth-container .social-btn-icon svg,
+#auth-wrapper #auth-container .social-btn-icon img {
   width: 20px;
   height: 20px;
 }
-/* =========================================================
-   AUTH MODAL
-   ========================================================= */
-   .auth-modal {
-    position: fixed;
-    inset: 0;
-    background: var(--overlay-bg); /* rgba(0,0,0,0.4) (light) or rgba(0,0,0,0.6) (dark) */
-    display: grid;
-    place-items: center;
-    z-index: 1000;
-    transition: opacity 0.3s ease;
-  }
-  
-  .auth-modal.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-  
-  .modal-content {
-    background: var(--modal-bg); /* #ffffff (light) or #1e1e1e (dark) */
-    padding: 2rem 1.5rem;
-    width: min(90%, 420px);
-    border-radius: 1rem;
-    box-shadow: 0 8px 24px var(--shadow-color);
-    position: relative;
-  }
 
-.close-btn {
+#auth-wrapper #auth-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6); /* Simplified overlay, less dramatic */
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  transition: opacity 0.3s ease; /* Kept a simple fade for usability */
+}
+
+#auth-wrapper #auth-modal.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#auth-wrapper #auth-modal .modal-content {
+  background: #1e1e1e; /* Dark mode --modal-bg */
+  padding: 2rem; /* Reduced padding for a tighter layout */
+  width: min(90%, 400px); /* Slightly narrower for a minimalist feel */
+  border-radius: 1rem; /* Less rounded for a sharper look */
+  border: 1px solid #2a2a2a; /* Subtle border for definition */
+  position: relative;
+}
+
+#auth-wrapper #auth-modal .close-btn {
   position: absolute;
   top: 1rem;
   right: 1rem;
@@ -331,50 +334,74 @@ html, body {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-color);
+  color: #e0e0e0; /* Dark mode --text-color */
   opacity: 0.7;
+  transition: opacity 0.2s ease; /* Minimal transition */
 }
 
-.close-btn:hover {
+#auth-wrapper #auth-modal .close-btn:hover {
   opacity: 1;
 }
 
-/* =========================================================
-   FORM ELEMENTS
-   ========================================================= */
-.input-group {
-  margin-top: 1rem;
+#auth-wrapper #auth-modal .app-title {
+  font-size: 1.5rem; /* Smaller, less bold title */
+  font-weight: 600;
+  color: #81c784; /* Dark mode --primary-color */
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+#auth-wrapper #auth-modal .app-tagline {
+  color: #b0b0b0; /* Lighter gray for contrast */
+  font-size: 0.95rem; /* Smaller for minimalism */
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+#auth-wrapper #auth-modal #auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Consistent spacing */
+}
+
+#auth-wrapper #auth-modal .input-group {
+  margin-top: 0;
   text-align: left;
 }
 
-.input-group label {
+#auth-wrapper #auth-modal .input-group label {
   font-size: 0.9rem;
-  color: var(--text-color);
+  color: #e0e0e0; /* Dark mode --text-color */
   font-weight: 500;
+  display: block;
+  margin-bottom: 0.3rem;
 }
 
-.input-group input {
+#auth-wrapper #auth-modal .input-group input {
   width: 100%;
-  margin-top: 0.3rem;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  border: 1.5px solid var(--border-color);
-  border-radius: 0.5rem;
-  background: var(--secondary-bg);
-  color: var(--text-color);
-  transition: border-color 0.2s ease;
+  padding: 0.8rem 1rem; /* Simplified padding */
+  font-size: 0.95rem; /* Slightly smaller text */
+  border: 1px solid #444; /* Thin, flat border */
+  border-radius: 0.5rem; /* Less rounded */
+  background: #2a2a2a; /* Flat background */
+  color: #e0e0e0; /* Dark mode --text-color */
+  transition: border-color 0.2s ease; /* Minimal transition */
 }
 
-.input-group input:focus {
+#auth-wrapper #auth-modal .input-group input:hover {
+  border-color: #81c784; /* Dark mode --primary-color */
+}
+
+#auth-wrapper #auth-modal .input-group input:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: #81c784; /* Dark mode --primary-color */
 }
 
-.password-wrapper {
+#auth-wrapper #auth-modal .password-wrapper {
   position: relative;
 }
 
-.toggle-password {
+#auth-wrapper #auth-modal .toggle-password {
   position: absolute;
   top: 50%;
   right: 1rem;
@@ -382,48 +409,72 @@ html, body {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-color);
+  color: #81c784; /* Dark mode --primary-color */
+  font-size: 1.1rem;
   opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
 
-.toggle-password:hover {
+#auth-wrapper #auth-modal .toggle-password:hover {
   opacity: 1;
 }
 
-/* =========================================================
-   MISC
-   ========================================================= */
-.link-button {
-  background: none;
+#auth-wrapper #auth-modal #auth-button {
+  padding: 0.8rem;
+  font-size: 1rem;
+  font-weight: 500;
+  background: #81c784; /* Dark mode --primary-color */
+  color: #fff;
   border: none;
-  color: var(--primary);
+  border-radius: 0.5rem;
   cursor: pointer;
-  font-size: 0.9rem;
+  transition: background 0.2s ease; /* Minimal transition */
   margin-top: 0.5rem;
 }
 
-.link-button:hover {
-  color: var(--hover-link-color);
+#auth-wrapper #auth-modal #auth-button:hover {
+  background: #66bb6a; /* Dark mode --hover-link-color */
 }
 
-.tos-text {
+#auth-wrapper #auth-modal #forgot-password-container {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+#auth-wrapper #auth-modal #forgot-password-button {
+  background: none;
+  border: 1px solid #81c784; /* Thin border */
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  color: #81c784; /* Dark mode --primary-color */
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+#auth-wrapper #auth-modal #forgot-password-button:hover {
+  background: #81c784;
+  color: #fff;
+}
+
+#auth-wrapper #auth-modal .tos-text {
   margin-top: 1.5rem;
   font-size: 0.85rem;
-  color: var(--text-color);
-  opacity: 0.8;
+  color: #b0b0b0; /* Lighter gray */
   text-align: center;
+  line-height: 1.5;
 }
 
-.tos-text a {
-  color: var(--primary);
+#auth-wrapper #auth-modal .tos-text a {
+  color: #81c784; /* Dark mode --link-color */
   text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
-.tos-text a:hover {
-  text-decoration: underline;
-  color: var(--hover-link-color);
+#auth-wrapper #auth-modal .tos-text a:hover {
+  color: #66bb6a; /* Dark mode --hover-link-color */
 }
-  
 
 /* Make sure the new desktop nav is hidden by default (on mobile) */
 .desktop-nav {
