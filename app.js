@@ -2292,7 +2292,6 @@ discardConfirmBtn.addEventListener("click", () => {
   const togglePwd = document.getElementById("toggle-password-visibility");
   const authWrapper = document.getElementById("auth-wrapper");
   
-  // Initialize dynamic text
 
   /* =========================================================
      2. UI State
