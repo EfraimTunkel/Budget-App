@@ -2293,8 +2293,7 @@ discardConfirmBtn.addEventListener("click", () => {
   const authWrapper = document.getElementById("auth-wrapper");
   
   // Initialize dynamic text
-  dynamicText.textContent = "Cash Rocket"; // Set static text
-  
+
   /* =========================================================
      2. UI State
      ========================================================= */
