@@ -184,20 +184,33 @@ body {
 #auth-wrapper #app-tagline {
   font-size: clamp(1.8rem, 5vw, 2.5rem);
   font-weight: 600;
-  background: linear-gradient(90deg, #81c784, #4caf50); /* Dark mode gradient */
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #81c784; /* Flat color */
   text-align: center;
   margin-bottom: 1rem;
   letter-spacing: 0.08em;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); /* Dark mode --shadow-color */
   text-transform: uppercase;
   line-height: 1.3;
-  opacity: 0;
-  transform: scale(0.95);
-  animation: fadeInScale 0.8s ease-out forwards;
+  position: absolute; /* Position absolutely to control placement */
+  top: 20%; /* Lower the text on mobile */
+  width: 100%;
+}
+#auth-wrapper #app-tagline .blinking-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  color: #81c784;
+  font-weight: 700;
+  animation: blink 1s infinite, pulse 1.5s infinite ease-in-out;
 }
 
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  50.1%, 100% { opacity: 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
 @keyframes fadeInScale {
   0% { opacity: 0; transform: scale(0.95); }
   100% { opacity: 1; transform: scale(1); }
@@ -205,11 +218,74 @@ body {
 
 @media (max-width: 767px) {
   #auth-wrapper #app-tagline {
-    font-size: clamp(1.5rem, 5vw, 2rem);
-    margin-bottom: 0.5rem;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    font-weight: 600;
+    color: #81c784; /* Flat color */
+    text-align: center;
+    margin-bottom: 1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.3;
+    position: absolute; /* Position absolutely to control placement */
+    top: 30%; /* Lower the text on mobile */
+    width: 100%;
+  }
+}
+/* Existing styles remain unchanged, adding new styles for the loading indicator */
+#auth-wrapper #loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  padding: 1.5rem;
+  margin-top: auto;
+}
+
+@media (max-width: 767px) {
+  #auth-wrapper #loading-indicator {
+    padding: 1.2rem;
+    max-width: 100%;
   }
 }
 
+@media (min-width: 768px) {
+  #auth-wrapper #loading-indicator {
+    max-width: 450px;
+  }
+}
+
+#auth-wrapper #loading-indicator .dot {
+  width: 10px;
+  height: 10px;
+  background: #81c784;
+  border-radius: 50%;
+  margin: 0 5px;
+  animation: dot-bounce 1.4s infinite ease-in-out;
+}
+
+#auth-wrapper #loading-indicator .dot:nth-child(2) {
+  animation-delay: -0.32s;
+}
+
+#auth-wrapper #loading-indicator .dot:nth-child(3) {
+  animation-delay: -0.16s;
+}
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* Hide auth-container when loading */
+#auth-wrapper.loading #auth-container {
+  display: none;
+}
+
+/* Ensure loading indicator is hidden by default */
+#auth-wrapper:not(.loading) #loading-indicator {
+  display: none !important;
+}
 #auth-wrapper .bottom-curve {
   position: absolute;
   bottom: 0;
@@ -223,22 +299,39 @@ body {
 
 @media (max-width: 767px) {
   #auth-wrapper .bottom-curve {
-    height: 20vh;
+    display: none; /* Completely hide on mobile */
+    
+  }
+
+  #auth-wrapper.auth-screen.body {
+    justify-content: flex-end; /* Push content to bottom on mobile */
+    padding-bottom: 0; /* Ensure no extra padding at the bottom */
   }
 }
 #auth-wrapper #auth-container {
   background: #1e1e1e; /* Flat dark mode --modal-bg */
-  padding: 1.5rem; /* Reduced padding for a tighter layout */
-  border-radius: 1rem; /* Less rounded for a sharper, minimalist look */
-  border: 1px solid #2a2a2a; /* Subtle border for definition */
+  padding: 1.5rem;
+  border-top-left-radius: 1rem; /* Only top corners rounded */
+  border-top-right-radius: 1rem;
+  border-bottom-left-radius: 0; /* Sharp bottom corners */
+  border-bottom-right-radius: 0;
+  border: 1px solid #2a2a2a; /* Subtle border */
+  border-bottom: none; /* Remove bottom border for seamless look */
   width: 100%;
-  max-width: 400px;
+  max-width: 500px;
   text-align: center;
+  align-items: center; /* Ensure it stays at the bottom */
+  margin-top: 100px;
 }
 
 @media (max-width: 767px) {
   #auth-wrapper #auth-container {
-    padding: 1.2rem; /* Even tighter on mobile */
+    padding: 1.2rem;
+    max-width: 100%; /* Full width on mobile */
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
   }
 }
 
@@ -254,40 +347,39 @@ body {
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 0.8rem; /* Simplified padding */
+  padding: 0.8rem;
   margin: 0.5rem 0;
-  border-radius: 0.5rem; /* Less rounded for minimalism */
+  border-radius: 0.5rem;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease; /* Minimal transitions */
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 #auth-wrapper #auth-container .btn-auth {
-  background: #81c784; /* Dark mode --primary-color */
+  background: #81c784;
   color: #fff;
   border: none;
 }
 
 #auth-wrapper #auth-container .btn-auth:hover {
-  background: #66bb6a; /* Dark mode --hover-link-color */
+  background: #66bb6a;
 }
 
 #auth-wrapper #auth-container .social-btn {
-  background: #2a2a2a; /* Slightly lighter than container for contrast */
-  border: 1px solid #444; /* Thinner border for minimalism */
+  background: #2a2a2a;
+  border: 1px solid #444;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  color: #e0e0e0; /* Dark mode --text-color */
+  color: #e0e0e0;
 }
 
 #auth-wrapper #auth-container .social-btn:hover {
-  background: #333333; /* Dark mode --item-hover-bg */
-  border-color: #81c784; /* Dark mode --primary-color */
+  background: #333333;
+  border-color: #81c784;
 }
-
 #auth-wrapper #auth-container .social-btn-icon {
   width: 20px;
   height: 20px;
@@ -380,7 +472,7 @@ body {
 #auth-wrapper #auth-modal .input-group input {
   width: 100%;
   padding: 0.8rem 1rem; /* Simplified padding */
-  font-size: 0.95rem; /* Slightly smaller text */
+  font-size: 17px; /* Slightly smaller text */
   border: 1px solid #444; /* Thin, flat border */
   border-radius: 0.5rem; /* Less rounded */
   background: #2a2a2a; /* Flat background */
@@ -1920,7 +2012,7 @@ canvas {
 
 .tx-label {
   font-weight: 600;
-  color: #333;
+  color: var(--text-color);
 }
 
 .tx-date {
@@ -2960,11 +3052,12 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   /* Profile grid for cards */
 
   .profile-grid {
-    gap: 0.75rem;
+    padding-top: 30px;
+    gap: 0.7rem;
   }
   .profile-card {
     padding: 1rem;
-    margin-top: -50px;
+    margin-top: -60px;
   }
   .profile-card i {
     font-size: 1.6rem;
@@ -3665,6 +3758,7 @@ body.nav-expanded .full-page {
   overflow-y: auto;
   padding: 1rem;
   background: var(--bg-color);
+  color: var(--text-color);
 }
 
 /************************************************
@@ -3672,6 +3766,7 @@ body.nav-expanded .full-page {
 ************************************************/
 .transaction-card {
   background: var(--card-bg);
+  color: var(--text-color);
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -3704,11 +3799,12 @@ body.nav-expanded .full-page {
   flex: 1;
   display: flex;
   flex-direction: column;
+  color: var(--text-color);
 }
 .transaction-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-color);
 }
 .transaction-time {
   font-size: 0.85rem;
@@ -6296,5 +6392,4 @@ html {
 }
 /* ========== DARK MODE VARIABLES ========== */
 /* Start with everything hidden except a loading spinner */
-
 
