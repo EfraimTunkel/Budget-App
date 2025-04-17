@@ -584,6 +584,7 @@ crSaveNewCatBtn.addEventListener("click", async () => {
 // Global utility to highlight the active sidebar nav item
 // Modified showSection to handle active state on mobile
 // Modified showSection to handle active state on mobile
+
 function showSection(sectionId) {
   const sections = document.querySelectorAll('.section');
   sections.forEach(section => {
@@ -2269,197 +2270,209 @@ discardConfirmBtn.addEventListener("click", () => {
 
 
 
- 
-/* =========================================================
+ /* =========================================================
    LOGIN ⇄ SIGN-UP LOGIC
    ========================================================= */
 
-  /* =========================================================
-     1. DOM Handles
-     ========================================================= */
-  const formTitle = document.getElementById("form-title");
-  const authButton = document.getElementById("auth-button");
-  const forgotPasswordBtn = document.getElementById("forgot-password-button");
-  const authForm = document.getElementById("auth-form");
-  const googleBtn = document.getElementById("google-signin-button");
-  const microsoftBtn = document.getElementById("microsoft-signin-button");
-  const signupBtn = document.getElementById("signup-button");
-  const loginBtn = document.getElementById("login-button");
-  const authModal = document.getElementById("auth-modal");
-  const closeModalBtn = document.getElementById("close-modal");
-  const dynamicText = document.getElementById("dynamic-text");
-  const pwdInput = document.getElementById("auth-password");
-  const togglePwd = document.getElementById("toggle-password-visibility");
-  const authWrapper = document.getElementById("auth-wrapper");
-  
+/* =========================================================
+   1. DOM Handles
+   ========================================================= */
+const formTitle = document.getElementById("form-title");
+const authButton = document.getElementById("auth-button");
+const forgotPasswordBtn = document.getElementById("forgot-password-button");
+const authForm = document.getElementById("auth-form");
+const googleBtn = document.getElementById("google-signin-button");
+const microsoftBtn = document.getElementById("microsoft-signin-button");
+const signupBtn = document.getElementById("signup-button");
+const loginBtn = document.getElementById("login-button");
+const authModal = document.getElementById("auth-modal");
+const closeModalBtn = document.getElementById("close-modal");
+const pwdInput = document.getElementById("auth-password");
+const togglePwd = document.getElementById("toggle-password-visibility");
+const authWrapper = document.getElementById("auth-wrapper");
 
-  /* =========================================================
-     2. UI State
-     ========================================================= */
-  let loginMode = true; // true = Log In, false = Sign Up
-  
-  /* =========================================================
-     3. Modal helpers
-     ========================================================= */
-  function paintAuthView() {
+/* =========================================================
+   2. UI State
+   ========================================================= */
+let loginMode = true; // true = Log In, false = Sign Up
+
+/* =========================================================
+   3. Modal Helpers
+   ========================================================= */
+function paintAuthView() {
+  if (loginMode) {
+    formTitle.textContent = "Sign In to Cash Rocket";
+    authButton.textContent = "Sign In";
+    forgotPasswordBtn.parentElement.style.display = "block";
+  } else {
+    formTitle.textContent = "Create Your Account";
+    authButton.textContent = "Sign Up";
+    forgotPasswordBtn.parentElement.style.display = "none";
+  }
+}
+
+function showModal(isLogin) {
+  loginMode = isLogin;
+  paintAuthView();
+  authModal.classList.remove("hidden");
+  document.getElementById("auth-email").focus();
+}
+
+function hideModal() {
+  authModal.classList.add("hidden");
+}
+
+/* =========================================================
+   4. View Toggle Helpers
+   ========================================================= */
+function showDashboard() {
+  authWrapper.style.display = "none";
+  dashboardContainer.style.display = "block";
+}
+
+function showAuthScreen() {
+  authWrapper.style.display = "flex";
+  dashboardContainer.style.display = "none";
+}
+
+function showLoadingState() {
+  authWrapper.classList.add("loading");
+}
+
+/* =========================================================
+   5. Event Wiring
+   ========================================================= */
+signupBtn.addEventListener("click", () => showModal(false));
+loginBtn.addEventListener("click", () => showModal(true));
+closeModalBtn.addEventListener("click", hideModal);
+
+// Password visibility toggle
+togglePwd.addEventListener("click", () => {
+  const isPwd = pwdInput.type === "password";
+  pwdInput.type = isPwd ? "text" : "password";
+  const icon = togglePwd.querySelector("i");
+  if (isPwd) {
+    icon.classList.remove("fa-eye");
+    icon.classList.add("fa-eye-slash");
+  } else {
+    icon.classList.remove("fa-eye-slash");
+    icon.classList.add("fa-eye");
+  }
+});
+
+/* =========================================================
+   6. Email / Password ⇄ Sign-up / Log-in
+   ========================================================= */
+authForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("auth-email").value.trim();
+  const password = pwdInput.value.trim();
+
+  try {
     if (loginMode) {
-      formTitle.textContent = "Sign In to Cash Rocket";
-      authButton.textContent = "Sign In";
-      forgotPasswordBtn.parentElement.style.display = "block";
+      showLoadingState(); // Show loading state before sign-in
+      const { user } = await verifiedSignIn(email, password);
+      hideModal();
+      // showDashboard() will be handled by onAuthStateChanged
     } else {
-      formTitle.textContent = "Create Your Account";
-      authButton.textContent = "Sign Up";
-      forgotPasswordBtn.parentElement.style.display = "none";
-    }
-  }
-  
-  function showModal(isLogin) {
-    loginMode = isLogin;
-    paintAuthView();
-    authModal.classList.remove("hidden");
-    document.getElementById("auth-email").focus();
-  }
-  
-  function hideModal() {
-    authModal.classList.add("hidden");
-  }
-  
-  /* =========================================================
-     4. View toggle helpers
-     ========================================================= */
-  function showDashboard() {
-    authWrapper.style.display = "none";
-    dashboardContainer.style.display = "block";
-  }
-  
-  function showAuthScreen() {
-    authWrapper.style.display = "flex";
-    dashboardContainer.style.display = "none";
-  }
-  
-  /* =========================================================
-     5. Event wiring
-     ========================================================= */
-  signupBtn.addEventListener("click", () => showModal(false));
-  loginBtn.addEventListener("click", () => showModal(true));
-  closeModalBtn.addEventListener("click", hideModal);
-  
-  // Password visibility toggle
-  togglePwd.addEventListener("click", () => {
-    const isPwd = pwdInput.type === "password";
-    pwdInput.type = isPwd ? "text" : "password";
-    const icon = togglePwd.querySelector("i");
-    if (isPwd) {
-      icon.classList.remove("fa-eye");
-      icon.classList.add("fa-eye-slash");
-    } else {
-      icon.classList.remove("fa-eye-slash");
-      icon.classList.add("fa-eye");
-    }
-  });
-  
-  /* =========================================================
-     6. Email / Password ⇄ Sign-up / Log-in
-     ========================================================= */
-  authForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = document.getElementById("auth-email").value.trim();
-    const password = pwdInput.value.trim();
-  
-    try {
-      if (loginMode) {
-        await verifiedSignIn(email, password);
-        hideModal();
-        showDashboard();
-      } else {
-        const { user } = await createUserWithEmailAndPassword(auth, email, password);
-        await sendEmailVerification(user);
-        alert("Verification e-mail sent. Please verify, then sign in.");
-        await signOut(auth);
-        loginMode = true;
-        paintAuthView();
-        hideModal();
-      }
-    } catch (err) {
-      console.error("Auth error:", err.code, err.message);
-      alert(err.message);
-    }
-  });
-  
-  /* Helper – only allow verified users */
-  async function verifiedSignIn(email, password) {
-    const { user } = await signInWithEmailAndPassword(auth, email, password);
-    await user.reload();
-    if (!user.emailVerified) {
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      await sendEmailVerification(user);
+      alert("Verification e-mail sent. Please verify, then sign in.");
       await signOut(auth);
-      throw new Error("Please verify your e-mail before logging in.");
+      loginMode = true;
+      paintAuthView();
+      hideModal();
+    }
+  } catch (err) {
+    console.error("Auth error:", err.code, err.message);
+    alert(err.message);
+    authWrapper.classList.remove("loading"); // Hide loading state on error
+  }
+});
+
+/* Helper – only allow verified users */
+async function verifiedSignIn(email, password) {
+  const { user } = await signInWithEmailAndPassword(auth, email, password);
+  await user.reload();
+  if (!user.emailVerified) {
+    await signOut(auth);
+    throw new Error("Please verify your e-mail before logging in.");
+  }
+  return { user };
+}
+
+/* Helper – ensure user document exists */
+async function ensureUserDoc(user) {
+  try {
+    const userDocRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) {
+      await setDoc(userDocRef, {
+        expenseCategories: DEFAULT_EXPENSE_CATEGORIES || [],
+        incomeCategories: DEFAULT_INCOME_CATEGORIES || [],
+        balance: 0,
+        incomes: [],
+        expenses: [],
+        logs: [],
+      }, { merge: true });
+    }
+  } catch (err) {
+    console.error("Error in ensureUserDoc:", err.code, err.message);
+  }
+}
+
+/* =========================================================
+   7. Social OAuth Providers
+   ========================================================= */
+const googleProvider = new GoogleAuthProvider();
+const microsoftProvider = new OAuthProvider("microsoft.com");
+
+/* Google */
+googleBtn.addEventListener("click", async () => {
+  try {
+    showLoadingState(); // Show loading state before sign-in
+    const { user } = await signInWithPopup(auth, googleProvider);
+    await ensureUserDoc(user);
+  } catch (err) {
+    console.error("Google Sign-in error:", err.code, err.message);
+    if (!auth.currentUser) {
+      alert("Error signing in with Google: " + err.message);
+      authWrapper.classList.remove("loading"); // Hide loading state on error
+    } else {
+      console.log("Sign-in succeeded despite error, proceeding.");
     }
   }
-  
-  /* Helper – ensure user document exists */
-  async function ensureUserDoc(user) {
-    try {
-      const userDocRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userDocRef);
-      if (!userSnap.exists()) {
-        await setDoc(userDocRef, {
-          expenseCategories: DEFAULT_EXPENSE_CATEGORIES || [],
-          incomeCategories: DEFAULT_INCOME_CATEGORIES || [],
-          balance: 0,
-          incomes: [],
-          expenses: [],
-          logs: [],
-        }, { merge: true });
-      }
-    } catch (err) {
-      console.error("Error in ensureUserDoc:", err.code, err.message);
-      // Don't throw, as sign-in succeeded
+  // UI updates handled by onAuthStateChanged
+});
+
+/* Microsoft */
+microsoftBtn.addEventListener("click", async () => {
+  try {
+    showLoadingState(); // Show loading state before sign-in
+    const { user } = await signInWithPopup(auth, microsoftProvider);
+    await ensureUserDoc(user);
+  } catch (err) {
+    console.error("Microsoft Sign-in error:", err.code, err.message);
+    if (!auth.currentUser) {
+      alert("Failed to sign in with Microsoft: " + err.message);
+      authWrapper.classList.remove("loading"); // Hide loading state on error
+    } else {
+      console.log("Sign-in succeeded despite error, proceeding.");
     }
   }
-  
-  /* =========================================================
-     7. Social OAuth providers
-     ========================================================= */
-  const googleProvider = new GoogleAuthProvider();
-  const microsoftProvider = new OAuthProvider("microsoft.com");
-  
-  /* Google */
-  googleBtn.addEventListener("click", async () => {
+  // UI updates handled by onAuthStateChanged
+});
+
+/* =========================================================
+   8. Monitor Authentication State
+   ========================================================= */
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    // Keep the loading state active while async operations complete
+    showLoadingState();
+
     try {
-      const { user } = await signInWithPopup(auth, googleProvider);
-      await ensureUserDoc(user);
-    } catch (err) {
-      console.error("Google Sign-in error:", err.code, err.message);
-      if (!auth.currentUser) {
-        alert("Error signing in with Google: " + err.message);
-      } else {
-        console.log("Sign-in succeeded despite error, proceeding.");
-      }
-    }
-    // UI updates handled by onAuthStateChanged
-  });
-  
-  /* Microsoft */
-  microsoftBtn.addEventListener("click", async () => {
-    try {
-      const { user } = await signInWithPopup(auth, microsoftProvider);
-      await ensureUserDoc(user);
-    } catch (err) {
-      console.error("Microsoft Sign-in error:", err.code, err.message);
-      if (!auth.currentUser) {
-        alert("Failed to sign in with Microsoft: " + err.message);
-      } else {
-        console.log("Sign-in succeeded despite error, proceeding.");
-      }
-    }
-    // UI updates handled by onAuthStateChanged
-  });
-  
-  /* =========================================================
-     8. Monitor Authentication State
-     ========================================================= */
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
+      // Log login and device (asynchronously, but don't await to avoid blocking UI)
       const prevLogin = sessionStorage.getItem("loginLogged");
       if (!prevLogin) {
         try {
@@ -2469,11 +2482,11 @@ discardConfirmBtn.addEventListener("click", () => {
           console.error("Error logging login:", err);
         }
       }
-  
+
       const ua = navigator.userAgent;
       const dev = `${navigator.platform} - ${ua.split(") ")[0].split("(").pop()}`;
       const hash = deviceHashASCII(dev);
-  
+
       if (localStorage.getItem("deviceHash") !== hash) {
         try {
           await addLog("new_device");
@@ -2482,43 +2495,18 @@ discardConfirmBtn.addEventListener("click", () => {
           console.error("Error logging new device:", err);
         }
       }
-  
-      showDashboard();
-  
+
+      // Ensure user document exists (using the existing helper)
+      await ensureUserDoc(user);
+
+      // Load theme settings
       const userDocRef = doc(db, "users", user.uid);
-      try {
-        const userSnap = await getDoc(userDocRef);
-  
-        if (!userSnap.exists()) {
-          await setDoc(userDocRef, {
-            expenseCategories: DEFAULT_EXPENSE_CATEGORIES || [],
-            incomeCategories: DEFAULT_INCOME_CATEGORIES || [],
-            balance: 0,
-            incomes: [],
-            expenses: [],
-            logs: [],
-          }, { merge: true });
-        } else {
-          const data = userSnap.data();
-          if (!Array.isArray(data.expenseCategories) || data.expenseCategories.length === 0) {
-            await setDoc(userDocRef, { expenseCategories: DEFAULT_EXPENSE_CATEGORIES || [] }, { merge: true });
-          }
-          if (!Array.isArray(data.incomeCategories) || data.incomeCategories.length === 0) {
-            await setDoc(userDocRef, { incomeCategories: DEFAULT_INCOME_CATEGORIES || [] }, { merge: true });
-          }
-        }
-      } catch (err) {
-        console.error("Error setting user document:", err);
-      }
-  
-      showSection("dashboard-section");
-      
       const themeToggle = document.getElementById("theme-toggle");
       try {
-        const updatedUserSnap = await getDoc(userDocRef);
-        const userData = updatedUserSnap.data();
+        const userSnap = await getDoc(userDocRef);
+        const userData = userSnap.data();
         const darkModeEnabled = userData.settings?.darkMode;
-  
+
         if (darkModeEnabled) {
           document.body.classList.add("dark-mode");
           if (themeToggle) themeToggle.checked = true;
@@ -2529,16 +2517,18 @@ discardConfirmBtn.addEventListener("click", () => {
       } catch (err) {
         console.error("Error loading theme settings:", err);
       }
-  
+
+      // Load dashboard data
       try {
         await loadCategoriesFromFirestore(user);
-        loadDashboard(user);
+        await loadDashboard(user); // Ensure this is awaited if it’s async
       } catch (err) {
         console.error("Error loading dashboard data:", err);
       }
-  
+
       // Weekly summary card (remove hard-coded true for production)
-      if (new Date().getDay() === 3) { // Wednesday
+      const showWeeklySummary = new Date().getDay() === 3; // Wednesday
+      if (showWeeklySummary) {
         console.log("It's Wednesday - showing Weekly Summary Card");
         setTimeout(() => {
           try {
@@ -2548,12 +2538,70 @@ discardConfirmBtn.addEventListener("click", () => {
           }
         }, 300);
       }
-    } else {
-      sessionStorage.removeItem("loginLogged");
+
+      // Now that all async operations are complete, show the dashboard
+      showDashboard();
+      showSection("dashboard-section");
+
+      // Remove the loading state after dashboard is fully loaded
+      authWrapper.classList.remove("loading");
+    } catch (err) {
+      console.error("Error in onAuthStateChanged:", err);
+      // If there's an error, remove loading state and show auth screen
+      authWrapper.classList.remove("loading");
       showAuthScreen();
     }
-  });
-  
+  } else {
+    sessionStorage.removeItem("loginLogged");
+    showAuthScreen();
+    authWrapper.classList.remove("loading");
+  }
+});
+
+/* =========================================================
+   9. Typing Effect for #app-tagline
+   ========================================================= */
+const tagline = document.getElementById("app-tagline");
+const phrases = [
+  "Boost Your Budget",
+  "Make a Budget",
+  "Connect Your Account",
+  "Track Your Finances",
+];
+let currentPhraseIndex = 0;
+let currentCharIndex = 0;
+let isTyping = true;
+
+function type() {
+  const currentPhrase = phrases[currentPhraseIndex];
+
+  if (isTyping) {
+    if (currentCharIndex <= currentPhrase.length) {
+      tagline.innerHTML =
+        currentPhrase.slice(0, currentCharIndex) + '<span class="blinking-cursor">|</span>';
+      currentCharIndex++;
+      setTimeout(type, Math.random() * 150 + 50);
+    } else {
+      isTyping = false;
+      setTimeout(type, 1500);
+    }
+  } else {
+    if (currentCharIndex >= 0) {
+      tagline.innerHTML =
+        currentPhrase.slice(0, currentCharIndex) + '<span class="blinking-cursor">|</span>';
+      currentCharIndex--;
+      setTimeout(type, 50);
+    } else {
+      currentPhraseIndex = (currentPhraseIndex + 1) % phrases.length;
+      currentCharIndex = 0;
+      isTyping = true;
+      setTimeout(type, 500);
+    }
+  }
+}
+
+type();
+ 
   /* =========================================================
      9. Theme Toggle
      ========================================================= */
