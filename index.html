@@ -21,20 +21,19 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- AUTH WRAPPER -->
-    <div id="auth-wrapper" class="auth-screen">
-      <!-- Logo -->
+
+    <div id="auth-wrapper" class="auth-screen body ">
       <div class="top-logo">
         <i class="fa-solid fa-rocket"></i>
+        <span class="app-name">Cash Rocket</span>
       </div>
-  
-      <!-- Headline -->
-      <span id="dynamic-text">Cash Rocket</span>
-      <!-- Auth Card -->
+      <div class="rocket-trail"></div>
+      <div class="stars"></div>
+      <h2 id="app-tagline">Boost your budget</h2>
       <div id="auth-container">
         <button id="google-signin-button" class="social-btn" aria-label="Sign in with Google">
           <div class="social-btn-icon">
-            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: block;">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
               <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
               <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
               <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
@@ -44,52 +43,49 @@
           </div>
           <span>Continue with Google</span>
         </button>
-        <button id="microsoft-signin-button" class="social-btn" aria-label="Sign in with Microsoft">
+        <button id="microsoft-signin-button" class="social-btn microsoft" aria-label="Sign in with Microsoft">
           <div class="social-btn-icon">
             <img src="assets/microsoft-logo-light.png" alt="Microsoft Logo">
           </div>
           <span>Continue with Microsoft</span>
         </button>
         <button id="signup-button" class="btn-auth">Sign Up</button>
-        <button id="login-button" class="btn-auth">Log In</button>
+        <button id="login-button" class="btn-auth secondary">Log In</button>
       </div>
-  
-      <!-- Bottom Curve -->
       <div class="bottom-curve"></div>
-  
-     <!-- Email/Password Modal -->
-<div id="auth-modal" class="auth-modal hidden" role="dialog" aria-labelledby="form-title">
-  <div class="modal-content">
-    <button id="close-modal" class="close-btn" aria-label="Close modal">×</button>
-    <h1 id="form-title" class="app-title"></h1>
-    <p class="app-tagline">Take control of your finances.</p>
-    <form id="auth-form">
-      <div class="input-group">
-        <label for="auth-email">Email Address*</label>
-        <input id="auth-email" type="email" placeholder="Enter your email" required />
-      </div>
-      <div class="input-group">
-        <label for="auth-password">Password*</label>
-        <div class="password-wrapper">
-          <input id="auth-password" type="password" placeholder="Enter your password" required />
-          <button id="toggle-password-visibility" type="button" class="toggle-password">
-            <i class="fa-solid fa-eye"></i>
-          </button>
+      <div id="auth-modal" class="auth-modal hidden" role="dialog" aria-labelledby="form-title">
+        <div class="modal-content">
+          <button id="close-modal" class="close-btn" aria-label="Close modal">×</button>
+          <h1 id="form-title" class="app-title"></h1>
+          <p class="app-tagline">Take control of your finances.</p>
+          <form id="auth-form">
+            <div class="input-group">
+              <label for="auth-email">Email Address*</label>
+              <input id="auth-email" type="email" placeholder="Enter your email" required />
+            </div>
+            <div class="input-group">
+              <label for="auth-password">Password*</label>
+              <div class="password-wrapper">
+                <input id="auth-password" type="password" placeholder="Enter your password" required />
+                <button id="toggle-password-visibility" type="button" class="toggle-password">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+            <button id="auth-button" type="submit" class="btn-auth"></button>
+          </form>
+          <p id="forgot-password-container">
+            <button id="forgot-password-button" type="button" class="link-button">Forgot Password?</button>
+          </p>
+          <p class="tos-text">
+            By proceeding you agree to our
+            <a href="terms.html">Terms of Service</a> and
+            <a href="privacy.html">Privacy Policy</a>.
+          </p>
         </div>
       </div>
-      <button id="auth-button" type="submit" class="btn-auth"></button>
-    </form>
-    <p id="forgot-password-container">
-      <button id="forgot-password-button" type="button" class="link-button">Forgot Password?</button>
-    </p>
-    <p class="tos-text">
-      By proceeding you agree to our
-      <a href="terms.html">Terms of Service</a> and
-      <a href="privacy.html">Privacy Policy</a>.
-    </p>
-  </div>
-</div>
     </div>
+
 
 
 
