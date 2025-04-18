@@ -2802,9 +2802,9 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50px; /* Wider than before to match the screenshot */
-  height: 34px; /* Slightly shorter height for a rectangular shape */
-  border-radius: 16px; /* Rounded corners, but not a perfect circle */
+  width: 44px; /* Wider than before to match the screenshot */
+  height: 44px; /* Slightly shorter height for a rectangular shape */
+  border-radius: 50%; /* Rounded corners, but not a perfect circle */
   transition: background-color 0.3s ease, transform 0.3s ease-in-out;
 }
 
@@ -2845,6 +2845,7 @@ document.querySelectorAll('.color-circle').forEach(circle => {
 .nav-item.active span {
   color: var(--nav-active-text);
 }
+
 
 
 /* Floating Button (Adjusted for consistency) */
@@ -5504,11 +5505,13 @@ color: var(--text-color);
 
 
 
+ 
   @media (max-width: 768px) {
     /* Mobile Bottom Navigation: Full width with more balanced spacing */
     .bottom-nav {
       padding: 4px 0;
       justify-content: space-around;
+     padding-bottom: 10px;
     }
   
     .nav-item {
