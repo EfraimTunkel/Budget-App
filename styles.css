@@ -2838,12 +2838,14 @@ document.querySelectorAll('.color-circle').forEach(circle => {
 
 /* Active State */
 .nav-item.active .nav-icon-wrapper {
-  background-color: #d0d0d0; /* Slightly darker gray for better contrast in light mode */
+  background-color: var(--nav-active-bg);
 }
 
-.dark-mode .nav-item.active .nav-icon-wrapper {
-  background-color: #555; /* Slightly lighter gray for better contrast in dark mode */
+.nav-item.active i,
+.nav-item.active span {
+  color: var(--nav-active-text);
 }
+
 
 /* Floating Button (Adjusted for consistency) */
 .floating-button {
