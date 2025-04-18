@@ -5511,7 +5511,7 @@ color: var(--text-color);
     .bottom-nav {
       padding: 4px 0;
       justify-content: space-around;
-     padding-bottom: 10px;
+     padding-bottom: 30px;
     }
   
     .nav-item {
