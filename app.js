@@ -4613,7 +4613,7 @@ async function initWeeklySummaryFeature(user) {
   const forceShow = true; // Set to true to bypass lastShown check for testing
 
   // Hide card on non-Mondays in production
-  if (!isTesting && dayOfWeek !== 1) {
+  if (!isTesting && dayOfWeek !== 2) {
     const cardEl = document.getElementById("weekly-summary-card");
     if (cardEl) cardEl.style.display = "none";
     return;
