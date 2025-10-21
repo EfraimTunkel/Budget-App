@@ -62,23 +62,39 @@ async function addLog(type) {
 }
 
 
-// *****************************************************************
-// IMPORTANT CHANGE HERE: removed fetchApiKey & initializeAppWithApiKey
-// We now initialize Firebase with the config directly (apiKey inline)
-// *****************************************************************
 
-// Firebase config — using the apiKey you provided
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDuDrJSgnGvkDHCdIBq98m2zRGLvwRgbYs",
-  authDomain: "budgetapp-5d500.firebaseapp.com",
-  projectId: "budgetapp-5d500",
-  storageBucket: "budgetapp-5d500.firebasestorage.app",
-  messagingSenderId: "31114956560",
-  appId: "1:31114956560:web:1cbf62fbeaa484114ddf95",
-  measurementId: "G-X9P0P9FC43"
-};
 
+  // Fetch the API key securely from the Firebase Cloud Function
+  const fetchApiKey = async () => {
+    try {
+      const response = await fetch("https://getapikey-ahmnn5lmka-uc.a.run.app/");
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      return data.apiKey;
+    } catch (error) {
+      console.error("Error fetching API key:", error);
+    }
+  };
+  // Make them global
+// Global variables
+let auth;
+let db;
+let storage; // Declare storage here as a global variable
+
+  // Initialize Firebase with dynamically fetched API key
+  const initializeAppWithApiKey = async () => {
+    const apiKey = await fetchApiKey();
+    if (apiKey) {
+      const firebaseConfig = {
+        apiKey,
+        authDomain: "budgetapp-5d500.firebaseapp.com",
+        projectId: "budgetapp-5d500",
+        storageBucket: "budgetapp-5d500.appspot.com",
+        messagingSenderId: "31114956560",
+        appId: "1:31114956560:web:1cbf62fbeaa484114ddf95",
+        measurementId: "G-X9P0P9FC43",
+      };
+  
       const app = initializeApp(firebaseConfig);
       auth = getAuth(app);
       db = getFirestore(app);
@@ -5481,4 +5497,3 @@ async function showInsightsPopup() {
     }
   );
 }
-
