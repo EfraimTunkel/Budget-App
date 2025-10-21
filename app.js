@@ -61,75 +61,56 @@ async function addLog(type) {
   await setDoc(userDocRef, { logs: arrayUnion(log) }, { merge: true });
 }
 
+// Firebase configuration is safe to expose in client-side code.
+const firebaseConfig = {
+  apiKey: "AIzaSyDuDrJSgnGvkDHCdIBq98m2zRGLvwRgbYs",
+  authDomain: "budgetapp-5d500.firebaseapp.com",
+  projectId: "budgetapp-5d500",
+  storageBucket: "budgetapp-5d500.firebasestorage.app",
+  messagingSenderId: "31114956560",
+  appId: "1:31114956560:web:1cbf62fbeaa484114ddf95",
+  measurementId: "G-X9P0P9FC43"
+};
 
-
-
-  // Fetch the API key securely from the Firebase Cloud Function
-  const fetchApiKey = async () => {
-    try {
-      const response = await fetch("https://getapikey-ahmnn5lmka-uc.a.run.app/");
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      return data.apiKey;
-    } catch (error) {
-      console.error("Error fetching API key:", error);
-    }
-  };
-  // Make them global
+// Make them global
 // Global variables
 let auth;
 let db;
 let storage; // Declare storage here as a global variable
 
-  // Initialize Firebase with dynamically fetched API key
-  const initializeAppWithApiKey = async () => {
-    const apiKey = await fetchApiKey();
-    if (apiKey) {
-      const firebaseConfig = {
-        apiKey,
-        authDomain: "budgetapp-5d500.firebaseapp.com",
-        projectId: "budgetapp-5d500",
-        storageBucket: "budgetapp-5d500.appspot.com",
-        messagingSenderId: "31114956560",
-        appId: "1:31114956560:web:1cbf62fbeaa484114ddf95",
-        measurementId: "G-X9P0P9FC43",
-      };
-  
-      const app = initializeApp(firebaseConfig);
-      auth = getAuth(app);
-      db = getFirestore(app);
-      try {
-        await setPersistence(auth, browserLocalPersistence);
-        console.log("Local persistence set.");
-      } catch (error) {
-        console.error("Error setting persistence:", error);
-      }
-      
-      document.getElementById("forgot-password-button").addEventListener("click", async () => {
-        const email = document.getElementById("auth-email").value;
-      
-        if (!email) {
-          alert("Please enter your email address.");
-          return;
-        }
-      
-        const auth = getAuth();
-      
-        try {
-          await sendPasswordResetEmail(auth, email);
-          alert("Password reset email sent! Please check your inbox.");
-        } catch (error) {
-          console.error("Error resetting password:", error.message);
-          alert("Failed to send password reset email. Please try again.");
-        }
-      });
-      
-      initializeFirebaseFeatures(app);
-      
-    } else {
-      console.error("Failed to fetch API key. Firebase initialization aborted.");
+// Initialize Firebase directly with the provided configuration
+const initializeAppWithApiKey = async () => {
+  const app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+    console.log("Local persistence set.");
+  } catch (error) {
+    console.error("Error setting persistence:", error);
+  }
+
+  document.getElementById("forgot-password-button").addEventListener("click", async () => {
+    const email = document.getElementById("auth-email").value;
+
+    if (!email) {
+      alert("Please enter your email address.");
+      return;
     }
-  };
+
+    const auth = getAuth();
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Password reset email sent! Please check your inbox.");
+    } catch (error) {
+      console.error("Error resetting password:", error.message);
+      alert("Failed to send password reset email. Please try again.");
+    }
+  });
+
+  initializeFirebaseFeatures(app);
+};
   function buildDailyNetBalanceSeries(incomes = [], expenses = []) {
     // 1) Build a map: dayString -> totalChange
     //    Example dayString: "2023-03-09"
