@@ -145,12 +145,17 @@
         </button>
 
         <!-- Profile icon (hidden on desktop, shown on mobile) -->
-        <div class="profile-icon-container hide-on-desktop" id="mobile-profile-container">
+        <button
+          type="button"
+          class="profile-icon-container hide-on-desktop"
+          id="mobile-profile-container"
+          aria-label="View profile"
+        >
           <div class="nav-icon-wrapper">
             <img src="default-avatar.png" alt="Profile Icon" id="mobile-profile-icon">
           </div>
           <span class="nav-label">Profile</span>
-        </div>
+        </button>
       </nav>
       
       <nav class="sidebar collapsed" id="sidebar">

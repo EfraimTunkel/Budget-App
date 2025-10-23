@@ -2537,6 +2537,10 @@ document.querySelectorAll('.color-circle').forEach(circle => {
   flex-direction: column;
   align-items: center;
   cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
 }
 
 .profile-icon-container .nav-icon-wrapper {
@@ -6375,46 +6379,68 @@ html {
 @media (max-width: 991px) {
   .bottom-nav {
     position: fixed;
-    left: 50%;
-    bottom: 1.5rem;
-    transform: translateX(-50%);
-    width: min(520px, calc(100% - 2rem));
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1500;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 0.75rem;
-    padding: 1.25rem 1.5rem 0.95rem;
-    border-radius: 22px;
-    background: rgba(255, 255, 255, 0.92);
+    padding: 0.95rem 1.5rem calc(0.95rem + env(safe-area-inset-bottom));
+    border-radius: 20px 20px 0 0;
+    background: rgba(255, 255, 255, 0.94);
     backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 255, 255, 0.65);
-    box-shadow: 0 24px 45px rgba(15, 23, 42, 0.12);
-    overflow: visible;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 -18px 32px rgba(15, 23, 42, 0.14);
   }
 
   .dark-mode .bottom-nav {
-    background: rgba(18, 18, 18, 0.86);
-    border-color: rgba(129, 199, 132, 0.18);
-    box-shadow: 0 24px 40px rgba(0, 0, 0, 0.55);
+    background: rgba(18, 18, 18, 0.9);
+    border-top-color: rgba(129, 199, 132, 0.18);
+    box-shadow: 0 -18px 36px rgba(0, 0, 0, 0.55);
   }
 
   .bottom-nav .nav-item,
   .bottom-nav .profile-icon-container {
     flex: 1;
-    gap: 0.35rem;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
     color: rgba(15, 23, 42, 0.72);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .bottom-nav .nav-item:focus-visible,
+  .bottom-nav .profile-icon-container:focus-visible,
+  #add-transaction-button:focus-visible {
+    outline: 3px solid rgba(76, 175, 80, 0.45);
+    outline-offset: 3px;
   }
 
   .dark-mode .bottom-nav .nav-item,
   .dark-mode .bottom-nav .profile-icon-container {
-    color: rgba(255, 255, 255, 0.72);
+    color: rgba(255, 255, 255, 0.78);
   }
 
   .bottom-nav .nav-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 44px;
     height: 44px;
+    border-radius: 50%;
     background: rgba(76, 175, 80, 0.12);
+    transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
   }
 
   .dark-mode .bottom-nav .nav-icon-wrapper {
@@ -6424,29 +6450,35 @@ html {
   .bottom-nav .nav-item i,
   .bottom-nav .profile-icon-container i {
     color: inherit;
+    font-size: 1.1rem;
   }
 
   .bottom-nav .nav-label {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.72rem;
     letter-spacing: 0.02em;
     opacity: 0.75;
   }
 
   .bottom-nav .nav-item.active,
   .bottom-nav .profile-icon-container.active {
-    color: #fff;
+    color: var(--primary-color);
+  }
+
+  .dark-mode .bottom-nav .nav-item.active,
+  .dark-mode .bottom-nav .profile-icon-container.active {
+    color: #81c784;
   }
 
   .bottom-nav .nav-item.active .nav-icon-wrapper,
   .bottom-nav .profile-icon-container.active .nav-icon-wrapper {
     background: linear-gradient(135deg, var(--primary-color), #2e7d32);
-    box-shadow: 0 14px 25px rgba(76, 175, 80, 0.35);
+    box-shadow: 0 18px 32px rgba(76, 175, 80, 0.35);
+    transform: translateY(-2px);
   }
 
   .dark-mode .bottom-nav .nav-item.active .nav-icon-wrapper,
   .dark-mode .bottom-nav .profile-icon-container.active .nav-icon-wrapper {
-    box-shadow: 0 18px 30px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 20px 34px rgba(0, 0, 0, 0.6);
   }
 
   .bottom-nav .nav-item.active .nav-label,
@@ -6454,30 +6486,67 @@ html {
     opacity: 1;
   }
 
+  #home-button {
+    order: 1;
+  }
+
+  #budgets-button {
+    order: 2;
+  }
+
+  #transactions-button {
+    order: 4;
+  }
+
+  #mobile-profile-container {
+    order: 5;
+    cursor: pointer;
+  }
+
   #add-transaction-button {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translate(-50%, -62%);
+    order: 3;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    bottom: auto;
+    right: auto;
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    box-shadow: 0 22px 40px rgba(76, 175, 80, 0.35);
+    transform: translateY(-22%);
+    background: linear-gradient(135deg, var(--primary-color), #2e7d32);
+    color: #fff;
+    border: none;
+    box-shadow: 0 24px 36px rgba(76, 175, 80, 0.4);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  #add-transaction-button:hover {
+    transform: translateY(-28%);
+    box-shadow: 0 28px 44px rgba(76, 175, 80, 0.45);
+  }
+
+  #add-transaction-button i {
+    font-size: 1.35rem;
   }
 
   .dark-mode #add-transaction-button {
-    box-shadow: 0 22px 40px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 24px 40px rgba(0, 0, 0, 0.55);
   }
 
   .profile-icon-container img {
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.12);
   }
 
   .dark-mode .profile-icon-container img {
-    border-color: rgba(129, 199, 132, 0.35);
+    border-color: rgba(129, 199, 132, 0.45);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.55);
   }
 }
 
@@ -6661,13 +6730,23 @@ html {
 
 @media (max-width: 480px) {
   .bottom-nav {
-    width: calc(100% - 1.5rem);
-    padding: 1.1rem 1rem 0.9rem;
+    padding: 0.85rem 1.1rem calc(0.85rem + env(safe-area-inset-bottom));
+    gap: 0.5rem;
+  }
+
+  .bottom-nav .nav-item,
+  .bottom-nav .profile-icon-container {
+    font-size: 0.76rem;
+  }
+
+  .bottom-nav .nav-label {
+    font-size: 0.68rem;
   }
 
   #add-transaction-button {
     width: 58px;
     height: 58px;
+    transform: translateY(-20%);
   }
 }
 
