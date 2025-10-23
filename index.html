@@ -108,49 +108,54 @@
     <div id="dashboard-container" >
       <nav class="bottom-nav">
         <!-- Home (shown on all) -->
-        <a class="nav-item show-on-all" id="home-button">
+        <a class="nav-item show-on-all" id="home-button" aria-label="Go to dashboard">
           <div class="nav-icon-wrapper">
             <i class="fa-solid fa-house"></i>
           </div>
-        
+          <span class="nav-label">Home</span>
         </a>
       <!-- Settings (hidden on mobile, shown on desktop) -->
       <a  class="nav-item hide-on-mobile" id="settings-button">
         <i class="fa-solid fa-gear"></i><span>Settings</span>
       </a>
-    
+
       <!-- Log Out (hidden on mobile, shown on desktop) -->
       <button id="logout-button" class="hide-on-mobile">
         Log Out
       </button>
         <!-- Budgets (shown on all) -->
-        <a class="nav-item show-on-all" id="budgets-button">
+        <a class="nav-item show-on-all" id="budgets-button" aria-label="View budgets">
           <div class="nav-icon-wrapper">
             <i class="fa-solid fa-wallet"></i>
           </div>
-          
+          <span class="nav-label">Budgets</span>
         </a>
-      
+
         <!-- Transactions (shown on all) -->
-        <a class="nav-item show-on-all" id="transactions-button">
+        <a class="nav-item show-on-all" id="transactions-button" aria-label="Browse transactions">
           <div class="nav-icon-wrapper">
             <i class="fa-solid fa-list"></i>
           </div>
-         
+          <span class="nav-label">Transactions</span>
         </a>
-      
+
         <!-- The floating add transaction button (shown on all) -->
-        <button id="add-transaction-button" class="floating-button show-on-all">
+        <button id="add-transaction-button" class="floating-button show-on-all" aria-label="Add a transaction">
           <i class="fa fa-plus"></i>
         </button>
-      
+
         <!-- Profile icon (hidden on desktop, shown on mobile) -->
-        <div class="profile-icon-container hide-on-desktop" id="mobile-profile-container">
+        <button
+          type="button"
+          class="profile-icon-container hide-on-desktop"
+          id="mobile-profile-container"
+          aria-label="View profile"
+        >
           <div class="nav-icon-wrapper">
             <img src="default-avatar.png" alt="Profile Icon" id="mobile-profile-icon">
           </div>
-          
-        </div>
+          <span class="nav-label">Profile</span>
+        </button>
       </nav>
       
       <nav class="sidebar collapsed" id="sidebar">
