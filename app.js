@@ -41,6 +41,17 @@ function deviceHashASCII(str) {
   return btoa(asciiOnly);
 }
 
+function syncMobileViewportAndNavSpacing() {
+  const viewportHeight = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty("--app-vh", `${viewportHeight}px`);
+
+  const mobileNav = document.querySelector(".bottom-nav");
+  if (mobileNav) {
+    const navHeight = Math.ceil(mobileNav.getBoundingClientRect().height);
+    document.documentElement.style.setProperty("--mobile-nav-height", `${navHeight}px`);
+  }
+}
+
 async function addLog(type) {
   const user = auth.currentUser;
   if (!user) return;
@@ -611,6 +622,10 @@ function setMobileNavActiveState(sectionId) {
   }
 }
 document.addEventListener('DOMContentLoaded', () => {
+  syncMobileViewportAndNavSpacing();
+  window.addEventListener('resize', syncMobileViewportAndNavSpacing, { passive: true });
+  window.addEventListener('orientationchange', syncMobileViewportAndNavSpacing, { passive: true });
+
   const profileSection = document.getElementById('profile-section');
   const walletsSection = document.getElementById('wallet-page-section');
   const addTransactionButton = document.getElementById('add-transaction-button');

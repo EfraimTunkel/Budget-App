@@ -1,4 +1,6 @@
 :root {
+  --app-vh: 1vh;
+  --mobile-nav-height: 88px;
   --bg-color: #ffffff;
   --text-color: #333333;
   --primary-color: #4caf50;
@@ -118,6 +120,7 @@ body {
   background: var(--bg-color);
   color: var(--text-color);
   min-height: 100vh;
+  min-height: calc(var(--app-vh, 1vh) * 100);
   overflow-x: hidden;
 }
 
@@ -131,6 +134,8 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  height: 100dvh;
+  min-height: calc(var(--app-vh, 1vh) * 100);
   width: 100%;
   position: relative;
   background: linear-gradient(135deg, #1e1e1e, #121212); /* Dark mode gradient */
@@ -6416,8 +6421,12 @@ html {
     font-weight: 600;
     background: none;
     border: none;
+    min-height: 44px;
+    min-width: 44px;
     padding: 0;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   .bottom-nav .nav-item:focus-visible,
@@ -6521,11 +6530,18 @@ html {
     border: none;
     box-shadow: 0 24px 36px rgba(76, 175, 80, 0.4);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
+    touch-action: manipulation;
   }
 
   #add-transaction-button:hover {
     transform: translateY(-28%);
     box-shadow: 0 28px 44px rgba(76, 175, 80, 0.45);
+  }
+
+  #add-transaction-button:active,
+  .bottom-nav .nav-item:active .nav-icon-wrapper,
+  .bottom-nav .profile-icon-container:active .nav-icon-wrapper {
+    transform: scale(0.96);
   }
 
   #add-transaction-button i {
@@ -6558,7 +6574,7 @@ html {
   }
 
   #main-content {
-    padding: 2rem 1.25rem 7.5rem;
+    padding: 2rem 1.25rem calc(var(--mobile-nav-height, 88px) + env(safe-area-inset-bottom) + 1.5rem);
     gap: 1.75rem;
   }
 
@@ -6719,6 +6735,17 @@ html {
 
   .chart-canvas {
     height: 260px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
