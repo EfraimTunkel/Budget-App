@@ -200,43 +200,54 @@
         <!-- Dashboard Section -->
      <!-- Dashboard Section -->
      <section id="dashboard-section" class="section dashboard-section">
-  <!-- Header / Greeting -->
-  <header class="dashboard-header">
+  <header class="dashboard-header dashboard-hero-card">
+    <div class="hero-glow hero-glow-one" aria-hidden="true"></div>
+    <div class="hero-glow hero-glow-two" aria-hidden="true"></div>
     <div class="user-info">
       <img id="user-profile-pic" src="default-avatar.png" alt="Profile Pic" />
       <div class="greeting-text">
+        <p class="dashboard-kicker">Your money cockpit</p>
         <h1 id="greeting"><span id="username-display">User</span></h1>
-        <p>Your current balance: <span id="balance">$0.00</span></p>
+        <p class="hero-balance-label">Total available balance</p>
+        <p class="hero-balance-value" id="balance">$0.00</p>
       </div>
     </div>
   </header>
 
-  <!-- Weekly Insights Card -->
-  <div id="weekly-summary-card" ></div>
+  <div id="weekly-summary-card"></div>
 
-  <!-- Summary Boxes (Expense & Income) -->
-  <section class="summary-boxes-section">
+  <section class="summary-boxes-section" aria-label="Income and expense summary">
     <div class="summary-box expense-box">
-      <h3>Expenses</h3>
+      <div class="summary-box-top-row">
+        <h3>Expenses</h3>
+        <span class="summary-icon" aria-hidden="true"><i class="fa-solid fa-arrow-trend-down"></i></span>
+      </div>
       <div class="amount negative">$777.30</div>
       <div class="transactions-count">8 transactions</div>
     </div>
     <div class="summary-box income-box">
-      <h3>Income</h3>
+      <div class="summary-box-top-row">
+        <h3>Income</h3>
+        <span class="summary-icon" aria-hidden="true"><i class="fa-solid fa-arrow-trend-up"></i></span>
+      </div>
       <div class="amount positive">$265.00</div>
       <div class="transactions-count">2 transactions</div>
     </div>
   </section>
 
-  <!-- Spending Overview (Moved Up) -->
-  <section class="donut-chart-section">
-    <h2>Spending Overview</h2>
+  <section class="donut-chart-section dashboard-panel">
+    <div class="panel-heading-row">
+      <h2>Spending Breakdown</h2>
+      <span class="panel-chip"><i class="fa-solid fa-chart-pie"></i> Categories</span>
+    </div>
     <div id="spending-chart" class="chart-canvas"></div>
   </section>
 
-  <!-- Recent Transactions (Moved Up) -->
-  <section id="transactions-sectionn" class="transactions-section">
-    <h2>Recent Transactions</h2>
+  <section id="transactions-sectionn" class="transactions-section dashboard-panel">
+    <div class="panel-heading-row">
+      <h2>Recent Activity</h2>
+      <span class="panel-chip"><i class="fa-regular fa-clock"></i> Live feed</span>
+    </div>
     <div class="recent-transactions-tabs">
       <button id="recent-all-tab" class="recent-tab active">All</button>
       <button id="recent-income-tab" class="recent-tab">Income</button>
@@ -246,12 +257,15 @@
       <!-- Last 6 transactions injected here -->
     </div>
     <button id="view-all-transactions" class="view-all-btn">
-      View All Transactions
+      View Full Timeline
     </button>
   </section>
 
-  <!-- Line Chart (Moved Down) -->
-  <section class="line-chart-section">
+  <section class="line-chart-section dashboard-panel">
+    <div class="panel-heading-row">
+      <h2>Balance Momentum</h2>
+      <span class="panel-chip"><i class="fa-solid fa-wave-square"></i> Trend</span>
+    </div>
     <div id="balance-chart" class="chart-canvas"></div>
   </section>
 </section>
