@@ -78,12 +78,12 @@
           <form id="auth-form">
             <div class="input-group">
               <label for="auth-email">Email Address*</label>
-              <input id="auth-email" type="email" placeholder="Enter your email" required />
+              <input id="auth-email" type="email" placeholder="Enter your email" autocomplete="email" inputmode="email" required />
             </div>
             <div class="input-group">
               <label for="auth-password">Password*</label>
               <div class="password-wrapper">
-                <input id="auth-password" type="password" placeholder="Enter your password" required />
+                <input id="auth-password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
                 <button id="toggle-password-visibility" type="button" class="toggle-password">
                   <i class="fa-solid fa-eye"></i>
                 </button>
