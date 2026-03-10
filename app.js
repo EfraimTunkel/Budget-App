@@ -3833,7 +3833,7 @@ incomeTab.addEventListener("click", () => {
   
       // Display name or fallback
       const finalName = data.displayName ? data.displayName : username;
-      usernameDisplay.textContent = `${greeting}, ${finalName}`;
+      usernameDisplay.textContent = finalName;
   
       // Profile pic if it exists
       if (data.photoUrl) {
@@ -4315,7 +4315,7 @@ document.getElementById("view-all-transactions")?.addEventListener("click", () =
         categories: []
       }, { merge: true });
       balanceDisplay.textContent = "$0.00";
-      usernameDisplay.textContent = `${greeting}, ${username}`;
+      usernameDisplay.textContent = username;
   
       // Optionally, render empty ApexCharts here
       // e.g., a donut chart with no expenses, etc.
